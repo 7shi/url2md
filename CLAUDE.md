@@ -305,6 +305,10 @@ uv run pytest -x
 - Provide meaningful error messages
 - Graceful degradation when possible (e.g., fallback from Playwright to requests)
 
+### Git Commit Messages
+- Use clear, concise commit messages in English
+- Do not include promotional text or AI-generated signatures
+
 ## License and Distribution
 
 - **License**: CC0-1.0 (Public Domain)
