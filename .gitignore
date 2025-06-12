@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# Cache directory (generated during experiments)
+cache/
+
 # Claude Code
 .claude/
