@@ -255,6 +255,14 @@ When writing new tests:
 - Mock external dependencies appropriately
 - Follow the existing test patterns in the test suite
 
+### Test Execution Workflow
+
+Before making any changes to the codebase:
+1. Run `uv run pytest` to ensure all tests pass
+2. For development dependencies, use `uv sync --extra dev` if pytest is not available
+3. Fix any failing tests before proceeding with new development
+4. Run tests again after making changes to verify fixes
+
 ### Test Execution Examples
 
 ```bash
@@ -293,6 +301,8 @@ uv run pytest -x
 - All code, comments, and docstrings are in English
 - Function and variable names use snake_case
 - Class names use PascalCase
+- JSON schema files must use English descriptions only
+- Avoid language-specific instructions in schema descriptions
 
 ### Documentation
 - All functions should have docstrings

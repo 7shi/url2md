@@ -173,20 +173,22 @@ cache/
 ### Classification JSON Format
 ```json
 {
-  "themes": {
-    "Programming": {
-      "tags": ["programming", "coding", "development"],
-      "weight": 1.0
+  "themes": [
+    {
+      "theme_name": "Programming",
+      "theme_description": "Programming and software development content",
+      "tags": ["programming", "coding", "development"]
     },
-    "Education": {
-      "tags": ["tutorial", "learning", "course"],
-      "weight": 1.2
+    {
+      "theme_name": "Education", 
+      "theme_description": "Educational and learning content",
+      "tags": ["tutorial", "learning", "course"]
     }
-  },
-  "tag_stats": {
-    "programming": 15,
-    "tutorial": 8,
-    "python": 12
+  ],
+  "classification_summary": {
+    "total_tags_processed": 35,
+    "total_themes_created": 2,
+    "classification_approach": "Grouped related tags into thematic categories"
   }
 }
 ```

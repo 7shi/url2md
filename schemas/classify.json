@@ -8,38 +8,38 @@
         "properties": {
           "theme_name": {
             "type": "string",
-            "description": "テーマの名前（日本語）"
+            "description": "Name of the theme"
           },
           "theme_description": {
             "type": "string", 
-            "description": "テーマの簡潔な説明"
+            "description": "Brief description of the theme"
           },
           "tags": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "このテーマに属するタグのリスト"
+            "description": "List of tags belonging to this theme"
           }
         },
         "required": ["theme_name", "theme_description", "tags"]
       },
-      "description": "分類されたテーマのリスト"
+      "description": "List of classified themes"
     },
     "classification_summary": {
       "type": "object",
       "properties": {
         "total_tags_processed": {
           "type": "integer",
-          "description": "処理したタグの総数"
+          "description": "Total number of tags processed"
         },
         "total_themes_created": {
           "type": "integer", 
-          "description": "作成されたテーマの数"
+          "description": "Number of themes created"
         },
         "classification_approach": {
           "type": "string",
-          "description": "分類の方針や考え方の説明"
+          "description": "Explanation of classification approach and methodology"
         }
       },
       "required": ["total_tags_processed", "total_themes_created", "classification_approach"]

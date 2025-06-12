@@ -20,8 +20,8 @@ def test_schema_files():
             'properties': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']
         }),
         ('schemas/classify.json', {
-            'required': ['themes', 'tag_stats'],
-            'properties': ['themes', 'tag_stats']
+            'required': ['themes', 'classification_summary'],
+            'properties': ['themes', 'classification_summary']
         })
     ]
     

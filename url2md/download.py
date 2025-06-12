@@ -33,7 +33,7 @@ text_types = [
 
 def is_text(content_type: str) -> bool:
     """Check if content type is text"""
-    return content_type and (content_type.startswith('text/') or content_type in text_types)
+    return bool(content_type and (content_type.startswith('text/') or content_type in text_types))
 
 
 def download(url: str) -> tuple[str, bytes]:

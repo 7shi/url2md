@@ -175,8 +175,12 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
     lines.append("## Summary")
     lines.append("")
     lines.append(f"- **Total URLs**: {total_urls}")
-    lines.append(f"- **Classified**: {total_classified} ({total_classified/total_urls*100:.1f}%)")
-    lines.append(f"- **Unclassified**: {unclassified_count} ({unclassified_count/total_urls*100:.1f}%)")
+    if total_urls > 0:
+        lines.append(f"- **Classified**: {total_classified} ({total_classified/total_urls*100:.1f}%)")
+        lines.append(f"- **Unclassified**: {unclassified_count} ({unclassified_count/total_urls*100:.1f}%)")
+    else:
+        lines.append("- **Classified**: 0 (0.0%)")
+        lines.append("- **Unclassified**: 0 (0.0%)")
     lines.append("")
     
     # Theme distribution
