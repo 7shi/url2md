@@ -19,12 +19,10 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s fetch "https://example.com"
-  %(prog)s fetch --file urls.txt --cache-dir cache
-  %(prog)s summarize --limit 10
-  %(prog)s classify --extract-tags
-  %(prog)s classify --classify --output classification.json
-  %(prog)s report classification.json --format markdown
+  %(prog)s fetch -f urls.txt --playwright
+  %(prog)s summarize -f urls.txt
+  %(prog)s classify --classify -f urls.txt -o class.json
+  %(prog)s report -f urls.txt -o report.md class.json
   %(prog)s pipeline urls.txt --cache-dir cache --output report.md
 
 For more information on each command, use:
