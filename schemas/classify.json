@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "properties": {
+    "themes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "theme_name": {
+            "type": "string",
+            "description": "テーマの名前（日本語）"
+          },
+          "theme_description": {
+            "type": "string", 
+            "description": "テーマの簡潔な説明"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "このテーマに属するタグのリスト"
+          }
+        },
+        "required": ["theme_name", "theme_description", "tags"]
+      },
+      "description": "分類されたテーマのリスト"
+    },
+    "classification_summary": {
+      "type": "object",
+      "properties": {
+        "total_tags_processed": {
+          "type": "integer",
+          "description": "処理したタグの総数"
+        },
+        "total_themes_created": {
+          "type": "integer", 
+          "description": "作成されたテーマの数"
+        },
+        "classification_approach": {
+          "type": "string",
+          "description": "分類の方針や考え方の説明"
+        }
+      },
+      "required": ["total_tags_processed", "total_themes_created", "classification_approach"]
+    }
+  },
+  "required": ["themes", "classification_summary"]
+}

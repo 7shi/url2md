@@ -1,0 +1,324 @@
+# CLAUDE.md
+
+This file provides guidelines for Claude Code (claude.ai/code) when working with the url2md package.
+
+## Project Overview
+
+url2md is a command-line tool for URL analysis and classification that generates Markdown reports through AI-powered content analysis, summarization, and classification.
+
+**Key Features:**
+- URL fetching with dynamic rendering support (Playwright)
+- AI-powered content summarization using Gemini API
+- LLM-based tag classification and theme analysis
+- Markdown report generation
+- Complete pipeline processing
+
+## Package Structure
+
+```
+url2md/
+├── pyproject.toml          # Package configuration (CC0 license, Python 3.10+)
+├── README.md               # User documentation
+├── CLAUDE.md              # This file - development guidelines
+├── schemas/               # JSON schemas for AI operations
+│   ├── summarize.json     # Schema for summarize command
+│   └── classify.json      # Schema for classify command
+├── tests/                 # Test directory with comprehensive test suite
+└── url2md/               # Main package
+    ├── __init__.py       # Package entry point
+    ├── main.py           # CLI entry point and subcommand dispatcher
+    ├── models.py         # Data models (URLInfo, load_urls_from_file)
+    ├── cache.py          # Cache management (Cache, CacheResult)
+    ├── fetch.py          # fetch subcommand
+    ├── summarize.py      # summarize subcommand
+    ├── classify.py       # classify subcommand
+    ├── report.py         # report subcommand
+    ├── gemini.py         # Gemini API integration
+    ├── utils.py          # HTML processing utilities
+    └── download.py       # Playwright dynamic rendering
+```
+
+## Development Environment
+
+### Python Execution
+**IMPORTANT**: Always use `uv run` for executing Python scripts and commands:
+
+```bash
+# Correct way to run url2md
+uv run url2md --help
+uv run url2md fetch "https://example.com"
+
+# Avoid direct Python execution
+python -m url2md        # ❌ Don't use this
+python url2md/main.py   # ❌ Don't use this
+```
+
+### Dependencies
+Dependencies are managed in `pyproject.toml`. Key dependencies include:
+- **google-genai>=1.19.0**: Gemini API integration
+- **requests>=2.31.0**: HTTP client
+- **playwright>=1.52.0**: Dynamic rendering (optional)
+- **tqdm>=4.67.1**: Progress bars
+- **minify-html>=0.16.4**: HTML minification
+- **pillow>=10.0.0**: Image processing (GIF→PNG conversion)
+
+### Development Dependencies
+Test and development dependencies:
+- **pytest>=8.3.0**: Testing framework
+- **pytest-cov**: Coverage reporting
+- **tempfile**: For filesystem testing (built-in)
+- **unittest.mock**: Mocking framework (built-in)
+
+### Environment Variables
+- `GEMINI_API_KEY`: Required for AI summarization and classification operations
+
+## Command Architecture
+
+url2md follows a subcommand architecture:
+
+```bash
+uv run url2md <subcommand> [options]
+```
+
+### Available Subcommands
+
+1. **fetch**: Download and cache URLs
+   - Module: `url2md/fetch.py`
+   - Purpose: Download web content, handle caching, support Playwright
+   
+2. **summarize**: Generate AI summaries
+   - Module: `url2md/summarize.py`
+   - Purpose: Create structured summaries using Gemini API
+   - Schema: `schemas/summarize.json`
+   
+3. **classify**: Classify content by topic
+   - Module: `url2md/classify.py`
+   - Purpose: Extract tags and classify by theme using LLM
+   - Schema: `schemas/classify.json`
+   
+4. **report**: Generate Markdown reports
+   - Module: `url2md/report.py`
+   - Purpose: Create comprehensive Markdown reports from classification data
+   
+5. **pipeline**: Complete workflow
+   - Module: `url2md/main.py` (run_pipeline function)
+   - Purpose: Execute entire workflow (fetch → summarize → classify → report)
+
+## Data Flow
+
+The standard workflow follows this pattern:
+
+```
+URLs → fetch → summarize → classify → report → Markdown Report
+```
+
+### Data Storage
+
+- **Cache Directory**: `cache/` (configurable with `--cache-dir`)
+  - `cache.tsv`: Metadata index with URL info
+  - `content/`: Downloaded files (HTML, PDF, images, etc.)
+  - `summary/`: AI-generated summaries as JSON files
+  
+- **Intermediate Files**:
+  - `classification.json`: LLM classification results
+  - `report.md`: Final Markdown report
+
+### Data Models
+
+- **URLInfo**: Core data model for cached URLs (in `models.py`)
+- **Cache**: Cache management class (in `cache.py`)
+- **CacheResult**: Result object for cache operations
+
+## Testing Guidelines
+
+### Running Tests
+```bash
+# Run all tests
+uv run pytest
+
+# Run specific test file
+uv run pytest tests/test_specific.py
+
+# Run with coverage
+uv run pytest --cov=url2md
+```
+
+### Test Structure
+Tests should be placed in the `tests/` directory and follow the naming convention `test_*.py`.
+
+**Test Categories:**
+- Unit tests for individual modules
+- Integration tests for command workflows
+- End-to-end tests for complete pipeline
+
+### Test Files Overview
+
+The test suite includes the following files:
+
+1. **test_cache.py** - Cache management functionality tests
+   - Cache initialization and data operations
+   - TSV format validation and persistence
+   - Filename collision handling and domain throttling
+   - CacheResult object testing
+
+2. **test_integration.py** - Integration and end-to-end tests
+   - Command-line interface integration
+   - Module import and dependency testing
+   - Complete workflow integration
+   - Schema file accessibility verification
+
+3. **test_models.py** - Data model tests
+   - URLInfo creation, serialization, and validation
+   - TSV format handling and error escaping
+   - URL loading from files and stdin
+   - Content fetching with error handling
+
+4. **test_report.py** - Report generation tests
+   - Tag matching weight calculations
+   - URL classification algorithms
+   - Markdown report formatting
+   - Theme analysis and statistics
+
+5. **test_schema_structure.py** - Schema and code structure validation
+   - JSON schema validation for AI operations
+   - Package structure verification
+   - Import path consistency checks
+   - Schema-code alignment validation
+
+6. **test_summarize.py** - AI summarization tests
+   - Schema validation and structure testing
+   - Prompt generation functionality
+   - File operations and JSON handling
+   - Mock-based content summarization testing
+
+7. **test_utils.py** - HTML processing utility tests
+   - HTML content extraction and cleaning
+   - Title extraction and text processing
+   - Minification and content validation
+   - Edge case handling for malformed HTML
+
+### Mock Considerations
+When testing:
+- Mock external API calls (Gemini API) using `unittest.mock`
+- Mock file system operations when appropriate with `tempfile`
+- Mock Playwright for browser automation tests
+- Use `patch` decorators for dependency injection
+- Test both success and error scenarios
+
+## Development Workflows
+
+### Adding New Features
+1. Identify which module needs modification
+2. Update relevant data models if needed
+3. Add/modify command logic
+4. Update JSON schemas if AI operations are involved
+5. Add tests for new functionality
+6. Update README.md if user-facing changes
+
+### Common Development Tasks
+
+#### Adding a New Subcommand
+1. Create new module in `url2md/` (e.g., `new_command.py`)
+2. Add argument parser in `main.py`
+3. Add command handler function in `main.py`
+4. Update `__init__.py` if needed
+5. Add comprehensive tests covering all functionality
+
+#### Modifying AI Operations
+1. Update relevant JSON schema in `schemas/`
+2. Modify prompt generation in the command module
+3. Test with actual API calls
+4. Verify structured output format
+
+#### Cache Management Changes
+1. Modify `cache.py` for data model changes
+2. Update `models.py` for URLInfo changes
+3. Ensure backward compatibility with existing cache files
+
+## Debugging and Troubleshooting
+
+### Common Issues
+
+1. **Import Errors**: Ensure using `uv run` instead of direct Python execution
+2. **Missing Dependencies**: Check `pyproject.toml` and run `uv sync`
+3. **API Errors**: Verify `GEMINI_API_KEY` environment variable
+4. **Playwright Issues**: Run `uv run playwright install` for browser support
+5. **Test Failures**: Run `uv run pytest -v` to see detailed test output and error messages
+
+### Test Development Guidelines
+
+When writing new tests:
+- Use descriptive test names that explain what is being tested
+- Include both positive and negative test cases
+- Test edge cases and error conditions
+- Use temporary directories for file system tests
+- Mock external dependencies appropriately
+- Follow the existing test patterns in the test suite
+
+### Test Execution Examples
+
+```bash
+# Run all tests with verbose output
+uv run pytest -v
+
+# Run specific test file
+uv run pytest tests/test_cache.py -v
+
+# Run specific test function
+uv run pytest tests/test_models.py::TestURLInfo::test_urlinfo_creation -v
+
+# Run tests with coverage report
+uv run pytest --cov=url2md --cov-report=html
+
+# Run only integration tests
+uv run pytest tests/test_integration.py -v
+
+# Run tests and stop on first failure
+uv run pytest -x
+```
+
+### Logging and Debugging
+- Use `print()` statements for user-facing progress information
+- Commands include progress bars using `tqdm`
+- Error messages should be clear and actionable
+
+### Performance Considerations
+- Cache management prevents redundant downloads
+- Domain-based throttling prevents rate limiting
+- Progress bars provide user feedback for long operations
+
+## Code Style and Conventions
+
+### Language
+- All code, comments, and docstrings are in English
+- Function and variable names use snake_case
+- Class names use PascalCase
+
+### Documentation
+- All functions should have docstrings
+- Type hints are used throughout
+- README.md provides user documentation
+- This CLAUDE.md provides development documentation
+
+### Error Handling
+- Use appropriate exception types
+- Provide meaningful error messages
+- Graceful degradation when possible (e.g., fallback from Playwright to requests)
+
+## License and Distribution
+
+- **License**: CC0-1.0 (Public Domain)
+- **Package Name**: url2md
+- **Entry Point**: `url2md = "url2md.main:main"` in pyproject.toml
+
+This package is designed to be independent and redistributable without dependencies on the original Skype analysis project.
+
+## Future Development
+
+The architecture is designed to be extensible:
+- New subcommands can be easily added
+- AI operations can be extended with new schemas
+- Output formats can be expanded beyond Markdown
+- Additional content types can be supported
+
+When making changes, maintain the modular architecture and ensure all components remain loosely coupled for maintainability.

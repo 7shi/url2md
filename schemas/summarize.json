@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "ページのタイトル（内容から推定した適切なタイトル）"
+    },
+    "summary_one_line": {
+      "type": "string",
+      "description": "50文字以内の簡潔な一行要約"
+    },
+    "summary_detailed": {
+      "type": "string", 
+      "description": "200-400文字の詳細要約。主要なトピックや内容、学術的・教育的価値、技術分野を含める"
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "内容を表すタグのリスト（例：言語学、数学、物理学、プログラミング等）"
+    },
+    "is_valid_content": {
+      "type": "boolean",
+      "description": "意味のあるコンテンツかどうか（エラーページや空ページでない）"
+    }
+  },
+  "required": ["title", "summary_one_line", "summary_detailed", "tags", "is_valid_content"]
+}
