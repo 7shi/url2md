@@ -127,17 +127,18 @@ def classify_all_urls(url_summaries: Dict[str, Dict], classification_data: Dict)
     Returns:
         Dict[str, str]: URL -> theme_name mapping
     """
-    # Extract themes and weights from classification data
-    themes_data = classification_data.get('themes', {})
+    # Extract themes from classification data (new schema format)
+    themes_data = classification_data.get('themes', [])
     themes = []
     theme_weights = {}
     
-    for theme_name, theme_info in themes_data.items():
+    for theme_info in themes_data:
+        theme_name = theme_info.get('theme_name', '')
         themes.append({
             'name': theme_name,
             'tags': theme_info.get('tags', [])
         })
-        theme_weights[theme_name] = theme_info.get('weight', 1.0)
+        theme_weights[theme_name] = 1.0  # Default weight since new schema doesn't include weights
     
     # Classify each URL
     url_classifications = {}
@@ -187,8 +188,9 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
     lines.append("## Theme Distribution")
     lines.append("")
     
-    themes_data = classification_data.get('themes', {})
-    for theme_name in sorted(themes_data.keys()):
+    themes_data = classification_data.get('themes', [])
+    theme_names = [theme.get('theme_name', '') for theme in themes_data]
+    for theme_name in sorted(theme_names):
         count = theme_counts.get(theme_name, 0)
         if count > 0:
             percentage = count / total_urls * 100
@@ -218,11 +220,10 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
             title = summary.get('title', [''])[0] if summary.get('title') else url
             one_line = summary.get('summary_one_line', '')
             
-            lines.append(f"- [{title}]({url})")
+            lines.append(f"- [{title}]({url})" + ("  " if one_line else ""))
             if one_line:
-                lines.append(f"  - {one_line}")
-        
-        lines.append("")
+                lines.append(f"  {one_line}")
+            lines.append("")
     
     # Unclassified URLs
     if unclassified_count > 0:
@@ -236,23 +237,24 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
                 title = summary.get('title', [''])[0] if summary.get('title') else url
                 one_line = summary.get('summary_one_line', '')
                 
-                lines.append(f"- [{title}]({url})")
+                lines.append(f"- [{title}]({url})" + ("  " if one_line else ""))
                 if one_line:
-                    lines.append(f"  - {one_line}")
-        
-        lines.append("")
+                    lines.append(f"  {one_line}")
+                lines.append("")
     
     # Theme definitions
     lines.append("## Theme Definitions")
     lines.append("")
     
-    for theme_name, theme_info in themes_data.items():
+    for theme_info in themes_data:
+        theme_name = theme_info.get('theme_name', '')
+        theme_description = theme_info.get('theme_description', '')
         tags = theme_info.get('tags', [])
-        weight = theme_info.get('weight', 1.0)
         
         lines.append(f"### {theme_name}")
         lines.append("")
-        lines.append(f"- **Weight**: {weight}")
+        if theme_description:
+            lines.append(f"- **Description**: {theme_description}")
         lines.append(f"- **Tags**: {', '.join(tags)}")
         lines.append("")
     
