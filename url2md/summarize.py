@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, models, upload_file, delete_file
-from .models import URLInfo
+from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title, get_resource_path, print_error_with_line
 
 

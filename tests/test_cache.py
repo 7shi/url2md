@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from url2md.cache import Cache, CacheResult
-from url2md.models import URLInfo
+from url2md.urlinfo import URLInfo
 
 
 def test_cache_initialization():

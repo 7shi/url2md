@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tests for models.py module
+Tests for urlinfo.py module
 """
 
 import tempfile
@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from unittest.mock import patch, mock_open
 
-from url2md.models import URLInfo, load_urls_from_file
+from url2md.urlinfo import URLInfo, load_urls_from_file
 
 
 class TestURLInfo:
@@ -118,7 +118,7 @@ class TestURLInfo:
         
         try:
             # Mock urlparse to raise an exception
-            with patch('url2md.models.urlparse') as mock_urlparse:
+            with patch('url2md.urlinfo.urlparse') as mock_urlparse:
                 mock_urlparse.side_effect = ValueError("Mock parsing error")
                 
                 url_info = URLInfo(
@@ -153,7 +153,7 @@ class TestURLInfo:
         # Should set empty domain without error
         assert url_info.domain == ""
     
-    @patch('url2md.models.requests.get')
+    @patch('requests.get')
     def test_fetch_content_requests(self, mock_get):
         """Test fetch_content using requests"""
         # Mock successful response
@@ -181,7 +181,7 @@ class TestURLInfo:
         assert args[0] == url_info.url
         assert 'User-Agent' in kwargs['headers']
     
-    @patch('url2md.models.requests.get')
+    @patch('requests.get')
     def test_fetch_content_error_handling(self, mock_get):
         """Test fetch_content error handling"""
         # Mock timeout error

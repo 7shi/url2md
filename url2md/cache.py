@@ -13,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .models import URLInfo
+from .urlinfo import URLInfo
 from .utils import print_error_with_line
 
 

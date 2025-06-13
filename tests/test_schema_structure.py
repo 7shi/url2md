@@ -70,8 +70,8 @@ def test_gemini_integration():
 
 
 def test_models_api():
-    """Test models.py API structure"""
-    with open('url2md/models.py', 'r', encoding='utf-8') as f:
+    """Test urlinfo.py API structure"""
+    with open('url2md/urlinfo.py', 'r', encoding='utf-8') as f:
         code = f.read()
     
     # Check classes
@@ -171,7 +171,7 @@ def test_package_structure():
     required_files = [
         'url2md/__init__.py',
         'url2md/main.py',
-        'url2md/models.py',
+        'url2md/urlinfo.py',
         'url2md/cache.py',
         'url2md/fetch.py',
         'url2md/summarize.py',

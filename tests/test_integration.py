@@ -14,7 +14,7 @@ from unittest.mock import patch, Mock
 
 from url2md.main import main
 from url2md.cache import Cache
-from url2md.models import URLInfo
+from url2md.urlinfo import URLInfo
 
 
 class TestCommandIntegration:
@@ -250,7 +250,7 @@ class TestModuleIntegration:
         """Test that all modules can be imported"""
         import url2md
         import url2md.main
-        import url2md.models
+        import url2md.urlinfo
         import url2md.cache
         import url2md.fetch
         import url2md.summarize

@@ -13,7 +13,7 @@ from typing import List, Dict, Any
 
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, models
-from .models import URLInfo
+from .urlinfo import URLInfo
 from .utils import get_resource_path
 
 

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from .cache import Cache
-from .models import URLInfo
+from .urlinfo import URLInfo
 from .utils import print_error_with_line
 
 

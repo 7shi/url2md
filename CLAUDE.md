@@ -36,7 +36,7 @@ url2md/
 └── url2md/               # Main package
     ├── __init__.py       # Package entry point
     ├── main.py           # CLI entry point and subcommand dispatcher
-    ├── models.py         # Data models (URLInfo, load_urls_from_file)
+    ├── urlinfo.py        # Data models (URLInfo, load_urls_from_file)
     ├── cache.py          # Cache management (Cache, CacheResult)
     ├── fetch.py          # URL fetching functions
     ├── summarize.py      # AI summarization functions
@@ -148,7 +148,7 @@ For detailed rationale, see [NOTES.md](NOTES.md#development-methodology-two-phas
 
 #### Cache Management Changes
 1. Modify `cache.py` for data model changes
-2. Update `models.py` for URLInfo changes
+2. Update `urlinfo.py` for URLInfo changes
 3. Ensure backward compatibility with existing cache files
 
 #### Configuration Changes

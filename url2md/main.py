@@ -14,6 +14,8 @@ from collections import Counter
 from pathlib import Path
 from typing import List, Optional
 
+from .cache import Cache
+from .urlinfo import URLInfo, load_urls_from_file
 from .utils import DEFAULT_CACHE_DIR, find_cache_dir, print_error_with_line
 
 
@@ -130,7 +132,6 @@ def run_subcommand(args) -> None:
 
 def run_init(args) -> None:
     """Run init subcommand"""
-    from .cache import Cache
     
     # Check for conflicting directory specifications
     if args.cache_dir and args.directory:
@@ -166,7 +167,6 @@ def run_init(args) -> None:
 def run_fetch(args) -> None:
     """Run fetch subcommand"""
     from .fetch import fetch_urls
-    from .models import load_urls_from_file
     
     # Collect URLs
     urls = []
@@ -202,8 +202,6 @@ def run_fetch(args) -> None:
 def run_summarize(args) -> None:
     """Run summarize subcommand"""
     from .summarize import summarize_urls, filter_url_infos_by_urls, filter_url_infos_by_hash
-    from .cache import Cache
-    from .models import load_urls_from_file
     
     # Check environment variable
     if not os.environ.get("GEMINI_API_KEY"):
@@ -241,8 +239,6 @@ def run_summarize(args) -> None:
 def run_classify(args) -> None:
     """Run classify subcommand"""
     from .classify import extract_tags, display_tag_statistics, create_tag_classification_prompt, classify_tags_with_llm, filter_url_infos_by_urls
-    from .cache import Cache
-    from .models import load_urls_from_file
     
     # Default action is classification unless --extract-tags or --show-prompt is specified
     perform_classification = not (args.extract_tags or args.show_prompt)
@@ -308,8 +304,6 @@ def run_classify(args) -> None:
 def run_report(args) -> None:
     """Run report subcommand"""
     from .report import classify_all_urls, generate_markdown_report, filter_url_infos_by_urls, load_url_summaries
-    from .cache import Cache
-    from .models import load_urls_from_file
     
     # Load classification data
     try:

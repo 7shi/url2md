@@ -12,7 +12,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 import pytest
 
-from url2md.models import URLInfo
+from url2md.urlinfo import URLInfo
 from url2md.cache import Cache
 from url2md.summarize import generate_summary_prompt, summarize_content
 
@@ -102,7 +102,7 @@ def test_prompt_generation():
 
 def test_file_operations():
     """Test file operation functionality"""
-    from url2md.models import URLInfo
+    from url2md.urlinfo import URLInfo
     from url2md.cache import Cache
     
     # Test with temporary directory
@@ -141,7 +141,7 @@ def test_file_operations():
 
 def test_json_structure():
     """Test JSON structured output"""
-    from url2md.models import URLInfo
+    from url2md.urlinfo import URLInfo
     from url2md.cache import Cache
     
     # Test data

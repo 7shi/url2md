@@ -34,7 +34,7 @@ from .download import (
     user_agent,
 )
 
-from .models import (
+from .urlinfo import (
     URLInfo,
     load_urls_from_file,
 )
