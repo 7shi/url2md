@@ -228,12 +228,21 @@ For development guidelines, see [CLAUDE.md](CLAUDE.md).
 
 ### Architecture
 
+- `url2md/main.py`: CLI entry point and command orchestration
 - `url2md/models.py`: Data models (URLInfo, etc.)
 - `url2md/cache.py`: Cache management
-- `url2md/fetch.py`: URL fetching command
-- `url2md/summarize.py`: AI summarization command
-- `url2md/classify.py`: Tag classification command
-- `url2md/report.py`: Report generation command
+- `url2md/fetch.py`: URL fetching functions
+- `url2md/summarize.py`: AI summarization functions
+- `url2md/classify.py`: Tag classification functions
+- `url2md/report.py`: Report generation functions
 - `url2md/gemini.py`: Gemini API integration
 - `url2md/utils.py`: HTML processing utilities
 - `url2md/download.py`: Playwright dynamic rendering
+
+### Debug Mode
+
+For troubleshooting, use the `--debug` flag to see full stack traces:
+
+```bash
+url2md --debug fetch "https://example.com"
+```

@@ -29,10 +29,10 @@ url2md/
     ├── main.py           # CLI entry point and subcommand dispatcher
     ├── models.py         # Data models (URLInfo, load_urls_from_file)
     ├── cache.py          # Cache management (Cache, CacheResult)
-    ├── fetch.py          # fetch subcommand
-    ├── summarize.py      # summarize subcommand
-    ├── classify.py       # classify subcommand
-    ├── report.py         # report subcommand
+    ├── fetch.py          # URL fetching functions
+    ├── summarize.py      # AI summarization functions
+    ├── classify.py       # Tag classification functions
+    ├── report.py         # Report generation functions
     ├── gemini.py         # Gemini API integration
     ├── utils.py          # HTML processing utilities
     └── download.py       # Playwright dynamic rendering
@@ -83,25 +83,25 @@ uv run url2md <subcommand> [options]
 ### Available Subcommands
 
 1. **fetch**: Download and cache URLs
-   - Module: `url2md/fetch.py`
+   - Implementation: `url2md/fetch.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Download web content, handle caching, support Playwright
    
 2. **summarize**: Generate AI summaries
-   - Module: `url2md/summarize.py`
+   - Implementation: `url2md/summarize.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Create structured summaries using Gemini API
    - Schema: `schemas/summarize.json`
    
 3. **classify**: Classify content by topic
-   - Module: `url2md/classify.py`
+   - Implementation: `url2md/classify.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Extract tags and classify by theme using LLM
    - Schema: `schemas/classify.json`
    
 4. **report**: Generate Markdown reports
-   - Module: `url2md/report.py`
+   - Implementation: `url2md/report.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Create comprehensive Markdown reports from classification data
    
 5. **pipeline**: Complete workflow
-   - Module: `url2md/main.py` (run_pipeline function)
+   - Implementation: `url2md/main.py` (run_pipeline function)
    - Purpose: Execute entire workflow (fetch → summarize → classify → report)
 
 ## Data Flow
@@ -218,11 +218,12 @@ When testing:
 ### Common Development Tasks
 
 #### Adding a New Subcommand
-1. Create new module in `url2md/` (e.g., `new_command.py`)
-2. Add argument parser in `main.py`
-3. Add command handler function in `main.py`
-4. Update `__init__.py` if needed
-5. Add comprehensive tests covering all functionality
+1. Create new module in `url2md/` (e.g., `new_command.py`) with core functions
+2. Add argument parser in `main.py`'s `create_parser()` function
+3. Add command handler function `run_new_command()` in `main.py`
+4. Update `run_subcommand()` function to include new command
+5. Update `__init__.py` if new functions need to be exported
+6. Add comprehensive tests covering all functionality
 
 #### Modifying AI Operations
 1. Update relevant JSON schema in `schemas/`
@@ -289,6 +290,7 @@ uv run pytest -x
 - Use `print()` statements for user-facing progress information
 - Commands include progress bars using `tqdm`
 - Error messages should be clear and actionable
+- Use `--debug` flag for full stack traces during development: `uv run url2md --debug <command>`
 
 ### Performance Considerations
 - Cache management prevents redundant downloads

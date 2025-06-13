@@ -5,7 +5,9 @@ Generate Markdown reports from URLs through AI-powered content analysis,
 summarization, and classification.
 """
 
-__version__ = "0.1.0"
+from importlib.metadata import version
+
+__version__ = version("url2md")
 __author__ = "url2md contributors"
 __license__ = "CC0-1.0"
 
@@ -75,8 +77,8 @@ __all__ = [
     "CacheResult",
 ]
 
-# Command modules are available as submodules:
-# from url2md.fetch import main as fetch_main
-# from url2md.summarize import main as summarize_main  
-# from url2md.classify import main as classify_main
-# from url2md.report import main as report_main
+# Function modules are available as submodules:
+# from url2md.fetch import fetch_urls
+# from url2md.summarize import summarize_urls
+# from url2md.classify import extract_tags, classify_tags_with_llm
+# from url2md.report import generate_markdown_report

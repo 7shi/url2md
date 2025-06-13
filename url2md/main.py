@@ -7,13 +7,17 @@ summarization, and classification.
 """
 
 import argparse
+import json
+import os
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import List, Optional
 
 
 def create_parser() -> argparse.ArgumentParser:
     """Create main parser and subcommands"""
+    from .gemini import default_model
     parser = argparse.ArgumentParser(
         description="url2md - URL analysis and classification tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -30,7 +34,9 @@ For more information on each command, use:
         """
     )
     
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.0')
+    from . import __version__
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument('--debug', action='store_true', help='Enable debug mode (show full traceback on errors)')
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
@@ -52,6 +58,7 @@ For more information on each command, use:
     summarize_parser.add_argument('--hash', help='Summarize specific hash only')
     summarize_parser.add_argument('--limit', type=int, help='Maximum number to process')
     summarize_parser.add_argument('--force', action='store_true', help='Force re-summarize existing summaries')
+    summarize_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     
     # classify subcommand
     classify_parser = subparsers.add_parser('classify', help='Analyze tags and classify with LLM')
@@ -61,6 +68,7 @@ For more information on each command, use:
     classify_parser.add_argument('--test', action='store_true', help='Show prompt only (test mode)')
     classify_parser.add_argument('--classify', action='store_true', help='Classify with LLM')
     classify_parser.add_argument('-o', '--output', help='Classification result output file')
+    classify_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     
     # report subcommand
     report_parser = subparsers.add_parser('report', help='Generate Markdown report from classification')
@@ -82,153 +90,233 @@ For more information on each command, use:
     pipeline_parser.add_argument('--force-fetch', action='store_true', help='Force re-fetch URLs')
     pipeline_parser.add_argument('--force-summary', action='store_true', help='Force re-summarize')
     pipeline_parser.add_argument('--playwright', action='store_true', help='Use Playwright for fetch')
+    pipeline_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     
     return parser
 
 
-def run_fetch(args) -> int:
+def run_subcommand(args) -> None:
+    """Execute the specified subcommand"""
+    if args.command == 'fetch':
+        run_fetch(args)
+    elif args.command == 'summarize':
+        run_summarize(args)
+    elif args.command == 'classify':
+        run_classify(args)
+    elif args.command == 'report':
+        run_report(args)
+    elif args.command == 'pipeline':
+        run_pipeline(args)
+    else:
+        raise ValueError(f"Unknown command: {args.command}")
+
+
+def run_fetch(args) -> None:
     """Run fetch subcommand"""
-    try:
-        from .fetch import main as fetch_main
-        
-        # Convert args to list format
-        fetch_args = []
-        
-        if args.urls:
-            fetch_args.extend(args.urls)
-        
-        if args.file:
-            fetch_args.extend(['--file', args.file])
-        
-        if args.cache_dir != Path('cache'):
-            fetch_args.extend(['--cache-dir', str(args.cache_dir)])
-        
-        if args.playwright:
-            fetch_args.append('--playwright')
-        
-        if args.force:
-            fetch_args.append('--force')
-        
-        if args.throttle != 5:
-            fetch_args.extend(['--throttle', str(args.throttle)])
-        
-        if args.timeout != 30:
-            fetch_args.extend(['--timeout', str(args.timeout)])
-        
-        return fetch_main(fetch_args)
-        
-    except ImportError as e:
-        print(f"Error: Cannot load fetch module: {e}", file=sys.stderr)
-        return 1
-    except Exception as e:
-        print(f"Fetch execution error: {e}", file=sys.stderr)
-        return 1
+    from .fetch import fetch_urls
+    from .models import load_urls_from_file
+    
+    # Collect URLs
+    urls = []
+    
+    if args.urls:
+        urls.extend(args.urls)
+    
+    if args.file:
+        file_urls = load_urls_from_file(args.file)
+        urls.extend(file_urls)
+    
+    if not urls:
+        raise ValueError("No URLs provided. Use --help for usage information.")
+    
+    # Remove duplicates while preserving order
+    unique_urls = []
+    seen = set()
+    for url in urls:
+        if url not in seen:
+            unique_urls.append(url)
+            seen.add(url)
+    
+    fetch_urls(
+        unique_urls,
+        args.cache_dir,
+        use_playwright=args.playwright,
+        force=args.force,
+        throttle_seconds=args.throttle
+    )
 
 
-def run_summarize(args) -> int:
+def run_summarize(args) -> None:
     """Run summarize subcommand"""
-    try:
-        from .summarize import main as summarize_main
-        
-        # Convert args to list format
-        summarize_args = []
-        
-        if args.urls:
-            summarize_args.extend(args.urls)
-        
-        if args.file:
-            summarize_args.extend(['--file', args.file])
-        
-        if args.cache_dir != Path('cache'):
-            summarize_args.extend(['--cache-dir', str(args.cache_dir)])
-        
-        if args.hash:
-            summarize_args.extend(['--hash', args.hash])
-        
-        if args.limit:
-            summarize_args.extend(['--limit', str(args.limit)])
-        
-        if args.force:
-            summarize_args.append('--force')
-        
-        return summarize_main(summarize_args)
-        
-    except ImportError as e:
-        print(f"Error: Cannot load summarize module: {e}", file=sys.stderr)
-        return 1
-    except Exception as e:
-        print(f"Summarize execution error: {e}", file=sys.stderr)
-        return 1
+    from .summarize import summarize_urls, filter_url_infos_by_urls, filter_url_infos_by_hash
+    from .cache import Cache
+    from .models import load_urls_from_file
+    
+    # Check environment variable
+    if not os.environ.get("GEMINI_API_KEY"):
+        raise ValueError("GEMINI_API_KEY environment variable not set")
+    
+    cache = Cache(args.cache_dir)
+    
+    # Determine target URLs
+    target_urls = []
+    if args.urls:
+        target_urls.extend(args.urls)
+    
+    if args.file:
+        file_urls = load_urls_from_file(args.file)
+        target_urls.extend(file_urls)
+    
+    # Filter URLInfo objects
+    if args.hash:
+        url_infos = filter_url_infos_by_hash(cache, args.hash)
+    elif target_urls:
+        url_infos = filter_url_infos_by_urls(cache, target_urls)
+    else:
+        url_infos = cache.get_all()
+    
+    summarize_urls(
+        url_infos,
+        cache,
+        force=args.force,
+        limit=args.limit,
+        model=args.model
+    )
 
 
-def run_classify(args) -> int:
+def run_classify(args) -> None:
     """Run classify subcommand"""
-    try:
-        from .classify import main as classify_main
-        
-        # Convert args to list format
-        classify_args = []
-        
-        if args.file:
-            classify_args.extend(['-f', args.file])
-        
-        if args.cache_dir != Path('cache'):
-            classify_args.extend(['--cache-dir', str(args.cache_dir)])
-        
-        if args.extract_tags:
-            classify_args.append('--extract-tags')
-        
-        if args.test:
-            classify_args.append('--test')
-        
-        if args.classify:
-            classify_args.append('--classify')
+    from .classify import extract_tags, display_tag_statistics, create_tag_classification_prompt, classify_tags_with_llm, filter_url_infos_by_urls
+    from .cache import Cache
+    from .models import load_urls_from_file
+    
+    # Check that at least one action is specified
+    if not any([args.extract_tags, args.test, args.classify]):
+        raise ValueError("Please specify at least one action (--extract-tags, --test, or --classify)")
+    
+    # Check environment variable for LLM operations
+    if (args.test or args.classify) and not os.environ.get("GEMINI_API_KEY"):
+        raise ValueError("GEMINI_API_KEY environment variable not set")
+    
+    cache = Cache(args.cache_dir)
+    
+    # Determine target URLs
+    target_urls = []
+    if args.file:
+        target_urls = load_urls_from_file(args.file)
+    
+    # Filter URLInfo objects
+    url_infos = filter_url_infos_by_urls(cache, target_urls)
+    
+    if not url_infos:
+        raise ValueError("No valid URL info found")
+    
+    # Extract tags
+    all_tags = extract_tags(cache, url_infos)
+    if not all_tags:
+        raise ValueError("No tags found in summary files")
+    
+    # Count tags
+    tag_counter = Counter(all_tags)
+    
+    # Execute requested actions
+    if args.extract_tags:
+        display_tag_statistics(tag_counter)
+    
+    if args.test:
+        prompt = create_tag_classification_prompt(tag_counter)
+        if prompt:
+            print("\n=== CLASSIFICATION PROMPT ===")
+            print(prompt)
+        else:
+            print("No frequent tags found for prompt generation")
+    
+    if args.classify:
+        classification_result = classify_tags_with_llm(tag_counter, model=args.model)
         
         if args.output:
-            classify_args.extend(['-o', args.output])
-        
-        return classify_main(classify_args)
-        
-    except ImportError as e:
-        print(f"Error: Cannot load classify module: {e}", file=sys.stderr)
-        return 1
-    except Exception as e:
-        print(f"Classify execution error: {e}", file=sys.stderr)
-        return 1
+            # Save to file
+            with open(args.output, 'w', encoding='utf-8') as f:
+                json.dump(classification_result, f, ensure_ascii=False, indent=2)
+            print(f"Classification results saved to: {args.output}")
+        else:
+            # Output to stdout
+            print("\n=== CLASSIFICATION RESULTS ===")
+            print(json.dumps(classification_result, ensure_ascii=False, indent=2))
 
 
-def run_report(args) -> int:
+def run_report(args) -> None:
     """Run report subcommand"""
+    from .report import classify_all_urls, generate_markdown_report, filter_url_infos_by_urls, load_url_summaries
+    from .cache import Cache
+    from .models import load_urls_from_file
+    
+    # Load classification data
     try:
-        from .report import main as report_main
-        
-        # Convert args to list format
-        report_args = [args.classification_file]
-        
-        if args.file:
-            report_args.extend(['-f', args.file])
-        
-        if args.cache_dir != Path('cache'):
-            report_args.extend(['--cache-dir', str(args.cache_dir)])
-        
-        if args.output:
-            report_args.extend(['-o', args.output])
-        
-        if hasattr(args, 'theme_weight') and args.theme_weight:
-            for weight_spec in args.theme_weight:
-                report_args.extend(['-t', weight_spec])
-        
-        return report_main(report_args)
-        
-    except ImportError as e:
-        print(f"Error: Cannot load report module: {e}", file=sys.stderr)
-        return 1
-    except Exception as e:
-        print(f"Report execution error: {e}", file=sys.stderr)
-        return 1
+        with open(args.classification_file, 'r', encoding='utf-8') as f:
+            classification_data = json.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Classification file not found: {args.classification_file}")
+    
+    cache = Cache(args.cache_dir)
+    
+    # Parse theme weights
+    theme_weights = {}
+    if hasattr(args, 'theme_weight') and args.theme_weight:
+        for weight_spec in args.theme_weight:
+            try:
+                theme_name, weight_str = weight_spec.rsplit(':', 1)
+                weight = float(weight_str)
+                theme_weights[theme_name] = weight
+                print(f"Theme weight set: {theme_name} = {weight}")
+            except ValueError:
+                print(f"Warning: Invalid weight specification ignored: {weight_spec}", file=sys.stderr)
+    
+    # Determine target URLs
+    target_urls = []
+    if args.file:
+        target_urls = load_urls_from_file(args.file)
+    
+    # Filter URLInfo objects
+    url_infos = filter_url_infos_by_urls(cache, target_urls)
+    
+    if not url_infos:
+        raise ValueError("No valid URL info found")
+    
+    # Load URL summaries
+    url_summaries = load_url_summaries(cache, url_infos)
+    
+    if not url_summaries:
+        raise ValueError("No valid URL summaries found")
+    
+    print(f"Processing {len(url_summaries)} URLs...")
+    
+    # Classify URLs
+    url_classifications = classify_all_urls(url_summaries, classification_data, theme_weights)
+    
+    # Display classification results
+    theme_counts = Counter(classification['theme'] for classification in url_classifications.values())
+    print("Classification results:")
+    for theme, count in theme_counts.most_common():
+        print(f"  {theme}: {count} URLs")
+    print(f"Classification completed: {len(url_classifications)} URLs")
+    
+    # Generate report
+    if args.format == 'markdown':
+        report_content = generate_markdown_report(url_classifications, classification_data, url_summaries)
+    else:
+        raise ValueError(f"Format '{args.format}' not yet implemented")
+    
+    # Output report
+    if args.output:
+        with open(args.output, 'w', encoding='utf-8') as f:
+            f.write(report_content)
+        print(f"Report saved to: {args.output}")
+    else:
+        print(report_content)
 
 
-def run_pipeline(args) -> int:
+def run_pipeline(args) -> None:
     """Run pipeline subcommand (complete workflow)"""
     print("🔄 URL analysis pipeline started")
     
@@ -243,10 +331,7 @@ def run_pipeline(args) -> int:
         throttle=5,
         timeout=30
     )
-    result = run_fetch(fetch_args)
-    if result != 0:
-        print("❌ URL fetch failed")
-        return result
+    run_fetch(fetch_args)
     
     # Step 2: summarize
     print("\n📝 Step 2: AI summary generation")
@@ -256,12 +341,10 @@ def run_pipeline(args) -> int:
         cache_dir=args.cache_dir,
         hash=None,
         limit=None,
-        force=getattr(args, 'force_summary', False)
+        force=getattr(args, 'force_summary', False),
+        model=args.model
     )
-    result = run_summarize(summarize_args)
-    if result != 0:
-        print("❌ Summary generation failed")
-        return result
+    run_summarize(summarize_args)
     
     # Step 3: classify
     print("\n🏷️ Step 3: LLM tag classification")
@@ -272,12 +355,10 @@ def run_pipeline(args) -> int:
         extract_tags=False,
         test=False,
         classify=True,
-        output=classification_file
+        output=classification_file,
+        model=args.model
     )
-    result = run_classify(classify_args)
-    if result != 0:
-        print("❌ Tag classification failed")
-        return result
+    run_classify(classify_args)
     
     # Step 4: report
     print("\n📊 Step 4: Report generation")
@@ -288,15 +369,11 @@ def run_pipeline(args) -> int:
         format='markdown',
         output=args.output
     )
-    result = run_report(report_args)
-    if result != 0:
-        print("❌ Report generation failed")
-        return result
+    run_report(report_args)
     
     print("\n✅ Pipeline completed successfully")
     if args.output:
         print(f"📄 Final report: {args.output}")
-    return 0
 
 
 def main() -> int:
@@ -308,20 +385,26 @@ def main() -> int:
         parser.print_help()
         return 1
     
-    # Run subcommand
-    if args.command == 'fetch':
-        return run_fetch(args)
-    elif args.command == 'summarize':
-        return run_summarize(args)
-    elif args.command == 'classify':
-        return run_classify(args)
-    elif args.command == 'report':
-        return run_report(args)
-    elif args.command == 'pipeline':
-        return run_pipeline(args)
+    if args.debug:
+        # Run subcommand without exception handling (show full traceback)
+        run_subcommand(args)
+        return 0
     else:
-        print(f"Unknown command: {args.command}", file=sys.stderr)
-        return 1
+        try:
+            # Run subcommand with exception handling
+            run_subcommand(args)
+            return 0
+            
+        except KeyboardInterrupt:
+            print(f"\n{args.command.title()} interrupted by user")
+            return 1
+        except ValueError as e:
+            # Handle unknown command case
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
+        except Exception as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
 
 
 if __name__ == '__main__':

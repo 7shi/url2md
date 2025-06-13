@@ -7,6 +7,8 @@ models = [
     "gemini-2.5-pro-preview-06-05",
 ]
 
+default_model = models[0]
+
 client = genai.Client(
     api_key=os.environ.get("GEMINI_API_KEY"),
 )

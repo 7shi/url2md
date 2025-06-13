@@ -5,15 +5,13 @@ Generate Markdown reports from URL analysis and classification results
 Generate comprehensive reports from classification data in Markdown format.
 """
 
-import argparse
 import json
-import sys
 from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from .cache import Cache
-from .models import URLInfo, load_urls_from_file
+from .models import URLInfo
 
 
 def calculate_tag_match_weight(url_tag: str, theme_tag: str) -> float:
@@ -285,111 +283,3 @@ def filter_url_infos_by_urls(cache: Cache, target_urls: List[str]) -> List[URLIn
     return filtered
 
 
-def main(args: List[str] = None) -> int:
-    """Main function for report command"""
-    parser = argparse.ArgumentParser(
-        description="Generate Markdown report from classification results",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  %(prog)s classification.json -f urls.txt    # Generate report for specific URLs
-  %(prog)s classification.json               # Generate report for all cached URLs
-  %(prog)s classification.json -o report.md  # Save report to file
-        """
-    )
-    
-    parser.add_argument('classification_file', help='Classification result JSON file')
-    parser.add_argument('-f', '--file', help='URL list file')
-    parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
-    parser.add_argument('--format', choices=['markdown', 'html'], default='markdown', help='Output format')
-    parser.add_argument('-o', '--output', help='Output file (stdout if not specified)')
-    parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
-                       help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
-    
-    parsed_args = parser.parse_args(args)
-    
-    # Load classification data
-    try:
-        with open(parsed_args.classification_file, 'r', encoding='utf-8') as f:
-            classification_data = json.load(f)
-    except FileNotFoundError:
-        print(f"Error: Classification file not found: {parsed_args.classification_file}", file=sys.stderr)
-        return 1
-    except Exception as e:
-        print(f"Error loading classification file: {e}", file=sys.stderr)
-        return 1
-    
-    cache = Cache(parsed_args.cache_dir)
-    
-    # Parse theme weights
-    theme_weights = {}
-    if parsed_args.theme_weight:
-        for weight_spec in parsed_args.theme_weight:
-            try:
-                theme_name, weight_str = weight_spec.rsplit(':', 1)
-                weight = float(weight_str)
-                theme_weights[theme_name] = weight
-                print(f"Theme weight set: {theme_name} = {weight}")
-            except ValueError:
-                print(f"Warning: Invalid weight specification ignored: {weight_spec}", file=sys.stderr)
-    
-    # Determine target URLs
-    target_urls = []
-    if parsed_args.file:
-        try:
-            target_urls = load_urls_from_file(parsed_args.file)
-        except Exception as e:
-            print(f"Error loading URLs from file: {e}", file=sys.stderr)
-            return 1
-    
-    # Filter URLInfo objects
-    url_infos = filter_url_infos_by_urls(cache, target_urls)
-    
-    if not url_infos:
-        print("No valid URL info found")
-        return 1
-    
-    # Load URL summaries
-    url_summaries = load_url_summaries(cache, url_infos)
-    
-    if not url_summaries:
-        print("No valid URL summaries found")
-        return 1
-    
-    print(f"Processing {len(url_summaries)} URLs...")
-    
-    try:
-        # Classify URLs
-        url_classifications = classify_all_urls(url_summaries, classification_data, theme_weights)
-        
-        # Display classification results
-        theme_counts = Counter(classification['theme'] for classification in url_classifications.values())
-        print("Classification results:")
-        for theme, count in theme_counts.most_common():
-            print(f"  {theme}: {count} URLs")
-        print(f"Classification completed: {len(url_classifications)} URLs")
-        
-        # Generate report
-        if parsed_args.format == 'markdown':
-            report_content = generate_markdown_report(url_classifications, classification_data, url_summaries)
-        else:
-            print(f"Error: Format '{parsed_args.format}' not yet implemented", file=sys.stderr)
-            return 1
-        
-        # Output report
-        if parsed_args.output:
-            with open(parsed_args.output, 'w', encoding='utf-8') as f:
-                f.write(report_content)
-            print(f"Report saved to: {parsed_args.output}")
-        else:
-            print(report_content)
-        
-        return 0
-        
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        return 1
-
-
-if __name__ == '__main__':
-    sys.exit(main())

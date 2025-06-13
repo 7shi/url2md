@@ -6,10 +6,7 @@ Read files from cache directory, generate summaries using Gemini API,
 and save as structured JSON files in cache/summary directory.
 """
 
-import argparse
 import json
-import os
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
@@ -19,7 +16,7 @@ from tqdm import tqdm
 
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, models, upload_file, delete_file
-from .models import URLInfo, load_urls_from_file
+from .models import URLInfo
 from .utils import extract_body_content, extract_html_title
 
 
@@ -302,78 +299,3 @@ def summarize_urls(url_infos: List[URLInfo], cache: Cache, force: bool = False,
     print(f"Errors: {error_count}")
 
 
-def main(args: List[str] = None) -> int:
-    """Main function for summarize command"""
-    parser = argparse.ArgumentParser(
-        description="Generate AI summaries of cached content",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  %(prog)s                               # Summarize all cached files
-  %(prog)s --hash 754e3a872575fdcef3    # Summarize specific hash only
-  %(prog)s --limit 5                    # Maximum 5 files (skips don't count)
-  %(prog)s --cache-dir custom_cache     # Custom cache directory
-  %(prog)s --force                      # Overwrite existing summaries
-  %(prog)s "https://example.com"        # Summarize single URL
-  %(prog)s "https://example1.com" "https://example2.com"  # Multiple URLs
-  %(prog)s --file urls.txt              # Specify targets from URL file
-        """
-    )
-    
-    parser.add_argument('urls', nargs='*', help='URLs to summarize (all cached if not specified)')
-    parser.add_argument('-f', '--file', help='URL list file')
-    parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
-    parser.add_argument('--hash', help='Summarize specific hash only')
-    parser.add_argument('--limit', type=int, help='Maximum number to process')
-    parser.add_argument('--force', action='store_true', help='Force re-summarize existing summaries')
-    parser.add_argument('--model', choices=models, help=f'Gemini model to use (default: {models[0]})')
-    
-    parsed_args = parser.parse_args(args)
-    
-    # Check environment variable
-    if not os.environ.get("GEMINI_API_KEY"):
-        print("Error: GEMINI_API_KEY environment variable not set", file=sys.stderr)
-        return 1
-    
-    cache = Cache(parsed_args.cache_dir)
-    
-    # Determine target URLs
-    target_urls = []
-    if parsed_args.urls:
-        target_urls.extend(parsed_args.urls)
-    
-    if parsed_args.file:
-        try:
-            file_urls = load_urls_from_file(parsed_args.file)
-            target_urls.extend(file_urls)
-        except Exception as e:
-            print(f"Error loading URLs from file: {e}", file=sys.stderr)
-            return 1
-    
-    # Filter URLInfo objects
-    if parsed_args.hash:
-        url_infos = filter_url_infos_by_hash(cache, parsed_args.hash)
-    elif target_urls:
-        url_infos = filter_url_infos_by_urls(cache, target_urls)
-    else:
-        url_infos = cache.get_all()
-    
-    try:
-        summarize_urls(
-            url_infos,
-            cache,
-            force=parsed_args.force,
-            limit=parsed_args.limit,
-            model=parsed_args.model
-        )
-        return 0
-    except KeyboardInterrupt:
-        print("\nSummarization interrupted by user")
-        return 1
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        return 1
-
-
-if __name__ == '__main__':
-    sys.exit(main())
