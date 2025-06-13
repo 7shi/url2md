@@ -47,6 +47,7 @@ For more information on each command, use:
     fetch_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     fetch_parser.add_argument('--playwright', action='store_true', help='Use Playwright for dynamic rendering')
     fetch_parser.add_argument('--force', action='store_true', help='Force re-fetch even if cached')
+    fetch_parser.add_argument('-r', '--retry', action='store_true', help='Retry failed URLs (default: skip errors)')
     fetch_parser.add_argument('--throttle', type=int, default=5, help='Seconds between requests to same domain')
     fetch_parser.add_argument('--timeout', type=int, default=30, help='Request timeout in seconds')
     
@@ -143,6 +144,7 @@ def run_fetch(args) -> None:
         args.cache_dir,
         use_playwright=args.playwright,
         force=args.force,
+        retry=args.retry,
         throttle_seconds=args.throttle
     )
 
@@ -336,6 +338,7 @@ def run_pipeline(args) -> None:
         cache_dir=args.cache_dir,
         playwright=getattr(args, 'playwright', False),
         force=getattr(args, 'force_fetch', False),
+        retry=False,
         throttle=5,
         timeout=30
     )

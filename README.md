@@ -46,8 +46,10 @@ url2md pipeline -u urls.txt --output report.md
 
 ### `fetch` - Download and cache URLs
 
+**Default behavior**: Skip previously failed URLs and show count. Use `--retry` to retry errors.
+
 ```bash
-# Basic usage
+# Basic usage (skips errors by default)
 url2md fetch "https://example.com"
 
 # Multiple URLs
@@ -56,13 +58,16 @@ url2md fetch "https://example.com" "https://another-site.com"
 # From file
 url2md fetch -u urls.txt
 
+# Retry failed URLs explicitly
+url2md fetch -r -u urls.txt
+
 # With dynamic rendering
 url2md fetch --playwright -u urls.txt
 
 # Custom cache directory
 url2md fetch --cache-dir /path/to/cache -u urls.txt
 
-# Force re-fetch
+# Force re-fetch all URLs
 url2md fetch --force "https://example.com"
 ```
 

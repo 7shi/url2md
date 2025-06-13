@@ -113,6 +113,7 @@ uv run url2md <subcommand> [options]
 1. **fetch**: Download and cache URLs
    - Implementation: `url2md/fetch.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Download web content, handle caching, support Playwright
+   - **Default Behavior**: Skip failed URLs (use `-r/--retry` to retry errors)
    
 2. **summarize**: Generate AI summaries
    - Implementation: `url2md/summarize.py` (functions), `url2md/main.py` (CLI integration)
