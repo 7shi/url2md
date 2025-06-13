@@ -79,7 +79,25 @@ def config_from_schema(schema_filename):
         response_schema=schema,
     )
 
-def generate_content_retry(model, config, contents):
+def generate_content_retry(model, config, contents, include_thoughts=True, thinking_budget=None):
+    # Add thinking configuration to config if requested
+    if include_thoughts or thinking_budget is not None:
+        thinking_config = types.ThinkingConfig(include_thoughts=include_thoughts)
+        if thinking_budget is not None:
+            thinking_config.thinking_budget = thinking_budget
+        
+        # Create new config with thinking configuration
+        if hasattr(config, 'response_mime_type'):
+            new_config = types.GenerateContentConfig(
+                response_mime_type=config.response_mime_type,
+                thinking_config=thinking_config
+            )
+            if hasattr(config, 'response_schema'):
+                new_config.response_schema = config.response_schema
+        else:
+            new_config = types.GenerateContentConfig(thinking_config=thinking_config)
+        config = new_config
+    
     for attempt in range(5, 0, -1):
         try:
             response = client.models.generate_content_stream(
@@ -88,10 +106,35 @@ def generate_content_retry(model, config, contents):
                 contents=contents,
             )
             text = ""
+            thoughts = ""
+            thoughts_shown = False
+            answer_shown = False
+            
             for chunk in response:
-                print(chunk.text, end="")
-                if chunk.text:
-                    text += chunk.text
+                if hasattr(chunk, 'candidates') and chunk.candidates:
+                    for part in chunk.candidates[0].content.parts:
+                        if not part.text:
+                            continue
+                        elif include_thoughts and part.thought:
+                            if not thoughts_shown:
+                                print("\n🤔 Thinking...")
+                                thoughts_shown = True
+                            print(part.text, end="")
+                            thoughts += part.text
+                        else:
+                            if thoughts_shown and not answer_shown:
+                                print("💡 Answer:")
+                                answer_shown = True
+                            print(part.text, end="")
+                            text += part.text
+                else:
+                    # Fallback for older API responses
+                    if chunk.text:
+                        print(chunk.text, end="")
+                        text += chunk.text
+            
+            if not text.endswith("\n"):
+                print()  # Final newline
             return text
         except genai.errors.APIError as e:
             if hasattr(e, "code") and e.code in [429, 500, 503]:

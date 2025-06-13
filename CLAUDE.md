@@ -17,7 +17,8 @@ url2md is a command-line tool for URL analysis and classification that generates
 **Key Features:**
 - URL fetching with dynamic rendering support (Playwright)
 - AI-powered content summarization using Gemini API
-- LLM-based tag classification and theme analysis
+- LLM-based tag classification and theme analysis with thinking process visualization
+- AI reasoning insights through Gemini 2.5's thinking capabilities
 - Markdown report generation
 - Complete pipeline processing
 
@@ -42,7 +43,7 @@ url2md/
     ├── summarize.py      # AI summarization functions
     ├── classify.py       # Tag classification functions
     ├── report.py         # Report generation functions
-    ├── gemini.py         # Gemini API integration
+    ├── gemini.py         # Gemini API integration with thinking capabilities
     ├── utils.py          # HTML processing utilities
     └── download.py       # Playwright dynamic rendering
 ```
@@ -69,7 +70,7 @@ python url2md/main.py   # ❌ Don't use this
 
 ### Dependencies
 Dependencies are managed in `pyproject.toml`. Key dependencies include:
-- **google-genai>=1.19.0**: Gemini API integration
+- **google-genai>=1.19.0**: Gemini API integration with thinking capabilities support
 - **requests>=2.31.0**: HTTP client
 - **playwright>=1.52.0**: Dynamic rendering (optional)
 - **tqdm>=4.67.1**: Progress bars
@@ -143,14 +144,16 @@ uv run url2md [global-options] <subcommand> [options]
    
 2. **summarize**: Generate AI summaries
    - Implementation: `url2md/summarize.py` (functions), `url2md/main.py` (CLI integration)
-   - Purpose: Create structured summaries using Gemini API
+   - Purpose: Create structured summaries using Gemini API with thinking process visualization
    - Schema: `schemas/summarize.json`
+   - **AI Thinking**: Displays real-time reasoning process during summarization
    - **Language Support**: Use `-l/--language` to specify output language (e.g., Japanese, Chinese, French)
    
 3. **classify**: Classify content by topic
    - Implementation: `url2md/classify.py` (functions), `url2md/main.py` (CLI integration)
-   - Purpose: Extract tags and classify by theme using LLM (default action)
+   - Purpose: Extract tags and classify by theme using LLM with reasoning insights (default action)
    - Schema: `schemas/classify.json`
+   - **AI Thinking**: Shows step-by-step classification reasoning and decision process
    - **Default Behavior**: Classification runs automatically unless `--extract-tags` or `--show-prompt` specified
    - **Language Support**: Use `-l/--language` to specify output language for theme names and descriptions
    
@@ -161,6 +164,7 @@ uv run url2md [global-options] <subcommand> [options]
 5. **workflow**: Complete workflow
    - Implementation: `url2md/main.py` (run_workflow function)
    - Purpose: Execute entire workflow (fetch → summarize → classify → report)
+   - **AI Thinking**: Displays thinking process for both summarize and classify steps
    - **Language Support**: Use `-l/--language` to specify output language for summarize and classify steps
 
 ## Data Flow
@@ -311,8 +315,9 @@ For detailed rationale, see [NOTES.md](NOTES.md#development-methodology-two-phas
 #### Modifying AI Operations
 1. Update relevant JSON schema in `schemas/`
 2. Modify prompt generation in the command module
-3. Test with actual API calls
-4. Verify structured output format
+3. Configure thinking parameters in `generate_content_retry()` calls if needed
+4. Test with actual API calls
+5. Verify structured output format and thinking process display
 
 #### Cache Management Changes
 1. Modify `cache.py` for data model changes

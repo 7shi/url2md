@@ -5,8 +5,9 @@ URL analysis and classification tool - Generate Markdown reports from URLs throu
 ## Features
 
 - **URL Fetching**: Download and cache web content with support for dynamic rendering via Playwright
-- **AI Summarization**: Generate structured summaries using Gemini API
-- **Content Classification**: Automatically classify and tag content by topic
+- **AI Summarization**: Generate structured summaries using Gemini API with thinking process visualization
+- **Content Classification**: Automatically classify and tag content by topic with AI reasoning insights
+- **AI Thinking Process**: Real-time display of Gemini 2.5's internal reasoning for complex analysis tasks
 - **Markdown Reports**: Generate comprehensive reports in Markdown format
 - **Pipeline Processing**: Complete workflow from URLs to final report
 
