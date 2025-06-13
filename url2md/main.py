@@ -189,7 +189,7 @@ def run_summarize(args) -> None:
         force=args.force,
         limit=args.limit,
         model=args.model,
-        language=getattr(args, 'language', None)
+        language=args.language
     )
 
 
@@ -236,7 +236,7 @@ def run_classify(args) -> None:
         display_tag_statistics(tag_counter)
     
     if args.show_prompt:
-        prompt = create_tag_classification_prompt(tag_counter, language=getattr(args, 'language', None))
+        prompt = create_tag_classification_prompt(tag_counter, language=args.language)
         if prompt:
             print("\n=== CLASSIFICATION PROMPT ===")
             print(prompt)
@@ -244,7 +244,7 @@ def run_classify(args) -> None:
             print("No frequent tags found for prompt generation")
     
     if perform_classification:
-        classification_result = classify_tags_with_llm(tag_counter, model=args.model, language=getattr(args, 'language', None))
+        classification_result = classify_tags_with_llm(tag_counter, model=args.model, language=args.language)
         
         # Save to file
         with open(args.output, 'w', encoding='utf-8') as f:
@@ -359,7 +359,7 @@ def run_workflow(args) -> None:
         limit=None,
         force=getattr(args, 'force_summary', False),
         model=args.model,
-        language=getattr(args, 'language', None)
+        language=args.language
     )
     run_summarize(summarize_args)
     
@@ -378,7 +378,7 @@ def run_workflow(args) -> None:
             show_prompt=False,
             output=classification_file,
             model=args.model,
-            language=getattr(args, 'language', None)
+            language=args.language
         )
         run_classify(classify_args)
     
