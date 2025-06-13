@@ -26,23 +26,33 @@ uv sync
 uv run playwright install  # Optional for dynamic rendering
 ```
 
-## Quick Start
+## Workflow Overview
+
+url2md follows a standard workflow to analyze URLs and generate reports:
+
+1. **Fetch** → Download and cache web content
+2. **Summarize** → Generate AI-powered summaries  
+3. **Classify** → Extract tags and categorize by themes
+4. **Report** → Create comprehensive Markdown reports
+
+### Quick Examples
+
+Here are the standard workflow commands (same as shown by `uv run url2md`):
 
 ```bash
-# Fetch URLs and cache content
-url2md fetch "https://example.com" "https://another-site.com"
+# Step-by-step workflow
+uv run url2md fetch -u urls.txt --playwright
+uv run url2md summarize -u urls.txt
+uv run url2md classify -u urls.txt -o class.json
+uv run url2md report -u urls.txt -c class.json -o report.md
 
-# Fetch from file
-url2md fetch -u urls.txt
-
-# Use dynamic rendering for JavaScript-heavy sites
-url2md fetch --playwright -u urls.txt
-
-# Run complete pipeline
-url2md pipeline -u urls.txt --output report.md
+# Complete pipeline in one command
+uv run url2md pipeline -u urls.txt --cache-dir cache -o report.md
 ```
 
-## Commands
+For more command details, use `uv run url2md <command> --help`.
+
+## Command Reference
 
 ### `fetch` - Download and cache URLs
 
