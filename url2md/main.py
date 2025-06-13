@@ -27,7 +27,7 @@ Examples:
   %(prog)s summarize -u urls.txt
   %(prog)s classify -u urls.txt -o class.json
   %(prog)s report -u urls.txt -c class.json -o report.md
-  %(prog)s workflow -u urls.txt --cache-dir cache -o report.md
+  %(prog)s workflow -u urls.txt --playwright -c class.json -o report.md
 
 For more information on each command, use:
   %(prog)s <command> --help
@@ -68,7 +68,7 @@ For more information on each command, use:
     classify_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only (no classification)')
     classify_parser.add_argument('--show-prompt', action='store_true', help='Show classification prompt only (no LLM call)')
-    classify_parser.add_argument('-o', '--output', help='Classification result output file')
+    classify_parser.add_argument('-o', '--output', required=True, help='Classification result output file')
     classify_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     
     # report subcommand
@@ -87,7 +87,7 @@ For more information on each command, use:
     workflow_parser.add_argument('urls', nargs='*', help='URLs to process (multiple allowed)')
     workflow_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     workflow_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
-    workflow_parser.add_argument('--classification-output', help='Classification result file')
+    workflow_parser.add_argument('-c', '--class', dest='classification', help='Classification result file (input/output)')
     workflow_parser.add_argument('-o', '--output', help='Final report output file')
     workflow_parser.add_argument('--force-fetch', action='store_true', help='Force re-fetch URLs')
     workflow_parser.add_argument('--force-summary', action='store_true', help='Force re-summarize')
@@ -240,15 +240,10 @@ def run_classify(args) -> None:
     if perform_classification:
         classification_result = classify_tags_with_llm(tag_counter, model=args.model)
         
-        if args.output:
-            # Save to file
-            with open(args.output, 'w', encoding='utf-8') as f:
-                json.dump(classification_result, f, ensure_ascii=False, indent=2)
-            print(f"Classification results saved to: {args.output}")
-        else:
-            # Output to stdout
-            print("\n=== CLASSIFICATION RESULTS ===")
-            print(json.dumps(classification_result, ensure_ascii=False, indent=2))
+        # Save to file
+        with open(args.output, 'w', encoding='utf-8') as f:
+            json.dump(classification_result, f, ensure_ascii=False, indent=2)
+        print(f"Classification results saved to: {args.output}")
 
 
 def run_report(args) -> None:
@@ -358,27 +353,33 @@ def run_workflow(args) -> None:
     run_summarize(summarize_args)
     
     # Step 3: classify
-    print("\n🏷️ Step 3: LLM tag classification")
-    classification_file = getattr(args, 'classification_output', None) or f"{args.cache_dir}/classification.json"
-    classify_args = argparse.Namespace(
-        urls=args.urls if args.urls else [],
-        file=args.file,
-        cache_dir=args.cache_dir,
-        extract_tags=False,
-        show_prompt=False,
-        output=classification_file,
-        model=args.model
-    )
-    run_classify(classify_args)
+    classification_file = getattr(args, 'classification', None) or f"{args.cache_dir}/classification.json"
+    
+    if Path(classification_file).exists():
+        print(f"\n🏷️ Step 3: LLM tag classification (skipped - {classification_file} exists)")
+    else:
+        print("\n🏷️ Step 3: LLM tag classification")
+        classify_args = argparse.Namespace(
+            urls=args.urls if args.urls else [],
+            file=args.file,
+            cache_dir=args.cache_dir,
+            extract_tags=False,
+            show_prompt=False,
+            output=classification_file,
+            model=args.model
+        )
+        run_classify(classify_args)
     
     # Step 4: report
     print("\n📊 Step 4: Report generation")
     report_args = argparse.Namespace(
-        classification_file=classification_file,
+        urls=args.urls if args.urls else [],
+        classification=classification_file,
         file=args.file,
         cache_dir=args.cache_dir,
         format='markdown',
-        output=args.output
+        output=args.output,
+        theme_weight=None
     )
     run_report(report_args)
     

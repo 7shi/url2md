@@ -47,7 +47,7 @@ uv run url2md classify -u urls.txt -o class.json
 uv run url2md report -u urls.txt -c class.json -o report.md
 
 # Complete workflow in one command
-uv run url2md workflow -u urls.txt --cache-dir cache -o report.md
+uv run url2md workflow -u urls.txt --playwright -c class.json -o report.md
 ```
 
 For more command details, use `uv run url2md <command> --help`.
@@ -106,10 +106,10 @@ url2md summarize --force
 # Extract and show tag statistics for all cached content
 url2md classify --extract-tags
 
-# Classify specific URLs with LLM
+# Classify specific URLs with LLM (output file required)
 url2md classify "https://example.com" -o classification.json
 
-# Classify URLs from file
+# Classify URLs from file (output file required)
 url2md classify -u urls.txt -o classification.json
 
 # Show classification prompt only (no LLM call)
@@ -143,15 +143,16 @@ url2md workflow -u urls.txt -o final-report.md
 
 # With custom settings
 url2md workflow \
-    -u urls.txt \
     --cache-dir cache \
+    -u urls.txt \
     --playwright \
-    --classification-output classification.json \
+    -c classification.json \
     -o report.md
 
 # With theme weight adjustments
 url2md workflow \
     -u urls.txt \
+    -c classification.json \
     -t "Programming:1.5" \
     -t "Education:0.8" \
     -o report.md
