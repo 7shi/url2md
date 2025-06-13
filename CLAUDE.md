@@ -2,6 +2,14 @@
 
 This file provides guidelines for Claude Code (claude.ai/code) when working with the url2md package.
 
+## Communication Guidelines
+
+**Conversation Language**: While the assistant may converse with users in their preferred language, all code and documentation should be written in English unless specifically instructed otherwise.
+
+### Git Commit Messages
+- Use clear, concise commit messages in English
+- Do not include promotional text or AI-generated signatures
+
 ## Project Overview
 
 url2md is a command-line tool for URL analysis and classification that generates Markdown reports through AI-powered content analysis, summarization, and classification.
@@ -20,6 +28,7 @@ url2md/
 ├── pyproject.toml          # Package configuration (CC0 license, Python 3.10+)
 ├── README.md               # User documentation
 ├── CLAUDE.md              # This file - development guidelines
+├── NOTES.md                # Development philosophy and lessons learned
 ├── schemas/               # JSON schemas for AI operations
 │   ├── summarize.json     # Schema for summarize command
 │   └── classify.json      # Schema for classify command
@@ -74,7 +83,7 @@ Test and development dependencies:
 - **unittest.mock**: Mocking framework (built-in)
 
 ### Environment Variables
-- `GEMINI_API_KEY`: Required for AI summarization and classification operations (not needed for `--extract-tags` or `--show-prompt`)
+See [README.md](README.md#environment-variables) for required environment variables.
 
 ## Command Architecture
 
@@ -97,11 +106,7 @@ uv run url2md [global-options] <subcommand> [options]
 - **Function Modules**: Each subcommand is implemented as a pure function module (no standalone execution)
 - **Clean Separation**: CLI logic centralized, business logic distributed
 
-**Benefits of Centralized Architecture:**
-- **Reduced Code Volume**: Eliminates duplicate argparse implementations across modules
-- **Lower AI Context Consumption**: Smaller codebase requires less context for AI assistance
-- **Improved Maintainability**: Single point of CLI logic maintenance
-- **Consistent Error Handling**: Unified exception handling across all commands
+**Centralized Benefits:** Eliminates code duplication, improves maintainability, and enables consistent error handling. See [NOTES.md](NOTES.md#architecture-decision-centralized-vs-distributed) for detailed rationale.
 
 **Command Flow:**
 1. **Argument Parsing**: All done in `main.py` using subparsers
@@ -173,16 +178,7 @@ URLs → fetch → summarize → classify → report → Markdown Report
 ## Testing Guidelines
 
 ### Running Tests
-```bash
-# Run all tests
-uv run pytest
-
-# Run specific test file
-uv run pytest tests/test_specific.py
-
-# Run with coverage
-uv run pytest --cov=url2md
-```
+See [README.md](README.md#testing) for basic testing commands. For comprehensive testing guidelines, see [NOTES.md](NOTES.md#testing-philosophy-and-practices).
 
 ### Test Structure
 Tests should be placed in the `tests/` directory and follow the naming convention `test_*.py`.
@@ -260,30 +256,9 @@ When testing:
 
 #### Adding a New Subcommand
 
-**Development Phase (Standalone Module):**
-1. Create new module in `url2md/` (e.g., `new_command.py`) with standalone execution capability
-2. Include argparse, main() function, and `if __name__ == '__main__':` block for testing
-3. Implement core functions and test thoroughly as standalone script
-4. Use local imports and self-contained error handling during development
-5. Test extensively until functionality is stable
+Use the **two-phase development approach**: start with a standalone module for prototyping, then integrate into the centralized architecture once stable. This methodology reduces risk and enables rapid iteration.
 
-**Integration Phase (Centralized Control):**
-1. Remove argparse imports and main() function from the module
-2. Keep only core functions (business logic)
-3. Add argument parser in `main.py`'s `create_parser()` function with `default_model` import
-4. Add command handler function `run_new_command()` in `main.py` with local imports
-5. Update `run_subcommand()` function to include new command case
-6. Follow import strategy: standard modules global, project modules local in run function
-7. Use exception-based error handling (no return codes)
-8. Update `__init__.py` if new functions need to be exported
-9. Add comprehensive tests covering all functionality
-10. Verify integration works correctly with existing command structure
-
-**Benefits of This Approach:**
-- **Safe Development**: Standalone testing without affecting main codebase
-- **Gradual Integration**: Control delegation only after stability confirmation
-- **Reduced Risk**: Isolated development prevents breaking existing commands
-- **Easier Debugging**: Standalone execution simplifies troubleshooting during development
+For detailed methodology and rationale, see [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development).
 
 #### Modifying AI Operations
 1. Update relevant JSON schema in `schemas/`
@@ -306,45 +281,9 @@ When testing:
 4. **Playwright Issues**: Run `uv run playwright install` for browser support
 5. **Test Failures**: Run `uv run pytest -v` to see detailed test output and error messages
 
-### Test Development Guidelines
+### Test Development
 
-When writing new tests:
-- Use descriptive test names that explain what is being tested
-- Include both positive and negative test cases
-- Test edge cases and error conditions
-- Use temporary directories for file system tests
-- Mock external dependencies appropriately
-- Follow the existing test patterns in the test suite
-
-### Test Execution Workflow
-
-Before making any changes to the codebase:
-1. Run `uv run pytest` to ensure all tests pass
-2. For development dependencies, use `uv sync --extra dev` if pytest is not available
-3. Fix any failing tests before proceeding with new development
-4. Run tests again after making changes to verify fixes
-
-### Test Execution Examples
-
-```bash
-# Run all tests with verbose output
-uv run pytest -v
-
-# Run specific test file
-uv run pytest tests/test_cache.py -v
-
-# Run specific test function
-uv run pytest tests/test_models.py::TestURLInfo::test_urlinfo_creation -v
-
-# Run tests with coverage report
-uv run pytest --cov=url2md --cov-report=html
-
-# Run only integration tests
-uv run pytest tests/test_integration.py -v
-
-# Run tests and stop on first failure
-uv run pytest -x
-```
+Follow the comprehensive testing guidelines and workflow detailed in [NOTES.md](NOTES.md#testing-philosophy-and-practices).
 
 ### Logging and Debugging
 - Use `print()` statements for user-facing progress information
@@ -379,13 +318,10 @@ uv run pytest -x
 - **Debug Mode**: `--debug` flag shows full stack traces for development
 - Graceful degradation when possible (e.g., fallback from Playwright to requests)
 
-### Git Commit Messages
-- Use clear, concise commit messages in English
-- Do not include promotional text or AI-generated signatures
-
 ## License and Distribution
 
-- **License**: CC0-1.0 (Public Domain)
+See [README.md](README.md#license) for license information.
+
 - **Package Name**: url2md
 - **Entry Point**: `url2md = "url2md.main:main"` in pyproject.toml
 
@@ -402,3 +338,9 @@ The centralized architecture is designed to be extensible:
 - **Error handling**: Maintain exception-based pattern for consistency
 
 When making changes, maintain the centralized CLI pattern while keeping business logic in separate function modules for maintainability.
+
+## Development Philosophy
+
+This project evolved through an iterative refinement process, gradually moving from unclear requirements to a clean, coherent design. The development approach resembles a "diffusion model" - starting from noisy prototypes and systematically removing complexity while enhancing clarity.
+
+For detailed lessons learned and development philosophy, see [NOTES.md](NOTES.md).

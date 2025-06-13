@@ -317,6 +317,12 @@ uv run pytest tests/test_cache.py -v
 
 This project welcomes contributions. The codebase is designed to be modular and extensible.
 
+### Documentation
+
+- **[README.md](README.md)** - User documentation and command reference
+- **[CLAUDE.md](CLAUDE.md)** - Development guidelines and technical specifications  
+- **[NOTES.md](NOTES.md)** - Development philosophy and lessons learned
+
 For development guidelines, see [CLAUDE.md](CLAUDE.md).
 
 ### Architecture
