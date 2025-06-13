@@ -138,8 +138,8 @@ url2md report -c classification.json -t "Programming:1.5" -t "Education:0.8"
 ### `workflow` - Complete workflow
 
 ```bash
-# Run complete workflow
-url2md workflow -u urls.txt -o final-report.md
+# Run complete workflow (classification file required)
+url2md workflow -u urls.txt -c classification.json -o final-report.md
 
 # With custom settings
 url2md workflow \

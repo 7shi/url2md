@@ -68,7 +68,7 @@ For more information on each command, use:
     classify_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only (no classification)')
     classify_parser.add_argument('--show-prompt', action='store_true', help='Show classification prompt only (no LLM call)')
-    classify_parser.add_argument('-o', '--output', required=True, help='Classification result output file')
+    classify_parser.add_argument('-o', '--output', required=True, help='Classification result output file (required)')
     classify_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     
     # report subcommand
@@ -87,12 +87,14 @@ For more information on each command, use:
     workflow_parser.add_argument('urls', nargs='*', help='URLs to process (multiple allowed)')
     workflow_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     workflow_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
-    workflow_parser.add_argument('-c', '--class', dest='classification', help='Classification result file (input/output)')
+    workflow_parser.add_argument('-c', '--class', dest='classification', required=True, help='Classification result file (input/output)')
     workflow_parser.add_argument('-o', '--output', help='Final report output file')
     workflow_parser.add_argument('--force-fetch', action='store_true', help='Force re-fetch URLs')
     workflow_parser.add_argument('--force-summary', action='store_true', help='Force re-summarize')
     workflow_parser.add_argument('--playwright', action='store_true', help='Use Playwright for fetch')
     workflow_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
+    workflow_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
+                              help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
     
     return parser
 
@@ -323,6 +325,10 @@ def run_report(args) -> None:
 
 def run_workflow(args) -> None:
     """Run workflow subcommand (complete workflow)"""
+    # Check environment variable upfront
+    if not os.environ.get("GEMINI_API_KEY"):
+        raise ValueError("GEMINI_API_KEY environment variable not set")
+    
     print("🔄 URL analysis workflow started")
     
     # Step 1: fetch
@@ -353,7 +359,7 @@ def run_workflow(args) -> None:
     run_summarize(summarize_args)
     
     # Step 3: classify
-    classification_file = getattr(args, 'classification', None) or f"{args.cache_dir}/classification.json"
+    classification_file = args.classification
     
     if Path(classification_file).exists():
         print(f"\n🏷️ Step 3: LLM tag classification (skipped - {classification_file} exists)")
@@ -379,7 +385,7 @@ def run_workflow(args) -> None:
         cache_dir=args.cache_dir,
         format='markdown',
         output=args.output,
-        theme_weight=None
+        theme_weight=getattr(args, 'theme_weight', None)
     )
     run_report(report_args)
     
