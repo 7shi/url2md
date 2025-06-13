@@ -79,7 +79,7 @@ For more information on each command, use:
     classify_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only (no classification)')
     classify_parser.add_argument('--show-prompt', action='store_true', help='Show classification prompt only (no LLM call)')
-    classify_parser.add_argument('-o', '--output', required=True, help='Classification result output file (required)')
+    classify_parser.add_argument('-o', '--output', help='Classification result output file (required for classification)')
     classify_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     classify_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
@@ -250,6 +250,10 @@ def run_classify(args) -> None:
     
     # Default action is classification unless --extract-tags or --show-prompt is specified
     perform_classification = not (args.extract_tags or args.show_prompt)
+    
+    # Check output file requirement for classification
+    if perform_classification and not args.output:
+        raise ValueError("Output file (-o/--output) is required when performing classification")
     
     # Check environment variable for LLM operations
     if perform_classification and not os.environ.get("GEMINI_API_KEY"):
