@@ -27,7 +27,7 @@ url2md is a command-line tool for URL analysis and classification that generates
 ```
 url2md/
 ├── pyproject.toml          # Package configuration (CC0 license, Python 3.10+)
-├── README.md               # User documentation
+├── README.md               # User documentation and command reference
 ├── CLAUDE.md              # This file - development guidelines
 ├── NOTES.md                # Development philosophy and lessons learned
 ├── docs/                  # Additional documentation
@@ -54,22 +54,7 @@ url2md/
 ## Development Environment
 
 ### Python Execution
-**IMPORTANT**: Always use `uv run` for executing Python scripts and commands:
-
-```bash
-# Correct way to run url2md
-uv run url2md --help
-uv run url2md init                    # Required first step
-uv run url2md fetch "https://example.com"
-uv run url2md fetch -u urls.txt
-uv run url2md summarize -u urls.txt -l Japanese
-uv run url2md classify -u urls.txt -o classification.json -l Japanese
-uv run url2md --cache-dir /custom/cache fetch -u urls.txt
-
-# Avoid direct Python execution
-python -m url2md        # ❌ Don't use this
-python url2md/main.py   # ❌ Don't use this
-```
+**IMPORTANT**: Always use `uv run` for executing Python scripts and commands. See [README.md](README.md) for complete command examples.
 
 ### Dependencies
 Dependencies are managed in `pyproject.toml`. Key dependencies include:
@@ -80,13 +65,6 @@ Dependencies are managed in `pyproject.toml`. Key dependencies include:
 - **minify-html>=0.16.4**: HTML minification
 - **pillow>=10.0.0**: Image processing (GIF→PNG conversion)
 - **colorama>=0.4.6**: Terminal color formatting for Markdown display
-
-### Development Dependencies
-Test and development dependencies:
-- **pytest>=8.3.0**: Testing framework
-- **pytest-cov**: Coverage reporting
-- **tempfile**: For filesystem testing (built-in)
-- **unittest.mock**: Mocking framework (built-in)
 
 ### Environment Variables
 See [README.md](README.md#environment-variables) for required environment variables.
@@ -99,23 +77,10 @@ url2md follows a **centralized command architecture** with function modules:
 uv run url2md [global-options] <subcommand> [options]
 ```
 
-**Global Options:**
-- `--cache-dir PATH`: Cache directory (auto-detected if not specified)
-  - Auto-detection: Searches for directories containing `cache.tsv` in current and parent directories
-  - Priority: `./url2md-cache/cache.tsv` is preferred if it exists
-  - Flexible naming: Any directory name containing `cache.tsv` is recognized
-  - Initialization: If no cache found, requires `url2md init` to create one
-- `--version`: Show version information
-- `--help`: Show help message
-
-### Implementation Strategy
-
 **Core Design Pattern:**
 - **Single Entry Point**: `url2md/main.py` serves as the central command orchestrator
 - **Function Modules**: Each subcommand is implemented as a pure function module (no standalone execution)
 - **Clean Separation**: CLI logic centralized, business logic distributed
-
-**Centralized Benefits:** Eliminates code duplication, improves maintainability, and enables consistent error handling. See [NOTES.md](NOTES.md#architecture-decision-centralized-vs-distributed) for detailed rationale.
 
 **Command Flow:**
 1. **Argument Parsing**: All done in `main.py` using subparsers
@@ -123,151 +88,7 @@ uv run url2md [global-options] <subcommand> [options]
 3. **Function Import**: Each `run_*()` function imports only what it needs locally
 4. **Error Handling**: Exception-based with natural propagation for debugging
 
-### Available Subcommands
-
-**Unified Command Interface:**
-- **Positional arguments**: URL enumeration (`urls` nargs='*')
-- **URL file input**: `-u/--urls-file` for URL list files
-- **Output files**: `-o/--output` for result files
-- **Classification input**: `-c/--class` for classification JSON files
-
-0. **init**: Initialize cache directory
-   - Implementation: `url2md/main.py` (run_init function)
-   - Purpose: Create cache directory structure with cache.tsv file
-   - **Required**: Must be run before other commands
-   - **Default Directory**: Creates `url2md-cache/` (configurable via `DEFAULT_CACHE_DIR`)
-   - **Argument Conflict**: Error if both `--cache-dir` and directory argument specified
-   - **Cache Detection**: Creates marker file `cache.tsv` for auto-detection by other commands
-
-1. **fetch**: Download and cache URLs
-   - Implementation: `url2md/fetch.py` (functions), `url2md/main.py` (CLI integration)
-   - Purpose: Download web content, handle caching, support Playwright
-   - **Default Behavior**: Skip failed URLs (use `-r/--retry` to retry errors)
-   
-2. **summarize**: Generate AI summaries
-   - Implementation: `url2md/summarize.py` (functions), `url2md/main.py` (CLI integration)
-   - Purpose: Create structured summaries using Gemini API with thinking process visualization
-   - Schema: `url2md/schemas/summarize.json`
-   - **AI Thinking**: Displays real-time reasoning process during summarization
-   - **Language Support**: Use `-l/--language` to specify output language (e.g., Japanese, Chinese, French)
-   
-3. **classify**: Classify content by topic
-   - Implementation: `url2md/classify.py` (functions), `url2md/main.py` (CLI integration)
-   - Purpose: Extract tags and classify by theme using LLM with reasoning insights (default action)
-   - Schema: `url2md/schemas/classify.json`
-   - **AI Thinking**: Shows step-by-step classification reasoning and decision process
-   - **Default Behavior**: Classification runs automatically unless `--extract-tags` or `--show-prompt` specified
-   - **Language Support**: Use `-l/--language` to specify output language for theme names and descriptions
-   
-4. **report**: Generate Markdown reports
-   - Implementation: `url2md/report.py` (functions), `url2md/main.py` (CLI integration)
-   - Purpose: Create comprehensive Markdown reports from classification data
-   
-5. **workflow**: Complete workflow
-   - Implementation: `url2md/main.py` (run_workflow function)
-   - Purpose: Execute entire workflow (fetch → summarize → classify → report)
-   - **AI Thinking**: Displays thinking process for both summarize and classify steps
-   - **Language Support**: Use `-l/--language` to specify output language for summarize and classify steps
-
-## Data Flow
-
-The standard workflow follows this pattern:
-
-```
-init → URLs → fetch → summarize → classify → report → Markdown Report
-```
-
-### Data Storage
-
-- **Cache Directory**: `url2md-cache/` (configurable with `--cache-dir`)
-  - `cache.tsv`: Metadata index with URL info
-  - `content/`: Downloaded files (HTML, PDF, images, etc.)
-  - `summary/`: AI-generated summaries as JSON files
-  
-- **Intermediate Files**:
-  - `classification.json`: LLM classification results
-  - `report.md`: Final Markdown report
-
-### Data Models
-
-- **URLInfo**: Core data model for cached URLs (in `models.py`)
-- **Cache**: Cache management class (in `cache.py`)
-- **CacheResult**: Result object for cache operations
-
-## Testing Guidelines
-
-### Running Tests
-See [README.md](README.md#testing) for basic testing commands. For comprehensive testing guidelines, see [NOTES.md](NOTES.md#testing-philosophy-and-practices).
-
-### Test Structure
-Tests should be placed in the `tests/` directory and follow the naming convention `test_*.py`.
-
-**Test Categories:**
-- Unit tests for individual modules
-- Integration tests for command workflows
-- End-to-end tests for complete pipeline
-
-### Test Files Overview
-
-The test suite includes the following files:
-
-1. **test_cache.py** - Cache management functionality tests
-   - Cache initialization and data operations
-   - TSV format validation and persistence
-   - Filename collision handling and domain throttling
-   - CacheResult object testing
-
-2. **test_cache_dir_detection.py** - Cache directory auto-detection tests
-   - Cache detection in current and parent directories
-   - Priority handling for `./url2md-cache/cache.tsv`
-   - Support for custom cache directory names
-   - Permission error handling
-
-3. **test_integration.py** - Integration and end-to-end tests
-   - Command-line interface integration
-   - Module import and dependency testing
-   - Complete workflow integration
-   - Schema file accessibility verification
-
-4. **test_models.py** - Data model tests
-   - URLInfo creation, serialization, and validation
-   - TSV format handling and error escaping
-   - URL loading from files and stdin
-   - Content fetching with error handling
-
-5. **test_report.py** - Report generation tests
-   - Tag matching weight calculations
-   - URL classification algorithms
-   - Markdown report formatting
-   - Theme analysis and statistics
-
-6. **test_schema_structure.py** - Schema and code structure validation
-   - JSON schema validation for AI operations
-   - Package structure verification
-   - Import path consistency checks
-   - Schema-code alignment validation
-
-7. **test_summarize.py** - AI summarization tests
-   - Schema validation and structure testing
-   - Prompt generation functionality
-   - File operations and JSON handling
-   - Mock-based content summarization testing
-
-8. **test_utils.py** - HTML processing and resource utility tests
-   - HTML content extraction and cleaning
-   - Title extraction and text processing
-   - Minification and content validation
-   - Edge case handling for malformed HTML
-   - Cache directory detection functionality
-   - Resource path resolution functionality
-
-### Mock Considerations
-When testing:
-- Mock external API calls (Gemini API) using `unittest.mock`
-- Mock file system operations when appropriate with `tempfile`
-- Mock Playwright for browser automation tests
-- Use `patch` decorators for dependency injection
-- Test both success and error scenarios
+**Centralized Benefits:** Eliminates code duplication, improves maintainability, and enables consistent error handling. See [NOTES.md](NOTES.md#architecture-decision-centralized-vs-distributed) for detailed rationale.
 
 ## Development Workflows
 
@@ -292,7 +113,7 @@ When testing:
 
 #### Adding a New Subcommand
 
-Use the **two-phase development approach**: start with a standalone module for prototyping, then integrate into the centralized architecture once stable. This methodology reduces risk and enables rapid iteration.
+Use the **two-phase development approach**: start with a standalone module for prototyping, then integrate into the centralized architecture once stable.
 
 **Development Phase (Standalone Module):**
 1. Create new module in `url2md/` (e.g., `new_command.py`) with standalone execution capability
@@ -339,6 +160,30 @@ When modifying configurable values (directory names, defaults, etc.):
 5. **Update gitignore patterns** if directory names change
 6. **Verify consistency** across Examples, help text, and documentation
 
+## Testing
+
+### Running Tests
+See [README.md](README.md#testing) for basic testing commands. 
+
+### Test Execution Workflow
+Before making any changes to the codebase:
+1. Run `uv run pytest` to ensure all tests pass
+2. For development dependencies, use `uv sync --dev` if pytest is not available
+3. Fix any failing tests before proceeding with new development
+4. Run tests again after making changes to verify fixes
+
+### Test Development Guidelines
+- Use descriptive test names that explain what is being tested
+- Include both positive and negative test cases
+- Test edge cases and error conditions
+- Use temporary directories for file system tests
+- Mock external dependencies appropriately
+- Follow the existing test patterns in the test suite
+- **Error Handling Tests**: Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases and `pytest.raises(ExceptionType)` for natural propagation
+- **Resource Access**: Use `get_resource_path()` for accessing schema files in tests
+
+For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy-and-practices).
+
 ## Debugging and Troubleshooting
 
 ### Common Issues
@@ -350,45 +195,6 @@ When modifying configurable values (directory names, defaults, etc.):
 5. **Playwright Issues**: Run `uv run playwright install` for browser support
 6. **Test Failures**: Run `uv run pytest -v` to see detailed test output and error messages
 7. **Tool Not Updated**: After code changes, use `uv cache clean url2md` before `uv tool install .` to ensure latest version
-
-### Test Development
-
-**Test Execution Workflow:**
-Before making any changes to the codebase:
-1. Run `uv run pytest` to ensure all tests pass
-2. For development dependencies, use `uv sync --extra dev` if pytest is not available
-3. Fix any failing tests before proceeding with new development
-4. Run tests again after making changes to verify fixes
-
-**Test Development Guidelines:**
-- Use descriptive test names that explain what is being tested
-- Include both positive and negative test cases
-- Test edge cases and error conditions
-- Use temporary directories for file system tests
-- Mock external dependencies appropriately
-- Follow the existing test patterns in the test suite
-- **Error Handling Tests**: Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases and `pytest.raises(ExceptionType)` for natural propagation
-- **Resource Access**: Use `get_resource_path()` for accessing schema files in tests
-
-**Useful Test Commands:**
-```bash
-# Run all tests with verbose output
-uv run pytest -v
-
-# Run specific test file
-uv run pytest tests/test_cache.py -v
-
-# Run specific test function
-uv run pytest tests/test_models.py::TestURLInfo::test_urlinfo_creation -v
-
-# Run tests with coverage report
-uv run pytest --cov=url2md --cov-report=html
-
-# Run tests and stop on first failure
-uv run pytest -x
-```
-
-For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy-and-practices).
 
 ### Logging and Debugging
 - Use `print()` statements for user-facing progress information
@@ -405,11 +211,6 @@ For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy
   # Avoid - changes current shell's directory
   cd tmp/test_dir && uv run pytest
   ```
-
-### Performance Considerations
-- Cache management prevents redundant downloads
-- Domain-based throttling prevents rate limiting
-- Progress bars provide user feedback for long operations
 
 ## Code Style and Conventions
 
@@ -440,7 +241,7 @@ For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy
 - README.md provides user documentation
 - This CLAUDE.md provides development documentation
 
-### Error Handling
+## Error Handling
 
 **Core Policy**: Prioritize error visibility in development phase (0.1.0)
 
@@ -456,15 +257,6 @@ For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy
 - **Graceful degradation**: Only for optional operations (cache detection, HTML parsing)
 
 For detailed error handling guidelines, see [docs/error-handling.md](docs/error-handling.md).
-
-## License and Distribution
-
-See [README.md](README.md#license) for license information.
-
-- **Package Name**: url2md
-- **Entry Point**: `url2md = "url2md.main:main"` in pyproject.toml
-
-This package is designed to be independent and redistributable without dependencies on the original Skype analysis project.
 
 ## Future Development
 
