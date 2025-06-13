@@ -14,12 +14,6 @@ URL analysis and classification tool - Generate Markdown reports from URLs throu
 ## Installation
 
 ```bash
-# Install the package
-pip install url2md
-
-# For dynamic rendering support (optional)
-playwright install
-
 # Source installation with uv
 git clone https://github.com/7shi/url2md.git
 cd url2md
