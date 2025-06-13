@@ -197,49 +197,11 @@ This architectural change exemplifies how better understanding enables better st
 
 ## Testing Philosophy and Practices
 
-### Test Development Guidelines
-
-When writing new tests:
-- Use descriptive test names that explain what is being tested
-- Include both positive and negative test cases
-- Test edge cases and error conditions
-- Use temporary directories for file system tests
-- Mock external dependencies appropriately
-- Follow the existing test patterns in the test suite
-
-### Test Execution Workflow
-
-Before making any changes to the codebase:
-1. Run `uv run pytest` to ensure all tests pass
-2. For development dependencies, use `uv sync --extra dev` if pytest is not available
-3. Fix any failing tests before proceeding with new development
-4. Run tests again after making changes to verify fixes
-
 ### Testing as Safety Net
 
 One key lesson: **comprehensive tests enable confident refactoring**. Each major architectural change was possible because the test suite provided confidence that functionality remained intact. Tests became the safety net that enabled bold improvements.
 
-### Useful Test Commands
-
-```bash
-# Run all tests with verbose output
-uv run pytest -v
-
-# Run specific test file
-uv run pytest tests/test_cache.py -v
-
-# Run specific test function
-uv run pytest tests/test_models.py::TestURLInfo::test_urlinfo_creation -v
-
-# Run tests with coverage report
-uv run pytest --cov=url2md --cov-report=html
-
-# Run only integration tests
-uv run pytest tests/test_integration.py -v
-
-# Run tests and stop on first failure
-uv run pytest -x
-```
+The test execution workflow and specific commands are documented in [CLAUDE.md](CLAUDE.md#test-development) for practical development use.
 
 ## Conclusion
 

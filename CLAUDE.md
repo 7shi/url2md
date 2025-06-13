@@ -272,13 +272,41 @@ When testing:
 5. Add tests for new functionality
 6. Update README.md if user-facing changes
 
+### Development Best Practices
+- **Start Simple, Evolve Gradually**: Begin with functional prototypes rather than perfect designs
+- **Centralize What Should Be Central**: Identify system-wide concerns (like CLI parsing, global options) and centralize them
+- **Test-Driven Stabilization**: Comprehensive tests enable confident refactoring
+- **Consistency Over Optimization**: Favor consistency over minor optimizations
+- **Document Reasoning**: Document the reasoning behind non-obvious choices
+
 ### Common Development Tasks
 
 #### Adding a New Subcommand
 
 Use the **two-phase development approach**: start with a standalone module for prototyping, then integrate into the centralized architecture once stable. This methodology reduces risk and enables rapid iteration.
 
-For detailed methodology and rationale, see [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development).
+**Development Phase (Standalone Module):**
+1. Create new module in `url2md/` (e.g., `new_command.py`) with standalone execution capability
+2. Include argparse, main() function, and `if __name__ == '__main__':` block for testing
+3. Implement core functions and test thoroughly as standalone script
+4. Use local imports and self-contained error handling during development
+5. Test extensively until functionality is stable
+
+**Integration Phase (Centralized Control):**
+1. Remove argparse imports and main() function from the module
+2. Keep only core functions (business logic)
+3. Add argument parser in `main.py`'s `create_parser()` function with `default_model` import
+4. Add command handler function `run_new_command()` in `main.py` with local imports
+5. Update `run_subcommand()` function to include new command case
+6. Follow import strategy: standard modules global, project modules local in run function
+7. Use exception-based error handling (no return codes)
+8. Update `__init__.py` if new functions need to be exported
+9. Add comprehensive tests covering all functionality
+10. Verify integration works correctly with existing command structure
+
+**Benefits:** Safe development, gradual integration, reduced risk, easier debugging during development.
+
+For detailed rationale, see [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development).
 
 #### Modifying AI Operations
 1. Update relevant JSON schema in `schemas/`
@@ -313,7 +341,40 @@ When modifying configurable values (directory names, defaults, etc.):
 
 ### Test Development
 
-Follow the comprehensive testing guidelines and workflow detailed in [NOTES.md](NOTES.md#testing-philosophy-and-practices).
+**Test Execution Workflow:**
+Before making any changes to the codebase:
+1. Run `uv run pytest` to ensure all tests pass
+2. For development dependencies, use `uv sync --extra dev` if pytest is not available
+3. Fix any failing tests before proceeding with new development
+4. Run tests again after making changes to verify fixes
+
+**Test Development Guidelines:**
+- Use descriptive test names that explain what is being tested
+- Include both positive and negative test cases
+- Test edge cases and error conditions
+- Use temporary directories for file system tests
+- Mock external dependencies appropriately
+- Follow the existing test patterns in the test suite
+
+**Useful Test Commands:**
+```bash
+# Run all tests with verbose output
+uv run pytest -v
+
+# Run specific test file
+uv run pytest tests/test_cache.py -v
+
+# Run specific test function
+uv run pytest tests/test_models.py::TestURLInfo::test_urlinfo_creation -v
+
+# Run tests with coverage report
+uv run pytest --cov=url2md --cov-report=html
+
+# Run tests and stop on first failure
+uv run pytest -x
+```
+
+For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy-and-practices).
 
 ### Logging and Debugging
 - Use `print()` statements for user-facing progress information
