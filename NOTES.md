@@ -37,25 +37,37 @@ The development of url2md followed a **"diffusion model-like" refinement process
 - Embrace refactoring as a natural part of development
 - **Lesson**: Complex systems emerge better through evolution than initial design
 
-### 2. Centralize What Should Be Central
+### 2. Class-Based Design Should Come Early
+- **Critical Lesson from Pre-History**: Function-based approaches work initially but create massive technical debt
+- Dictionary-based data structures lack type safety and become unmanageable
+- Code duplication emerges rapidly when multiple modules need the same data
+- **The Breaking Point**: When 2-3 files import the same functions, immediate class-based refactoring is essential
+- **Cost of Delay**: Waiting until 5+ files have duplicate patterns results in "major refactoring effort" (700+ lines changed)
+- **Early Warning Signs**:
+  - Same import statements across multiple files
+  - Dictionary key access patterns duplicated (`data[url]['field']`)
+  - Manual TSV parsing logic repeated in different modules
+  - String-based field access without IDE support
+
+### 3. Centralize What Should Be Central
 - CLI argument parsing benefits from centralization
 - Global options (cache-dir, debug) should be truly global
 - Error handling consistency requires single-point control
 - **Lesson**: Identify system-wide concerns early and centralize them
 
-### 3. User Experience Emerges Through Use
+### 4. User Experience Emerges Through Use
 - Complex CLI interfaces become clear through iterative refinement
 - Developer confusion often indicates user confusion
 - Help messages and examples are as important as functionality
 - **Lesson**: If the developer finds it confusing, users will too
 
-### 4. Test-Driven Stabilization
+### 5. Test-Driven Stabilization
 - Comprehensive tests enable confident refactoring
 - Each major change should maintain test suite integrity
 - Tests document expected behavior during transitions
 - **Lesson**: Tests are the safety net that enables bold improvements
 
-### 5. Architecture Follows Understanding
+### 6. Architecture Follows Understanding
 - Initial architecture reflects initial understanding (often incomplete)
 - Better understanding enables better architecture
 - Migration should be gradual and test-validated
@@ -65,6 +77,7 @@ The development of url2md followed a **"diffusion model-like" refinement process
 
 ### When Adding New Features
 - Start with standalone prototypes to understand requirements
+- **Watch for the 2-3 file import threshold** - immediate class-based refactoring signal
 - Integrate only after the feature is well-understood
 - Maintain backward compatibility during transitions
 - Update documentation alongside code changes
@@ -74,12 +87,14 @@ The development of url2md followed a **"diffusion model-like" refinement process
 - Ensure all tests pass after each change
 - Update examples and documentation to match new patterns
 - Consider the impact on existing users
+- **Act decisively when duplication emerges** - delay costs exponentially
 
 ### When Facing Design Decisions
 - Favor consistency over minor optimizations
 - Choose clarity over cleverness
 - Document the reasoning behind non-obvious choices
 - Remember that code is read more often than written
+- **Prioritize type safety and IDE support** - dictionary access patterns are technical debt
 
 ## Evolution vs Revolution
 
@@ -117,6 +132,53 @@ This approach is particularly valuable for CLI tools where user workflows must b
 - **Issue**: Users couldn't understand relationships between commands
 - **Solution**: Added explanatory comments and grouped related examples
 - **Lesson**: Documentation should teach concepts, not just list options
+
+## Historical Technical Debt Examples (Pre-History)
+
+### The Cache Class Refactoring Crisis
+**Date**: June 11, 2025 (Pre-url2md package)  
+**Scale**: 707 lines added, 828 lines deleted, 8 files affected
+
+#### The Problem Evolution
+1. **Day 1**: Simple function-based cache in `fetch_url.py` - worked perfectly
+2. **Day 2**: `analyze_resources.py` imports cache functions - first duplication
+3. **Day 3**: `summarize_cache.py` copies same patterns - technical debt accumulating
+4. **Day 4**: `check_mime_extensions.py` adds more duplication - problem visible
+5. **Day 5**: Test files replicate patterns - "this is getting out of hand"
+6. **Day 6**: Major refactoring required - significant development halt
+
+#### Symptoms Before the Breaking Point
+```python
+# Duplicated across 5+ files:
+from fetch_url import read_cache_data, get_cache_file_path
+cache_data = read_cache_data(cache_dir)
+for entry in cache_data:
+    filename = entry.get('filename', '')  # String keys, no IDE support
+    status = entry.get('status', '')      # Runtime errors possible
+```
+
+#### The Refactoring Solution
+```python
+# After: Clean class-based design
+from cache import Cache, URLInfo
+cache = Cache(cache_dir)
+for entry in cache.get_all():
+    filename = entry.filename  # Type-safe attribute access
+    status = entry.status      # IDE completion and validation
+```
+
+### The TSV File Corruption Crisis
+**Problem**: Error messages with embedded newlines broke TSV format  
+**Root Cause**: No centralized data serialization  
+**Impact**: 141 corrupted rows in production data  
+**Lesson**: Centralized serialization prevents format corruption
+
+### The File Format Migration Challenge
+**Problem**: Two incompatible JSON schema formats existed simultaneously  
+**Legacy**: `{"metadata": {...}, "classification": {"themes": [...]}}`  
+**Current**: `{"themes": [...], "classification_summary": {...}}`  
+**Solution**: Bridge scripts supporting both formats during transition  
+**Lesson**: Format changes require explicit migration strategy
 
 ## Future Architectural Considerations
 
