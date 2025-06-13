@@ -25,7 +25,7 @@ def create_parser() -> argparse.ArgumentParser:
 Examples:
   %(prog)s fetch -u urls.txt --playwright
   %(prog)s summarize -u urls.txt
-  %(prog)s classify --classify -u urls.txt -o class.json
+  %(prog)s classify -u urls.txt -o class.json
   %(prog)s report -u urls.txt -c class.json -o report.md
   %(prog)s pipeline -u urls.txt --cache-dir cache -o report.md
 
@@ -65,9 +65,8 @@ For more information on each command, use:
     classify_parser.add_argument('urls', nargs='*', help='URLs to classify (all cached if not specified)')
     classify_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     classify_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
-    classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only')
-    classify_parser.add_argument('--test', action='store_true', help='Show prompt only (test mode)')
-    classify_parser.add_argument('--classify', action='store_true', help='Classify with LLM')
+    classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only (no classification)')
+    classify_parser.add_argument('--show-prompt', action='store_true', help='Show classification prompt only (no LLM call)')
     classify_parser.add_argument('-o', '--output', help='Classification result output file')
     classify_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     
@@ -192,12 +191,11 @@ def run_classify(args) -> None:
     from .cache import Cache
     from .models import load_urls_from_file
     
-    # Check that at least one action is specified
-    if not any([args.extract_tags, args.test, args.classify]):
-        raise ValueError("Please specify at least one action (--extract-tags, --test, or --classify)")
+    # Default action is classification unless --extract-tags or --show-prompt is specified
+    perform_classification = not (args.extract_tags or args.show_prompt)
     
     # Check environment variable for LLM operations
-    if (args.test or args.classify) and not os.environ.get("GEMINI_API_KEY"):
+    if perform_classification and not os.environ.get("GEMINI_API_KEY"):
         raise ValueError("GEMINI_API_KEY environment variable not set")
     
     cache = Cache(args.cache_dir)
@@ -229,7 +227,7 @@ def run_classify(args) -> None:
     if args.extract_tags:
         display_tag_statistics(tag_counter)
     
-    if args.test:
+    if args.show_prompt:
         prompt = create_tag_classification_prompt(tag_counter)
         if prompt:
             print("\n=== CLASSIFICATION PROMPT ===")
@@ -237,7 +235,7 @@ def run_classify(args) -> None:
         else:
             print("No frequent tags found for prompt generation")
     
-    if args.classify:
+    if perform_classification:
         classification_result = classify_tags_with_llm(tag_counter, model=args.model)
         
         if args.output:
@@ -360,11 +358,11 @@ def run_pipeline(args) -> None:
     print("\n🏷️ Step 3: LLM tag classification")
     classification_file = getattr(args, 'classification_output', None) or f"{args.cache_dir}/classification.json"
     classify_args = argparse.Namespace(
+        urls=args.urls if args.urls else [],
         file=args.file,
         cache_dir=args.cache_dir,
         extract_tags=False,
-        test=False,
-        classify=True,
+        show_prompt=False,
         output=classification_file,
         model=args.model
     )

@@ -48,6 +48,7 @@ url2md/
 uv run url2md --help
 uv run url2md fetch "https://example.com"
 uv run url2md fetch -u urls.txt
+uv run url2md classify -u urls.txt -o classification.json
 
 # Avoid direct Python execution
 python -m url2md        # ❌ Don't use this
@@ -71,7 +72,7 @@ Test and development dependencies:
 - **unittest.mock**: Mocking framework (built-in)
 
 ### Environment Variables
-- `GEMINI_API_KEY`: Required for AI summarization and classification operations
+- `GEMINI_API_KEY`: Required for AI summarization and classification operations (not needed for `--extract-tags` or `--show-prompt`)
 
 ## Command Architecture
 
@@ -120,8 +121,9 @@ uv run url2md <subcommand> [options]
    
 3. **classify**: Classify content by topic
    - Implementation: `url2md/classify.py` (functions), `url2md/main.py` (CLI integration)
-   - Purpose: Extract tags and classify by theme using LLM
+   - Purpose: Extract tags and classify by theme using LLM (default action)
    - Schema: `schemas/classify.json`
+   - **Default Behavior**: Classification runs automatically unless `--extract-tags` or `--show-prompt` specified
    
 4. **report**: Generate Markdown reports
    - Implementation: `url2md/report.py` (functions), `url2md/main.py` (CLI integration)

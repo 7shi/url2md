@@ -92,13 +92,13 @@ url2md summarize --force
 url2md classify --extract-tags
 
 # Classify specific URLs with LLM
-url2md classify "https://example.com" --classify -o classification.json
+url2md classify "https://example.com" -o classification.json
 
 # Classify URLs from file
-url2md classify -u urls.txt --classify -o classification.json
+url2md classify -u urls.txt -o classification.json
 
-# Test mode (show prompt only)
-url2md classify --test
+# Show classification prompt only (no LLM call)
+url2md classify --show-prompt
 ```
 
 ### `report` - Generate Markdown reports
@@ -144,7 +144,7 @@ url2md pipeline \
 
 ## Environment Variables
 
-- `GEMINI_API_KEY`: Required for AI summarization and classification operations
+- `GEMINI_API_KEY`: Required for AI summarization and classification operations (not needed for `--extract-tags` or `--show-prompt`)
 
 ## Requirements
 
