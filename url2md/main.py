@@ -23,11 +23,11 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s fetch -f urls.txt --playwright
-  %(prog)s summarize -f urls.txt
-  %(prog)s classify --classify -f urls.txt -o class.json
-  %(prog)s report -f urls.txt -o report.md class.json
-  %(prog)s pipeline urls.txt --cache-dir cache --output report.md
+  %(prog)s fetch -u urls.txt --playwright
+  %(prog)s summarize -u urls.txt
+  %(prog)s classify --classify -u urls.txt -o class.json
+  %(prog)s report -u urls.txt -c class.json -o report.md
+  %(prog)s pipeline -u urls.txt --cache-dir cache -o report.md
 
 For more information on each command, use:
   %(prog)s <command> --help
@@ -43,7 +43,7 @@ For more information on each command, use:
     # fetch subcommand
     fetch_parser = subparsers.add_parser('fetch', help='Fetch URLs and store in cache')
     fetch_parser.add_argument('urls', nargs='*', help='URLs to fetch (multiple allowed)')
-    fetch_parser.add_argument('-f', '--file', help='URL list file (use - for stdin)')
+    fetch_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file (use - for stdin)')
     fetch_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     fetch_parser.add_argument('--playwright', action='store_true', help='Use Playwright for dynamic rendering')
     fetch_parser.add_argument('--force', action='store_true', help='Force re-fetch even if cached')
@@ -53,7 +53,7 @@ For more information on each command, use:
     # summarize subcommand
     summarize_parser = subparsers.add_parser('summarize', help='Generate AI summaries of cached content')
     summarize_parser.add_argument('urls', nargs='*', help='URLs to summarize (all cached if not specified)')
-    summarize_parser.add_argument('-f', '--file', help='URL list file')
+    summarize_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     summarize_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     summarize_parser.add_argument('--hash', help='Summarize specific hash only')
     summarize_parser.add_argument('--limit', type=int, help='Maximum number to process')
@@ -62,7 +62,8 @@ For more information on each command, use:
     
     # classify subcommand
     classify_parser = subparsers.add_parser('classify', help='Analyze tags and classify with LLM')
-    classify_parser.add_argument('-f', '--file', help='URL list file')
+    classify_parser.add_argument('urls', nargs='*', help='URLs to classify (all cached if not specified)')
+    classify_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     classify_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only')
     classify_parser.add_argument('--test', action='store_true', help='Show prompt only (test mode)')
@@ -72,8 +73,9 @@ For more information on each command, use:
     
     # report subcommand
     report_parser = subparsers.add_parser('report', help='Generate Markdown report from classification')
-    report_parser.add_argument('classification_file', help='Classification result JSON file')
-    report_parser.add_argument('-f', '--file', help='URL list file')
+    report_parser.add_argument('urls', nargs='*', help='URLs to include in report (all classified if not specified)')
+    report_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
+    report_parser.add_argument('-c', '--class', dest='classification', required=True, help='Classification result JSON file')
     report_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     report_parser.add_argument('--format', choices=['markdown', 'html'], default='markdown', help='Output format')
     report_parser.add_argument('-o', '--output', help='Output file (stdout if not specified)')
@@ -83,7 +85,7 @@ For more information on each command, use:
     # pipeline subcommand
     pipeline_parser = subparsers.add_parser('pipeline', help='Run complete pipeline (fetch → summarize → classify → report)')
     pipeline_parser.add_argument('urls', nargs='*', help='URLs to process (multiple allowed)')
-    pipeline_parser.add_argument('-f', '--file', help='URL list file')
+    pipeline_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     pipeline_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     pipeline_parser.add_argument('--classification-output', help='Classification result file')
     pipeline_parser.add_argument('-o', '--output', help='Final report output file')
@@ -202,8 +204,12 @@ def run_classify(args) -> None:
     
     # Determine target URLs
     target_urls = []
+    if args.urls:
+        target_urls.extend(args.urls)
+    
     if args.file:
-        target_urls = load_urls_from_file(args.file)
+        file_urls = load_urls_from_file(args.file)
+        target_urls.extend(file_urls)
     
     # Filter URLInfo objects
     url_infos = filter_url_infos_by_urls(cache, target_urls)
@@ -253,10 +259,10 @@ def run_report(args) -> None:
     
     # Load classification data
     try:
-        with open(args.classification_file, 'r', encoding='utf-8') as f:
+        with open(args.classification, 'r', encoding='utf-8') as f:
             classification_data = json.load(f)
     except FileNotFoundError:
-        raise FileNotFoundError(f"Classification file not found: {args.classification_file}")
+        raise FileNotFoundError(f"Classification file not found: {args.classification}")
     
     cache = Cache(args.cache_dir)
     
@@ -274,8 +280,12 @@ def run_report(args) -> None:
     
     # Determine target URLs
     target_urls = []
+    if args.urls:
+        target_urls.extend(args.urls)
+    
     if args.file:
-        target_urls = load_urls_from_file(args.file)
+        file_urls = load_urls_from_file(args.file)
+        target_urls.extend(file_urls)
     
     # Filter URLInfo objects
     url_infos = filter_url_infos_by_urls(cache, target_urls)

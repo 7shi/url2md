@@ -47,6 +47,7 @@ url2md/
 # Correct way to run url2md
 uv run url2md --help
 uv run url2md fetch "https://example.com"
+uv run url2md fetch -u urls.txt
 
 # Avoid direct Python execution
 python -m url2md        # ❌ Don't use this
@@ -101,6 +102,12 @@ uv run url2md <subcommand> [options]
 5. **Debug Support**: `--debug` flag bypasses exception handling for full tracebacks
 
 ### Available Subcommands
+
+**Unified Command Interface:**
+- **Positional arguments**: URL enumeration (`urls` nargs='*')
+- **URL file input**: `-u/--urls-file` for URL list files
+- **Output files**: `-o/--output` for result files
+- **Classification input**: `-c/--class` for classification JSON files
 
 1. **fetch**: Download and cache URLs
    - Implementation: `url2md/fetch.py` (functions), `url2md/main.py` (CLI integration)

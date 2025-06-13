@@ -33,13 +33,13 @@ uv run playwright install  # Optional for dynamic rendering
 url2md fetch "https://example.com" "https://another-site.com"
 
 # Fetch from file
-url2md fetch --file urls.txt
+url2md fetch -u urls.txt
 
 # Use dynamic rendering for JavaScript-heavy sites
-url2md fetch --playwright --file urls.txt
+url2md fetch --playwright -u urls.txt
 
 # Run complete pipeline
-url2md pipeline --file urls.txt --output report.md
+url2md pipeline -u urls.txt --output report.md
 ```
 
 ## Commands
@@ -54,13 +54,13 @@ url2md fetch "https://example.com"
 url2md fetch "https://example.com" "https://another-site.com"
 
 # From file
-url2md fetch --file urls.txt
+url2md fetch -u urls.txt
 
 # With dynamic rendering
-url2md fetch --playwright --file urls.txt
+url2md fetch --playwright -u urls.txt
 
 # Custom cache directory
-url2md fetch --cache-dir /path/to/cache --file urls.txt
+url2md fetch --cache-dir /path/to/cache -u urls.txt
 
 # Force re-fetch
 url2md fetch --force "https://example.com"
@@ -75,6 +75,9 @@ url2md summarize
 # Summarize specific URLs
 url2md summarize "https://example.com"
 
+# Summarize URLs from file
+url2md summarize -u urls.txt
+
 # Limit number of summaries
 url2md summarize --limit 10
 
@@ -85,11 +88,14 @@ url2md summarize --force
 ### `classify` - Classify content by topic
 
 ```bash
-# Extract and show tag statistics
+# Extract and show tag statistics for all cached content
 url2md classify --extract-tags
 
-# Classify with LLM
-url2md classify --classify --output classification.json
+# Classify specific URLs with LLM
+url2md classify "https://example.com" --classify -o classification.json
+
+# Classify URLs from file
+url2md classify -u urls.txt --classify -o classification.json
 
 # Test mode (show prompt only)
 url2md classify --test
@@ -99,38 +105,41 @@ url2md classify --test
 
 ```bash
 # Generate report from classification
-url2md report classification.json
+url2md report -c classification.json
 
 # Save to file
-url2md report classification.json --output report.md
+url2md report -c classification.json -o report.md
 
 # Specify URL subset
-url2md report classification.json --file urls.txt
+url2md report -c classification.json -u urls.txt
+
+# Include specific URLs in report
+url2md report "https://example.com" -c classification.json -o report.md
 
 # Adjust theme weights for classification
-url2md report classification.json --theme-weight "Programming:1.5" --theme-weight "Education:0.8"
+url2md report -c classification.json -t "Programming:1.5" -t "Education:0.8"
 ```
 
 ### `pipeline` - Complete workflow
 
 ```bash
 # Run complete pipeline
-url2md pipeline --file urls.txt --output final-report.md
+url2md pipeline -u urls.txt -o final-report.md
 
 # With custom settings
 url2md pipeline \
-    --file urls.txt \
+    -u urls.txt \
     --cache-dir cache \
     --playwright \
     --classification-output classification.json \
-    --output report.md
+    -o report.md
 
 # With theme weight adjustments
 url2md pipeline \
-    --file urls.txt \
-    --theme-weight "Programming:1.5" \
-    --theme-weight "Education:0.8" \
-    --output report.md
+    -u urls.txt \
+    -t "Programming:1.5" \
+    -t "Education:0.8" \
+    -o report.md
 ```
 
 ## Environment Variables
