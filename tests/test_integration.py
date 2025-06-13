@@ -6,8 +6,10 @@ These tests verify that different components work together correctly.
 """
 
 import tempfile
+import os
 from pathlib import Path
 import pytest
+import sys
 from unittest.mock import patch, Mock
 
 from url2md.main import main
@@ -41,6 +43,101 @@ class TestCommandIntegration:
         with patch('sys.argv', ['url2md']):
             result = main()
             assert result == 1  # Should return error code
+    
+    def test_init_command_integration(self):
+        """Test init command creates proper cache structure"""
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Change to temp directory
+            original_cwd = os.getcwd()
+            try:
+                os.chdir(temp_path)
+                
+                # Test init command
+                with patch.object(sys, 'argv', ['url2md', 'init', 'test_cache']):
+                    result = main()
+                    assert result == 0
+                
+                # Verify cache structure was created
+                cache_dir = temp_path / "test_cache"
+                assert cache_dir.exists()
+                assert (cache_dir / "cache.tsv").exists()
+                assert (cache_dir / "content").exists()
+                assert (cache_dir / "summary").exists()
+                
+            finally:
+                os.chdir(original_cwd)
+    
+    def test_init_command_existing_cache_fails(self):
+        """Test init command fails when cache already exists"""
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Change to temp directory
+            original_cwd = os.getcwd()
+            try:
+                os.chdir(temp_path)
+                
+                # First init should succeed
+                with patch.object(sys, 'argv', ['url2md', 'init', 'test_cache']):
+                    result = main()
+                    assert result == 0
+                
+                # Second init should fail
+                with patch.object(sys, 'argv', ['url2md', 'init', 'test_cache']):
+                    result = main()
+                    assert result == 1  # Should fail
+                
+            finally:
+                os.chdir(original_cwd)
+    
+    def test_init_command_conflicting_args_fails(self):
+        """Test init command fails when both --cache-dir and directory are specified"""
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Change to temp directory
+            original_cwd = os.getcwd()
+            try:
+                os.chdir(temp_path)
+                
+                # Should fail with conflicting arguments
+                with patch.object(sys, 'argv', ['url2md', '--cache-dir', 'foo', 'init', 'bar']):
+                    result = main()
+                    assert result == 1  # Should fail due to conflict
+                
+            finally:
+                os.chdir(original_cwd)
+    
+    def test_init_command_with_cache_dir_global_option(self):
+        """Test init command with --cache-dir global option"""
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Change to temp directory
+            original_cwd = os.getcwd()
+            try:
+                os.chdir(temp_path)
+                
+                # Should work with --cache-dir
+                with patch.object(sys, 'argv', ['url2md', '--cache-dir', 'custom_cache', 'init']):
+                    result = main()
+                    assert result == 0
+                
+                # Verify cache structure was created in custom location
+                cache_dir = temp_path / "custom_cache"
+                assert cache_dir.exists()
+                assert (cache_dir / "cache.tsv").exists()
+                assert (cache_dir / "content").exists()
+                assert (cache_dir / "summary").exists()
+                
+            finally:
+                os.chdir(original_cwd)
 
 
 class TestCacheIntegration:

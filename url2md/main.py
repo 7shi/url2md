@@ -18,13 +18,16 @@ from typing import List, Optional
 def create_parser() -> argparse.ArgumentParser:
     """Create main parser and subcommands"""
     from .gemini import default_model
-    from .utils import find_cache_dir
     
     parser = argparse.ArgumentParser(
         description="url2md - URL analysis and classification tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Initialize cache directory (required first step)
+  %(prog)s init [cache_dir]
+
+  # Standard workflow
   %(prog)s fetch -u urls.txt --playwright
   %(prog)s summarize -u urls.txt -l Japanese
   %(prog)s classify -u urls.txt -o class.json -l Japanese
@@ -44,7 +47,7 @@ For more information on each command, use:
     from . import __version__
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode (show full traceback on errors)')
-    parser.add_argument('--cache-dir', type=Path, default=find_cache_dir(), help='Cache directory (auto-detected from parent dirs)')
+    parser.add_argument('--cache-dir', type=Path, help='Cache directory (auto-detected from parent dirs if not specified)')
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
@@ -88,6 +91,10 @@ For more information on each command, use:
     report_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
                               help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
     
+    # init subcommand
+    init_parser = subparsers.add_parser('init', help='Initialize cache directory')
+    init_parser.add_argument('directory', nargs='?', default='cache', help='Cache directory name (default: cache)')
+    
     # workflow subcommand
     workflow_parser = subparsers.add_parser('workflow', help='Run complete workflow (fetch → summarize → classify → report)')
     workflow_parser.add_argument('urls', nargs='*', help='URLs to process (multiple allowed)')
@@ -107,7 +114,9 @@ For more information on each command, use:
 
 def run_subcommand(args) -> None:
     """Execute the specified subcommand"""
-    if args.command == 'fetch':
+    if args.command == 'init':
+        run_init(args)
+    elif args.command == 'fetch':
         run_fetch(args)
     elif args.command == 'summarize':
         run_summarize(args)
@@ -119,6 +128,39 @@ def run_subcommand(args) -> None:
         run_workflow(args)
     else:
         raise ValueError(f"Unknown command: {args.command}")
+
+
+def run_init(args) -> None:
+    """Run init subcommand"""
+    from .cache import Cache
+    
+    # Check for conflicting directory specifications
+    if args.cache_dir and args.directory != 'cache':
+        raise ValueError("Cannot specify both --cache-dir and directory argument for init command")
+    
+    # Determine cache directory
+    if args.cache_dir:
+        cache_dir = args.cache_dir
+    else:
+        cache_dir = Path(args.directory)
+    
+    # Check if cache already exists
+    cache_tsv = cache_dir / "cache.tsv"
+    if cache_tsv.exists():
+        raise ValueError(f"Cache already exists: {cache_dir}")
+    
+    # Create cache directory
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create subdirectories
+    (cache_dir / "content").mkdir(exist_ok=True)
+    (cache_dir / "summary").mkdir(exist_ok=True)
+    
+    # Initialize cache and create cache.tsv
+    cache = Cache(cache_dir)
+    cache.save()  # Create empty cache.tsv file
+    
+    print(f"Initialized cache directory: {cache_dir}")
 
 
 def run_fetch(args) -> None:
@@ -411,6 +453,15 @@ def main() -> int:
     if not args.command:
         parser.print_help()
         return 1
+    
+    # Set cache_dir if not provided (except for init command)
+    if not args.cache_dir and args.command != 'init':
+        from .utils import find_cache_dir
+        try:
+            args.cache_dir = find_cache_dir()
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
     
     if args.debug:
         # Run subcommand without exception handling (show full traceback)

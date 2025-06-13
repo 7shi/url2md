@@ -30,23 +30,27 @@ uv run playwright install  # Optional for dynamic rendering
 
 url2md follows a standard workflow to analyze URLs and generate reports:
 
-1. **Fetch** → Download and cache web content
-2. **Summarize** → Generate AI-powered summaries  
-3. **Classify** → Extract tags and categorize by themes
-4. **Report** → Create comprehensive Markdown reports
+1. **Initialize** → Create cache directory structure (one-time setup)
+2. **Fetch** → Download and cache web content
+3. **Summarize** → Generate AI-powered summaries  
+4. **Classify** → Extract tags and categorize by themes
+5. **Report** → Create comprehensive Markdown reports
 
 ### Quick Examples
 
 Here are the standard workflow commands (same as shown by `uv run url2md`):
 
 ```bash
+# Initialize cache directory (required first step)
+uv run url2md init
+
 # Step-by-step workflow
 uv run url2md fetch -u urls.txt --playwright
 uv run url2md summarize -u urls.txt
 uv run url2md classify -u urls.txt -o class.json
 uv run url2md report -u urls.txt -c class.json -o report.md
 
-# Complete workflow in one command
+# Complete workflow in one command (after init)
 uv run url2md workflow -u urls.txt --playwright -c class.json -o report.md
 
 # With Japanese language output for AI operations
@@ -79,7 +83,7 @@ url2md automatically detects cache directories by looking for `cache.tsv` files 
 
 1. **Priority**: If `cache/cache.tsv` exists in the current directory, it uses `cache` (relative path)
 2. **Parent Search**: Otherwise, searches for any directory containing `cache.tsv` in current and parent directories
-3. **Default**: If no `cache.tsv` is found, creates new cache in `./cache`
+3. **Initialization Required**: If no `cache.tsv` is found, you must run `url2md init` to create a cache
 
 This allows you to run url2md commands from any subdirectory within your project, and it will automatically find and use the appropriate cache directory.
 
@@ -99,6 +103,24 @@ project/
 ```
 
 ## Command Reference
+
+### `init` - Initialize cache directory
+
+**Required first step**: Creates cache directory structure with `cache.tsv` file.
+
+```bash
+# Initialize cache in current directory (creates ./cache/)
+url2md init
+
+# Initialize with custom directory name
+url2md init my_cache
+
+# Initialize with custom path (global option)
+url2md --cache-dir /path/to/cache init
+
+# Note: Cannot specify both --cache-dir and directory argument
+# url2md --cache-dir foo init bar  # Error: conflicting arguments
+```
 
 ### `fetch` - Download and cache URLs
 

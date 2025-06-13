@@ -51,7 +51,10 @@ def find_cache_dir() -> Path:
     """Find cache directory by looking for cache.tsv in current or parent directories
     
     Returns:
-        Path to directory containing cache.tsv, or default 'cache' if not found
+        Path to directory containing cache.tsv
+    
+    Raises:
+        ValueError: If no cache.tsv found (requires explicit initialization)
     """
     current_dir = Path.cwd()
     
@@ -81,5 +84,5 @@ def find_cache_dir() -> Path:
             # Skip directories we can't iterate
             continue
     
-    # If no cache.tsv found, return default
-    return Path("cache")
+    # If no cache.tsv found, require initialization
+    raise ValueError("No cache directory found. Run 'url2md init' to initialize.")

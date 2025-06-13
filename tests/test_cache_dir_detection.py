@@ -87,8 +87,8 @@ class TestCacheDirectoryDetection:
             finally:
                 os.chdir(original_cwd)
     
-    def test_no_cache_found_returns_default(self):
-        """Test returning default when no cache.tsv found"""
+    def test_no_cache_found_raises_error(self):
+        """Test that error is raised when no cache.tsv found"""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             
@@ -99,9 +99,8 @@ class TestCacheDirectoryDetection:
             original_cwd = os.getcwd()
             try:
                 os.chdir(temp_path)
-                result = find_cache_dir()
-                # Should return default "cache"
-                assert result == Path("cache")
+                with pytest.raises(ValueError, match="No cache directory found"):
+                    find_cache_dir()
             finally:
                 os.chdir(original_cwd)
     
@@ -119,9 +118,8 @@ class TestCacheDirectoryDetection:
             original_cwd = os.getcwd()
             try:
                 os.chdir(temp_path)
-                result = find_cache_dir()
-                # Should return default since no cache.tsv
-                assert result == Path("cache")
+                with pytest.raises(ValueError, match="No cache directory found"):
+                    find_cache_dir()
             finally:
                 os.chdir(original_cwd)
     

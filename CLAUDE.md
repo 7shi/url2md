@@ -55,6 +55,7 @@ url2md/
 ```bash
 # Correct way to run url2md
 uv run url2md --help
+uv run url2md init                    # Required first step
 uv run url2md fetch "https://example.com"
 uv run url2md fetch -u urls.txt
 uv run url2md summarize -u urls.txt -l Japanese
@@ -94,10 +95,11 @@ uv run url2md [global-options] <subcommand> [options]
 ```
 
 **Global Options:**
-- `--cache-dir PATH`: Cache directory (default: auto-detected or `./cache`)
+- `--cache-dir PATH`: Cache directory (auto-detected if not specified)
   - Auto-detection: Searches for directories containing `cache.tsv` in current and parent directories
   - Priority: `./cache/cache.tsv` is preferred if it exists
   - Flexible naming: Any directory name containing `cache.tsv` is recognized
+  - Initialization: If no cache found, requires `url2md init` to create one
 - `--debug`: Enable debug mode with full stack traces
 - `--version`: Show version information
 - `--help`: Show help message
@@ -125,6 +127,12 @@ uv run url2md [global-options] <subcommand> [options]
 - **URL file input**: `-u/--urls-file` for URL list files
 - **Output files**: `-o/--output` for result files
 - **Classification input**: `-c/--class` for classification JSON files
+
+0. **init**: Initialize cache directory
+   - Implementation: `url2md/main.py` (run_init function)
+   - Purpose: Create cache directory structure with cache.tsv file
+   - **Required**: Must be run before other commands
+   - **Argument Conflict**: Error if both `--cache-dir` and directory argument specified
 
 1. **fetch**: Download and cache URLs
    - Implementation: `url2md/fetch.py` (functions), `url2md/main.py` (CLI integration)
@@ -158,7 +166,7 @@ uv run url2md [global-options] <subcommand> [options]
 The standard workflow follows this pattern:
 
 ```
-URLs → fetch → summarize → classify → report → Markdown Report
+init → URLs → fetch → summarize → classify → report → Markdown Report
 ```
 
 ### Data Storage
@@ -285,11 +293,12 @@ For detailed methodology and rationale, see [NOTES.md](NOTES.md#development-meth
 
 ### Common Issues
 
-1. **Import Errors**: Ensure using `uv run` instead of direct Python execution
-2. **Missing Dependencies**: Check `pyproject.toml` and run `uv sync`
-3. **API Errors**: Verify `GEMINI_API_KEY` environment variable
-4. **Playwright Issues**: Run `uv run playwright install` for browser support
-5. **Test Failures**: Run `uv run pytest -v` to see detailed test output and error messages
+1. **Cache Not Found**: Run `uv run url2md init` to initialize cache directory before other commands
+2. **Import Errors**: Ensure using `uv run` instead of direct Python execution
+3. **Missing Dependencies**: Check `pyproject.toml` and run `uv sync`
+4. **API Errors**: Verify `GEMINI_API_KEY` environment variable
+5. **Playwright Issues**: Run `uv run playwright install` for browser support
+6. **Test Failures**: Run `uv run pytest -v` to see detailed test output and error messages
 
 ### Test Development
 
