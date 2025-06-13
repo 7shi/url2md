@@ -57,6 +57,22 @@ uv run url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
 
 For more command details, use `uv run url2md <command> --help`.
 
+## Global Options
+
+These options must be specified before the subcommand:
+
+```bash
+# Cache directory (applies to all commands)
+url2md --cache-dir /custom/cache <command> [options]
+
+# Debug mode (shows full stack traces)
+url2md --debug <command> [options]
+
+# Examples
+url2md --cache-dir /tmp/cache fetch -u urls.txt
+url2md --debug --cache-dir /custom/cache summarize -u urls.txt
+```
+
 ## Command Reference
 
 ### `fetch` - Download and cache URLs
@@ -79,8 +95,8 @@ url2md fetch -r -u urls.txt
 # With dynamic rendering
 url2md fetch --playwright -u urls.txt
 
-# Custom cache directory
-url2md fetch --cache-dir /path/to/cache -u urls.txt
+# Custom cache directory (global option)
+url2md --cache-dir /path/to/cache fetch -u urls.txt
 
 # Force re-fetch all URLs
 url2md fetch --force "https://example.com"
@@ -159,8 +175,7 @@ url2md report -c classification.json -t "Programming:1.5" -t "Education:0.8"
 url2md workflow -u urls.txt -c classification.json -o final-report.md
 
 # With custom settings
-url2md workflow \
-    --cache-dir cache \
+url2md --cache-dir cache workflow \
     -u urls.txt \
     --playwright \
     -c classification.json \

@@ -50,6 +50,7 @@ uv run url2md fetch "https://example.com"
 uv run url2md fetch -u urls.txt
 uv run url2md summarize -u urls.txt -l Japanese
 uv run url2md classify -u urls.txt -o classification.json -l Japanese
+uv run url2md --cache-dir /custom/cache fetch -u urls.txt
 
 # Avoid direct Python execution
 python -m url2md        # ❌ Don't use this
@@ -80,8 +81,14 @@ Test and development dependencies:
 url2md follows a **centralized command architecture** with function modules:
 
 ```bash
-uv run url2md <subcommand> [options]
+uv run url2md [global-options] <subcommand> [options]
 ```
+
+**Global Options:**
+- `--cache-dir PATH`: Cache directory (default: cache/)
+- `--debug`: Enable debug mode with full stack traces
+- `--version`: Show version information
+- `--help`: Show help message
 
 ### Implementation Strategy
 

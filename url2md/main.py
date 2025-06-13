@@ -28,6 +28,7 @@ Examples:
   %(prog)s classify -u urls.txt -o class.json -l Japanese
   %(prog)s report -u urls.txt -c class.json -o report.md
   %(prog)s workflow -u urls.txt --playwright -c class.json -o report.md -l Japanese
+  %(prog)s --cache-dir /custom/cache fetch -u urls.txt
 
 For more information on each command, use:
   %(prog)s <command> --help
@@ -37,6 +38,7 @@ For more information on each command, use:
     from . import __version__
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode (show full traceback on errors)')
+    parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
@@ -44,7 +46,6 @@ For more information on each command, use:
     fetch_parser = subparsers.add_parser('fetch', help='Fetch URLs and store in cache')
     fetch_parser.add_argument('urls', nargs='*', help='URLs to fetch (multiple allowed)')
     fetch_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file (use - for stdin)')
-    fetch_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     fetch_parser.add_argument('--playwright', action='store_true', help='Use Playwright for dynamic rendering')
     fetch_parser.add_argument('--force', action='store_true', help='Force re-fetch even if cached')
     fetch_parser.add_argument('-r', '--retry', action='store_true', help='Retry failed URLs (default: skip errors)')
@@ -55,7 +56,6 @@ For more information on each command, use:
     summarize_parser = subparsers.add_parser('summarize', help='Generate AI summaries of cached content')
     summarize_parser.add_argument('urls', nargs='*', help='URLs to summarize (all cached if not specified)')
     summarize_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
-    summarize_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     summarize_parser.add_argument('--hash', help='Summarize specific hash only')
     summarize_parser.add_argument('--limit', type=int, help='Maximum number to process')
     summarize_parser.add_argument('--force', action='store_true', help='Force re-summarize existing summaries')
@@ -66,7 +66,6 @@ For more information on each command, use:
     classify_parser = subparsers.add_parser('classify', help='Analyze tags and classify with LLM')
     classify_parser.add_argument('urls', nargs='*', help='URLs to classify (all cached if not specified)')
     classify_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
-    classify_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only (no classification)')
     classify_parser.add_argument('--show-prompt', action='store_true', help='Show classification prompt only (no LLM call)')
     classify_parser.add_argument('-o', '--output', required=True, help='Classification result output file (required)')
@@ -78,7 +77,6 @@ For more information on each command, use:
     report_parser.add_argument('urls', nargs='*', help='URLs to include in report (all classified if not specified)')
     report_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
     report_parser.add_argument('-c', '--class', dest='classification', required=True, help='Classification result JSON file')
-    report_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     report_parser.add_argument('--format', choices=['markdown', 'html'], default='markdown', help='Output format')
     report_parser.add_argument('-o', '--output', help='Output file (stdout if not specified)')
     report_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
@@ -88,7 +86,6 @@ For more information on each command, use:
     workflow_parser = subparsers.add_parser('workflow', help='Run complete workflow (fetch → summarize → classify → report)')
     workflow_parser.add_argument('urls', nargs='*', help='URLs to process (multiple allowed)')
     workflow_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
-    workflow_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     workflow_parser.add_argument('-c', '--class', dest='classification', required=True, help='Classification result file (input/output)')
     workflow_parser.add_argument('-o', '--output', help='Final report output file')
     workflow_parser.add_argument('--force-fetch', action='store_true', help='Force re-fetch URLs')

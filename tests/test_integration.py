@@ -118,7 +118,7 @@ class TestWorkflowIntegration:
             from unittest.mock import patch
             
             # Test fetch command via main entry point
-            with patch.object(sys, 'argv', ['url2md', 'fetch', 'https://example.com/test', '--cache-dir', str(cache_dir)]):
+            with patch.object(sys, 'argv', ['url2md', '--cache-dir', str(cache_dir), 'fetch', 'https://example.com/test']):
                 result = url2md_main()
                 assert result == 0
             mock_fetch.assert_called_once()
