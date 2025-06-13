@@ -45,6 +45,7 @@ url2md/
     ├── gemini.py         # Gemini API integration with thinking capabilities
     ├── utils.py          # HTML processing and resource utilities
     ├── download.py       # Playwright dynamic rendering
+    ├── terminal.py       # Terminal formatting and Markdown conversion utilities
     └── schemas/          # JSON schemas for AI operations
         ├── summarize.json# Schema for summarize command
         └── classify.json # Schema for classify command
@@ -78,6 +79,7 @@ Dependencies are managed in `pyproject.toml`. Key dependencies include:
 - **tqdm>=4.67.1**: Progress bars
 - **minify-html>=0.16.4**: HTML minification
 - **pillow>=10.0.0**: Image processing (GIF→PNG conversion)
+- **colorama>=0.4.6**: Terminal color formatting for Markdown display
 
 ### Development Dependencies
 Test and development dependencies:

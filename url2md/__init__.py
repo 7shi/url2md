@@ -44,6 +44,12 @@ from .cache import (
     CacheResult,
 )
 
+from .terminal import (
+    bold,
+    convert_markdown,
+    MarkdownStreamConverter,
+)
+
 __all__ = [
     # Version info
     "__version__",
@@ -75,6 +81,11 @@ __all__ = [
     "load_urls_from_file",
     "Cache",
     "CacheResult",
+    
+    # Terminal utilities
+    "bold",
+    "convert_markdown",
+    "MarkdownStreamConverter",
 ]
 
 # Function modules are available as submodules:

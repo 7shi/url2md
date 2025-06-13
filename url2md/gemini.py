@@ -2,6 +2,7 @@ import os, sys, json, time, re
 from pathlib import Path
 from google import genai
 from google.genai import types
+from .terminal import convert_markdown, MarkdownStreamConverter
 
 models = [
     "gemini-2.5-flash-preview-05-20",
@@ -101,6 +102,7 @@ def generate_content_retry(model, config, contents, include_thoughts=True, think
             thoughts = ""
             thoughts_shown = False
             answer_shown = False
+            converter = MarkdownStreamConverter()
             
             for chunk in response:
                 if hasattr(chunk, 'candidates') and chunk.candidates:
@@ -109,24 +111,30 @@ def generate_content_retry(model, config, contents, include_thoughts=True, think
                             continue
                         elif include_thoughts and part.thought:
                             if not thoughts_shown:
-                                print("\n🤔 Thinking...")
+                                print(converter.feed("\n🤔 **Thinking...**\n"))
                                 thoughts_shown = True
-                            print(part.text, end="")
                             thoughts += part.text
                         else:
                             if thoughts_shown and not answer_shown:
-                                print("💡 Answer:")
+                                print(converter.feed("💡 **Answer:**\n"))
                                 answer_shown = True
-                            print(part.text, end="")
                             text += part.text
+                        # Convert markdown formatting for output
+                        print(converter.feed(part.text), end="", flush=True)
                 else:
                     # Fallback for older API responses
                     if chunk.text:
-                        print(chunk.text, end="")
                         text += chunk.text
+                        # Convert markdown formatting for output
+                        print(converter.feed(chunk.text), end="", flush=True)
+            
+            # Flush any remaining content
+            remaining = converter.flush()
+            if remaining:
+                print(remaining, end="", flush=True)
             
             if not text.endswith("\n"):
-                print()  # Final newline
+                print(flush=True)  # Final newline
             return text
         except genai.errors.APIError as e:
             if hasattr(e, "code") and e.code in [429, 500, 503]:
