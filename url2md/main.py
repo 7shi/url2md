@@ -27,7 +27,11 @@ Examples:
   %(prog)s summarize -u urls.txt -l Japanese
   %(prog)s classify -u urls.txt -o class.json -l Japanese
   %(prog)s report -u urls.txt -c class.json -o report.md
+
+  # Complete workflow (fetch → summarize → classify → report)
   %(prog)s workflow -u urls.txt --playwright -c class.json -o report.md -l Japanese
+
+  # Global options (specify before subcommand)
   %(prog)s --cache-dir /custom/cache fetch -u urls.txt
 
 For more information on each command, use:
