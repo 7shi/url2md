@@ -132,8 +132,15 @@ def test_command_modules():
         with open(module_file, 'r', encoding='utf-8') as f:
             code = f.read()
         
-        # Each command module should have a main function
-        assert 'def main(' in code, f"Missing main function in {module_path}"
+        # Each command module should have core functions (centralized architecture)
+        if 'fetch.py' in module_path:
+            assert 'def fetch_urls(' in code, f"Missing fetch_urls function in {module_path}"
+        elif 'summarize.py' in module_path:
+            assert 'def summarize_urls(' in code, f"Missing summarize_urls function in {module_path}"
+        elif 'classify.py' in module_path:
+            assert 'def extract_tags(' in code, f"Missing extract_tags function in {module_path}"
+        elif 'report.py' in module_path:
+            assert 'def generate_markdown_report(' in code, f"Missing generate_markdown_report function in {module_path}"
 
 
 def test_main_entry_point():
@@ -147,7 +154,7 @@ def test_main_entry_point():
         'run_summarize',
         'run_classify', 
         'run_report',
-        'run_pipeline'
+        'run_workflow'
     ]
     
     for handler in required_handlers:

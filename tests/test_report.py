@@ -130,21 +130,23 @@ class TestGenerateMarkdownReport:
     def test_basic_report_generation(self):
         """Test basic report generation"""
         url_classifications = {
-            "https://example1.com": "Linguistics",
-            "https://example2.com": "Programming"
+            "https://example1.com": {"theme": "Linguistics", "score": 0.8},
+            "https://example2.com": {"theme": "Programming", "score": 0.9}
         }
         
         classification_data = {
-            "themes": {
-                "Linguistics": {
-                    "tags": ["linguistics", "phonology"],
-                    "weight": 1.0
+            "themes": [
+                {
+                    "theme_name": "Linguistics",
+                    "theme_description": "Linguistics and language topics",
+                    "tags": ["linguistics", "phonology"]
                 },
-                "Programming": {
-                    "tags": ["Python", "programming"],
-                    "weight": 1.0
+                {
+                    "theme_name": "Programming",
+                    "theme_description": "Programming and software development",
+                    "tags": ["Python", "programming"]
                 }
-            }
+            ]
         }
         
         url_summaries = {
@@ -174,16 +176,17 @@ class TestGenerateMarkdownReport:
     def test_with_unclassified_urls(self):
         """Test report with unclassified URLs"""
         url_classifications = {
-            "https://example1.com": "Linguistics"
+            "https://example1.com": {"theme": "Linguistics", "score": 0.8}
         }
         
         classification_data = {
-            "themes": {
-                "Linguistics": {
-                    "tags": ["linguistics"],
-                    "weight": 1.0
+            "themes": [
+                {
+                    "theme_name": "Linguistics",
+                    "theme_description": "Linguistics and language topics",
+                    "tags": ["linguistics"]
                 }
-            }
+            ]
         }
         
         url_summaries = {

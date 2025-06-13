@@ -113,15 +113,14 @@ class TestWorkflowIntegration:
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir)
             
-            from url2md.fetch import main as fetch_main
+            from url2md.main import main as url2md_main
+            import sys
+            from unittest.mock import patch
             
-            # Test fetch command
-            result = fetch_main([
-                'https://example.com/test',
-                '--cache-dir', str(cache_dir)
-            ])
-            
-            assert result == 0
+            # Test fetch command via main entry point
+            with patch.object(sys, 'argv', ['url2md', 'fetch', 'https://example.com/test', '--cache-dir', str(cache_dir)]):
+                result = url2md_main()
+                assert result == 0
             mock_fetch.assert_called_once()
     
     def test_schema_file_integration(self):
@@ -172,17 +171,17 @@ class TestModuleIntegration:
         """Test that command modules have required interfaces"""
         from url2md import fetch, summarize, classify, report
         
-        # Each command module should have a main function
-        assert hasattr(fetch, 'main')
-        assert hasattr(summarize, 'main')
-        assert hasattr(classify, 'main')
-        assert hasattr(report, 'main')
+        # Each command module should have core functions (no main in centralized architecture)
+        assert hasattr(fetch, 'fetch_urls')
+        assert hasattr(summarize, 'summarize_urls')
+        assert hasattr(classify, 'extract_tags')
+        assert hasattr(report, 'generate_markdown_report')
         
-        # Test that main functions are callable
-        assert callable(fetch.main)
-        assert callable(summarize.main)
-        assert callable(classify.main)
-        assert callable(report.main)
+        # Test that core functions are callable
+        assert callable(fetch.fetch_urls)
+        assert callable(summarize.summarize_urls)
+        assert callable(classify.extract_tags)
+        assert callable(report.generate_markdown_report)
     
     def test_gemini_integration(self):
         """Test Gemini API integration setup"""
