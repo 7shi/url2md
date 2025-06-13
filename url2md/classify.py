@@ -5,6 +5,7 @@ Extract and analyze tags from cache/summary/, classify with LLM
 Extract all tags from summary files, aggregate them, and classify by theme using LLM.
 """
 
+import sys
 import json
 from collections import Counter
 from pathlib import Path
@@ -150,7 +151,8 @@ def classify_tags_with_llm(tag_counter: Counter, model: str = None,
     # Generate prompt
     prompt = create_tag_classification_prompt(tag_counter, language)
     if not prompt:
-        raise ValueError("No frequent tags found for classification")
+        print("Error: No frequent tags found for classification", file=sys.stderr)
+        sys.exit(1)
     
     print(f"Classifying tags using model: {model}")
     print(f"Total unique tags: {len(tag_counter)}")
@@ -167,15 +169,9 @@ def classify_tags_with_llm(tag_counter: Counter, model: str = None,
     response = generate_content_retry(model, config, [prompt])
     
     # Parse JSON response
-    try:
-        classification_data = json.loads(response.strip())
+    classification_data = json.loads(response.strip())
         
-        # Add original tag statistics
-        classification_data["tag_stats"] = dict(tag_counter.most_common())
-        
-        return classification_data
-    except json.JSONDecodeError as e:
-        raise ValueError(f"JSON parsing error: {e}. Response: {response[:200]}...")
+    return classification_data
 
 
 def filter_url_infos_by_urls(cache: Cache, target_urls: List[str]) -> List[URLInfo]:
