@@ -378,6 +378,4 @@ This project welcomes contributions. The codebase is designed to be modular and 
 - **[CLAUDE.md](CLAUDE.md)** - Development guidelines and technical specifications  
 - **[NOTES.md](NOTES.md)** - Development philosophy and lessons learned
 
-For development guidelines, see [CLAUDE.md](CLAUDE.md).
-
 For detailed architecture information, development guidelines, and troubleshooting, see [CLAUDE.md](CLAUDE.md).
