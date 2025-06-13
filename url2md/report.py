@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 
 from .cache import Cache
 from .models import URLInfo
+from .utils import print_error_with_line
 
 
 def calculate_tag_match_weight(url_tag: str, theme_tag: str) -> float:
@@ -65,7 +66,7 @@ def load_url_summaries(cache: Cache, url_infos: List[URLInfo]) -> Dict[str, Dict
                     continue
                 url_summaries[url_info.url] = summary_data
             except Exception as e:
-                print(f"Warning: Summary file read error ({url_info.url}): {e}")
+                print_error_with_line(f"Warning: Summary file read error ({url_info.url})", e)
     
     if skip_count > 0:
         print(f"Skipped invalid content: {skip_count} items")

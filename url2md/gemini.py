@@ -3,6 +3,7 @@ from pathlib import Path
 from google import genai
 from google.genai import types
 from .terminal import convert_markdown, MarkdownStreamConverter
+from .utils import print_error_with_line
 
 models = [
     "gemini-2.5-flash-preview-05-20",
@@ -65,8 +66,13 @@ def build_schema_from_json(json_data):
             raise ValueError(f"Unsupported type: {t}")
 
 def config_from_schema(schema_filename):
-    with open(schema_filename, 'r', encoding='utf-8') as f:
-        schema = build_schema_from_json(json.load(f))
+    try:
+        with open(schema_filename, 'r', encoding='utf-8') as f:
+            schema = build_schema_from_json(json.load(f))
+    except Exception as e:
+        print_error_with_line("Error", e)
+        print("Cannot open schema file:", schema_filename, file=sys.stderr)
+        sys.exit(1)
     return types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=schema,
@@ -138,7 +144,7 @@ def generate_content_retry(model, config, contents, include_thoughts=True, think
             return text
         except genai.errors.APIError as e:
             if hasattr(e, "code") and e.code in [429, 500, 503]:
-                print(e, file=sys.stderr)
+                print_error_with_line("API Error", e)
                 # Skip waiting for the last attempt
                 if attempt == 1:
                     continue

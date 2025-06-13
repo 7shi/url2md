@@ -88,8 +88,8 @@ class TestCommandIntegration:
                 
                 # Second init should fail
                 with patch.object(sys, 'argv', ['url2md', 'init', 'test_cache']):
-                    result = main()
-                    assert result == 1  # Should fail
+                    with pytest.raises(ValueError, match="Cache already exists"):
+                        main()
                 
             finally:
                 os.chdir(original_cwd)
@@ -107,8 +107,8 @@ class TestCommandIntegration:
                 
                 # Should fail with conflicting arguments
                 with patch.object(sys, 'argv', ['url2md', '--cache-dir', 'foo', 'init', 'bar']):
-                    result = main()
-                    assert result == 1  # Should fail due to conflict
+                    with pytest.raises(ValueError, match="Cannot specify both"):
+                        main()
                 
             finally:
                 os.chdir(original_cwd)
@@ -223,6 +223,7 @@ class TestWorkflowIntegration:
     def test_schema_file_integration(self):
         """Test schema file accessibility"""
         from url2md.gemini import config_from_schema
+        from url2md.utils import get_resource_path
         
         # Test that schema files can be loaded
         schema_files = [
@@ -231,12 +232,12 @@ class TestWorkflowIntegration:
         ]
         
         for schema_file in schema_files:
-            schema_path = Path(schema_file)
+            schema_path = get_resource_path(schema_file)
             assert schema_path.exists(), f"Schema file not found: {schema_file}"
             
             # Test that config can be created from schema
             try:
-                config = config_from_schema(schema_file)
+                config = config_from_schema(str(schema_path))
                 assert config is not None
             except Exception as e:
                 pytest.fail(f"Failed to create config from {schema_file}: {e}")

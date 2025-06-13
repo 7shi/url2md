@@ -14,6 +14,8 @@ import pytest
 
 def test_schema_files():
     """Test schema file structure"""
+    from url2md.utils import get_resource_path
+    
     schema_files = [
         ('schemas/summarize.json', {
             'required': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content'],
@@ -26,7 +28,7 @@ def test_schema_files():
     ]
     
     for schema_file, expected in schema_files:
-        schema_path = Path(schema_file)
+        schema_path = get_resource_path(schema_file)
         if not schema_path.exists():
             pytest.fail(f"{schema_file} not found")
             

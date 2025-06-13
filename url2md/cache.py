@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from .models import URLInfo
+from .utils import print_error_with_line
 
 
 @dataclass
@@ -72,20 +73,24 @@ class Cache:
         self._entries.clear()
         try:
             with open(self.tsv_path, 'r', encoding='utf-8') as f:
-                # Skip header line
-                header_line = f.readline()
-                
-                for line in f:
-                    line = line.strip()
-                    if line:
-                        try:
-                            url_info = URLInfo.from_tsv_line(line)
-                            self._entries[url_info.url] = url_info
-                        except ValueError as e:
-                            print(f"Warning: Failed to parse TSV line: {e}")
-                            continue
+                lines = f.readlines()
         except Exception as e:
-            print(f"Cache data loading error: {e}")
+            print_error_with_line("Error", e)
+            print("Cannot open cache file:", self.tsv_path, file=sys.stderr)
+            sys.exit(1)
+        
+        # Skip header line
+        if lines:
+            lines = lines[1:]
+        
+        for line in lines:
+            line = line.strip()
+            if line:
+                try:
+                    url_info = URLInfo.from_tsv_line(line)
+                    self._entries[url_info.url] = url_info
+                except ValueError as e:
+                    print_error_with_line("Warning: Failed to parse TSV line", e)
     
     def save(self) -> None:
         """Save data to cache.tsv"""
@@ -107,7 +112,7 @@ class Cache:
             temp_path.rename(self.tsv_path)
             
         except Exception as e:
-            print(f"Error: cache.tsv save error: {e}")
+            print_error_with_line("Error: cache.tsv save error", e)
             sys.exit(1)
     
     def add(self, url_info: URLInfo) -> None:

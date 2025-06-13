@@ -19,7 +19,9 @@ from url2md.summarize import generate_summary_prompt, summarize_content
 
 def test_schema_validation():
     """Test schemas/summarize.json structure"""
-    schema_path = Path('schemas/summarize.json')
+    from url2md.utils import get_resource_path
+    
+    schema_path = get_resource_path('schemas/summarize.json')
     assert schema_path.exists(), "Schema file not found"
     
     try:

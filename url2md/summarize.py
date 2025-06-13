@@ -17,7 +17,7 @@ from tqdm import tqdm
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, models, upload_file, delete_file
 from .models import URLInfo
-from .utils import extract_body_content, extract_html_title, get_resource_path
+from .utils import extract_body_content, extract_html_title, get_resource_path, print_error_with_line
 
 
 def generate_summary_prompt(url: str, content_type: str, language: str = None) -> str:
@@ -104,43 +104,36 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
             
         elif content_type == "image/gif":
             # Convert GIF files to PNG and send with from_bytes
-            try:
-                from PIL import Image
-                import io
-                from google.genai import types
+            from PIL import Image
+            import io
+            from google.genai import types
+            
+            # Read GIF file
+            with Image.open(content_path) as img:
+                # Get first frame (for animated GIFs)
+                if hasattr(img, 'is_animated') and img.is_animated:
+                    img.seek(0)  # First frame
                 
-                # Read GIF file
-                with Image.open(content_path) as img:
-                    # Get first frame (for animated GIFs)
-                    if hasattr(img, 'is_animated') and img.is_animated:
-                        img.seek(0)  # First frame
-                    
-                    # Convert to RGBA mode (transparency support)
-                    if img.mode != 'RGBA':
-                        rgba_img = img.convert('RGBA')
-                        img.close()  # Explicitly close original Image object
-                        img = rgba_img
-                    
-                    # Convert to PNG in memory
-                    with io.BytesIO() as png_buffer:
-                        img.save(png_buffer, format='PNG')
-                        png_data = png_buffer.getvalue()
+                # Convert to RGBA mode (transparency support)
+                if img.mode != 'RGBA':
+                    rgba_img = img.convert('RGBA')
+                    img.close()  # Explicitly close original Image object
+                    img = rgba_img
                 
-                print(f"  GIF→PNG conversion complete (in memory): {len(png_data)} bytes")
-                
-                # Use from_bytes with PNG format
-                png_part = types.Part.from_bytes(
-                    data=png_data,
-                    mime_type="image/png"
-                )
-                
-                contents = [png_part, prompt]
-                    
-            except Exception as e:
-                print(f"  GIF conversion error: {e}")
-                # Use original GIF file if conversion fails
-                uploaded_file = upload_file(str(content_path), mime_type)
-                contents = [uploaded_file, prompt]
+                # Convert to PNG in memory
+                with io.BytesIO() as png_buffer:
+                    img.save(png_buffer, format='PNG')
+                    png_data = png_buffer.getvalue()
+            
+            print(f"  GIF→PNG conversion complete (in memory): {len(png_data)} bytes")
+            
+            # Use from_bytes with PNG format
+            png_part = types.Part.from_bytes(
+                data=png_data,
+                mime_type="image/png"
+            )
+            
+            contents = [png_part, prompt]
                 
         else:
             # Upload binary files (PDF, etc.)
@@ -170,10 +163,10 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
                 
                 return True, summary_data, None
             except json.JSONDecodeError as e:
-                error_msg = f"JSON parsing error: {e}"
-                print(f"  {error_msg}")
+                error_msg = "JSON parsing error"
+                print_error_with_line(f"  {error_msg}", e)
                 print(f"  Response: {response[:200]}...")
-                return False, {}, error_msg
+                return False, {}, f"{error_msg}: {e}"
             
         finally:
             # Clean up uploaded file if exists
@@ -181,12 +174,12 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
                 try:
                     delete_file(uploaded_file)
                 except Exception as e:
-                    print(f"  Warning: Failed to delete uploaded file: {e}")
+                    print_error_with_line("  Warning: Failed to delete uploaded file", e)
         
     except Exception as e:
-        error_msg = f"Summary generation error: {e}"
-        print(f"  {error_msg}")
-        return False, {}, error_msg
+        error_msg = "Summary generation error"
+        print_error_with_line(f"  {error_msg}", e)
+        return False, {}, f"{error_msg}: {e}"
 
 
 def filter_url_infos_by_urls(cache: Cache, target_urls: List[str]) -> List[URLInfo]:

@@ -102,6 +102,13 @@ class TestExtractBodyContent:
         result = extract_body_content(html)
         assert "<h1>Title</h1>" in result
         assert "<p>Content</p>" in result
+    
+    def test_body_extraction_error_handling(self):
+        """Test error handling in body extraction"""
+        # Test with None input that should trigger an error
+        result = extract_body_content(None)
+        # Should return the original input on error gracefully
+        assert result is None
 
 
 class TestExtractHtmlTitle:
@@ -199,3 +206,10 @@ class TestExtractHtmlTitle:
         """
         result = extract_html_title(html)
         assert result == "Spaced Title"
+    
+    def test_title_extraction_error_handling(self):
+        """Test error handling in title extraction"""
+        # Test with None input that should trigger an error
+        result = extract_html_title(None)
+        # Should return empty string on error gracefully
+        assert result == ""

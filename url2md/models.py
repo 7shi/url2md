@@ -16,6 +16,7 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from .download import PLAYWRIGHT_AVAILABLE, download, is_text, user_agent
+from .utils import print_error_with_line
 
 
 @dataclass
@@ -34,11 +35,15 @@ class URLInfo:
     def __post_init__(self):
         """Generate hash and domain after initialization"""
         self.hash = hashlib.md5(self.url.encode('utf-8')).hexdigest()
-        try:
-            parsed = urlparse(self.url)
-            self.domain = parsed.netloc.lower()
-        except Exception:
+        if not self.url:
             self.domain = ""
+        else:
+            try:
+                parsed = urlparse(self.url)
+                self.domain = parsed.netloc.lower()
+            except Exception as e:
+                print_error_with_line("URL domain extraction failed, setting empty domain", e)
+                self.domain = ""
     
     def to_tsv_line(self) -> str:
         """Serialize to TSV line format"""
@@ -95,7 +100,7 @@ class URLInfo:
                 self.content_type = content_type
                 return content
             except Exception as e:
-                print(f"Playwright failed, falling back to requests: {e}")
+                print_error_with_line("Playwright failed, falling back to requests", e)
                 return self._fetch_content_requests()
         else:
             # Use requests
@@ -105,22 +110,13 @@ class URLInfo:
         """Fetch content using requests library"""
         headers = {'User-Agent': user_agent}
         
-        try:
-            response = requests.get(self.url, headers=headers, timeout=30)
-            response.raise_for_status()
-            
-            # Update content type from response
-            self.content_type = response.headers.get('content-type', '').split(';')[0].strip()
-            
-            return response.content
-        except requests.exceptions.Timeout:
-            raise Exception("Request timeout")
-        except requests.exceptions.ConnectionError:
-            raise Exception("Connection error")
-        except requests.exceptions.HTTPError as e:
-            raise Exception(f"HTTP error: {e}")
-        except Exception as e:
-            raise Exception(f"Request failed: {e}")
+        response = requests.get(self.url, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        # Update content type from response
+        self.content_type = response.headers.get('content-type', '').split(';')[0].strip()
+        
+        return response.content
 
 
 def load_urls_from_file(filepath: str) -> list[str]:
@@ -151,9 +147,9 @@ def load_urls_from_file(filepath: str) -> list[str]:
                     url = line.strip()
                     if url and not url.startswith('#'):
                         urls.append(url)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"URL file not found: {filepath}")
         except Exception as e:
-            raise Exception(f"Error reading URL file {filepath}: {e}")
+            print_error_with_line("Error", e)
+            print("Cannot read URL file:", filepath, file=sys.stderr)
+            sys.exit(1)
     
     return urls

@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 from typing import List, Optional
 
-from .utils import DEFAULT_CACHE_DIR, find_cache_dir
+from .utils import DEFAULT_CACHE_DIR, find_cache_dir, print_error_with_line
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -297,9 +297,13 @@ def run_classify(args) -> None:
         classification_result = classify_tags_with_llm(tag_counter, model=args.model, language=args.language)
         
         # Save to file
-        with open(args.output, 'w', encoding='utf-8') as f:
-            json.dump(classification_result, f, ensure_ascii=False, indent=2)
-        print(f"Classification results saved to: {args.output}")
+        try:
+            with open(args.output, 'w', encoding='utf-8') as f:
+                json.dump(classification_result, f, ensure_ascii=False, indent=2)
+            print(f"Classification results saved to: {args.output}")
+        except Exception as e:
+            print_error_with_line("Error", e)
+            print(f"Cannot write to file '{args.output}'", file=sys.stderr)
 
 
 def run_report(args) -> None:
@@ -312,8 +316,10 @@ def run_report(args) -> None:
     try:
         with open(args.classification, 'r', encoding='utf-8') as f:
             classification_data = json.load(f)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Classification file not found: {args.classification}")
+    except Exception as e:
+        print_error_with_line("Error", e)
+        print(f"Cannot open file '{args.classification}'", file=sys.stderr)
+        sys.exit(1)
     
     cache = Cache(args.cache_dir)
     
@@ -326,8 +332,9 @@ def run_report(args) -> None:
                 weight = float(weight_str)
                 theme_weights[theme_name] = weight
                 print(f"Theme weight set: {theme_name} = {weight}")
-            except ValueError:
-                print(f"Warning: Invalid weight specification ignored: {weight_spec}", file=sys.stderr)
+            except ValueError as e:
+                print(f"Error: Invalid weight specification: {weight_spec}", file=sys.stderr)
+                sys.exit(1)
     
     # Determine target URLs
     target_urls = []
@@ -370,9 +377,13 @@ def run_report(args) -> None:
     
     # Output report
     if args.output:
-        with open(args.output, 'w', encoding='utf-8') as f:
-            f.write(report_content)
-        print(f"Report saved to: {args.output}")
+        try:
+            with open(args.output, 'w', encoding='utf-8') as f:
+                f.write(report_content)
+            print(f"Report saved to: {args.output}")
+        except Exception as e:
+            print_error_with_line("Error", e)
+            print(f"Cannot write to file '{args.output}'", file=sys.stderr)
     else:
         print(report_content)
 
@@ -464,29 +475,12 @@ def main() -> int:
         try:
             args.cache_dir = find_cache_dir()
         except ValueError as e:
-            print(f"Error: {e}", file=sys.stderr)
+            print_error_with_line("Error", e)
             return 1
     
-    if args.debug:
-        # Run subcommand without exception handling (show full traceback)
-        run_subcommand(args)
-        return 0
-    else:
-        try:
-            # Run subcommand with exception handling
-            run_subcommand(args)
-            return 0
-            
-        except KeyboardInterrupt:
-            print(f"\n{args.command.title()} interrupted by user")
-            return 1
-        except ValueError as e:
-            # Handle unknown command case
-            print(f"Error: {e}", file=sys.stderr)
-            return 1
-        except Exception as e:
-            print(f"Error: {e}", file=sys.stderr)
-            return 1
+    # Run subcommand - let errors propagate for debugging
+    run_subcommand(args)
+    return 0
 
 
 if __name__ == '__main__':

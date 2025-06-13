@@ -106,6 +106,53 @@ class TestURLInfo:
             )
             assert url_info.domain == expected_domain, f"Domain mismatch for {url}"
     
+    def test_urlinfo_domain_extraction_error_handling(self):
+        """Test domain extraction error handling"""
+        import io
+        import sys
+        from unittest.mock import patch
+        
+        # Capture stderr to check error messages
+        captured_stderr = io.StringIO()
+        sys.stderr = captured_stderr
+        
+        try:
+            # Mock urlparse to raise an exception
+            with patch('url2md.models.urlparse') as mock_urlparse:
+                mock_urlparse.side_effect = ValueError("Mock parsing error")
+                
+                url_info = URLInfo(
+                    url="https://example.com",
+                    filename="test.html", 
+                    fetch_date="2024-01-01T00:00:00",
+                    status="success",
+                    content_type="text/html",
+                    size=1000
+                )
+                # Should set empty domain on error
+                assert url_info.domain == ""
+            
+            # Check that error was logged
+            error_output = captured_stderr.getvalue()
+            assert "URL domain extraction failed" in error_output
+        finally:
+            # Restore stderr
+            sys.stderr = sys.__stderr__
+    
+    def test_urlinfo_empty_url_handling(self):
+        """Test empty URL handling"""
+        # Test with empty URL - should not trigger error logging
+        url_info = URLInfo(
+            url="",
+            filename="test.html", 
+            fetch_date="2024-01-01T00:00:00",
+            status="success",
+            content_type="text/html",
+            size=1000
+        )
+        # Should set empty domain without error
+        assert url_info.domain == ""
+    
     @patch('url2md.models.requests.get')
     def test_fetch_content_requests(self, mock_get):
         """Test fetch_content using requests"""
@@ -224,8 +271,9 @@ https://example3.com
     
     def test_load_urls_file_not_found(self):
         """Test handling of non-existent file"""
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(SystemExit) as exc_info:
             load_urls_from_file('/nonexistent/file.txt')
+        assert exc_info.value.code == 1
     
     def test_load_urls_with_whitespace(self):
         """Test URL loading with various whitespace"""

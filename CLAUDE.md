@@ -287,6 +287,8 @@ When testing:
 - **Test-Driven Stabilization**: Comprehensive tests enable confident refactoring
 - **Consistency Over Optimization**: Favor consistency over minor optimizations
 - **Document Reasoning**: Document the reasoning behind non-obvious choices
+- **Fail Fast Philosophy**: Prefer natural exception propagation over complex fallback mechanisms
+- **Resource Access**: Use `get_resource_path()` for consistent package resource access
 
 ### Common Development Tasks
 
@@ -321,8 +323,9 @@ For detailed rationale, see [NOTES.md](NOTES.md#development-methodology-two-phas
 1. Update relevant JSON schema in `url2md/schemas/`
 2. Modify prompt generation in the command module
 3. Configure thinking parameters in `generate_content_retry()` calls if needed
-4. Test with actual API calls
-5. Verify structured output format and thinking process display
+4. Use `get_resource_path()` for schema file access in tests and code
+5. Test with actual API calls
+6. Verify structured output format and thinking process display
 
 #### Cache Management Changes
 1. Modify `cache.py` for data model changes
@@ -366,6 +369,8 @@ Before making any changes to the codebase:
 - Use temporary directories for file system tests
 - Mock external dependencies appropriately
 - Follow the existing test patterns in the test suite
+- **Error Handling Tests**: Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases and `pytest.raises(ExceptionType)` for natural propagation
+- **Resource Access**: Use `get_resource_path()` for accessing schema files in tests
 
 **Useful Test Commands:**
 ```bash
@@ -438,11 +443,21 @@ For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy
 - This CLAUDE.md provides development documentation
 
 ### Error Handling
+
+**Core Policy**: Prioritize error visibility in development phase (0.1.0)
+
 - **Exception-based**: All `run_*()` functions use exceptions instead of return values
-- **Single Catch Point**: Only `main()` has try-except blocks
-- **Meaningful Messages**: ValueError for user errors, generic Exception for system errors
-- **Debug Mode**: `--debug` flag shows full stack traces for development
-- Graceful degradation when possible (e.g., fallback from Playwright to requests)
+- **Minimal main() handling**: Let errors propagate for full stack traces
+- **Localized try-catch**: Handle exceptions close to their source, avoid broad safety nets
+- **Centralized reporting**: Use `print_error_with_line()` for detailed error information
+- **File operation patterns**:
+  - User input files: Error → `sys.exit(1)`
+  - Output files: Error → Log and continue
+  - Critical system data: Error → `sys.exit(1)`
+  - Individual data items: Warning → Continue processing
+- **Graceful degradation**: Only for optional operations (cache detection, HTML parsing)
+
+For detailed error handling guidelines, see [docs/error-handling.md](docs/error-handling.md).
 
 ## License and Distribution
 

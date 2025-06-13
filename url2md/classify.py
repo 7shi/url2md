@@ -32,15 +32,18 @@ def extract_tags(cache: Cache, url_infos: List[URLInfo]) -> List[str]:
         # Read JSON using Cache method
         summary_file = cache.get_summary_path(url_info)
         if summary_file and summary_file.exists():
-            with open(summary_file, 'r', encoding='utf-8') as f:
-                summary_data = json.load(f)
-            
-            tags = summary_data.get('tags', [])
-            if isinstance(tags, list):
-                all_tags.extend(tags)
-            elif isinstance(tags, str):
-                tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
-                all_tags.extend(tag_list)
+            try:
+                with open(summary_file, 'r', encoding='utf-8') as f:
+                    summary_data = json.load(f)
+                
+                tags = summary_data.get('tags', [])
+                if isinstance(tags, list):
+                    all_tags.extend(tags)
+                elif isinstance(tags, str):
+                    tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+                    all_tags.extend(tag_list)
+            except Exception as e:
+                print_error_with_line(f"Warning: Summary file read error ({url_info.url})", e)
     
     return all_tags
 
