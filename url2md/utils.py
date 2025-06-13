@@ -7,6 +7,7 @@ Provides HTML content preprocessing and text extraction functionality.
 
 import re
 import html
+from pathlib import Path
 
 
 def extract_body_content(html_content: str) -> str:
@@ -44,3 +45,41 @@ def extract_html_title(html_content: str) -> str:
     except Exception:
         # Return empty string if error occurs
         return ""
+
+
+def find_cache_dir() -> Path:
+    """Find cache directory by looking for cache.tsv in current or parent directories
+    
+    Returns:
+        Path to directory containing cache.tsv, or default 'cache' if not found
+    """
+    current_dir = Path.cwd()
+    
+    # First, check if cache/cache.tsv exists in current directory
+    default_cache = current_dir / "cache"
+    default_tsv = default_cache / "cache.tsv"
+    try:
+        if default_tsv.exists():
+            return Path("cache")  # Return relative path for current directory
+    except PermissionError:
+        pass
+    
+    # Check current directory and parent directories for cache.tsv
+    for directory in [current_dir] + list(current_dir.parents):
+        try:
+            # Look for cache.tsv in any subdirectory
+            for path in directory.iterdir():
+                if path.is_dir():
+                    tsv_file = path / "cache.tsv"
+                    try:
+                        if tsv_file.exists():
+                            return path
+                    except PermissionError:
+                        # Skip directories we can't access
+                        continue
+        except PermissionError:
+            # Skip directories we can't iterate
+            continue
+    
+    # If no cache.tsv found, return default
+    return Path("cache")

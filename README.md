@@ -73,6 +73,31 @@ url2md --cache-dir /tmp/cache fetch -u urls.txt
 url2md --debug --cache-dir /custom/cache summarize -u urls.txt
 ```
 
+### Cache Directory Detection
+
+url2md automatically detects cache directories by looking for `cache.tsv` files in parent directories, similar to how git finds `.git` directories:
+
+1. **Priority**: If `cache/cache.tsv` exists in the current directory, it uses `cache` (relative path)
+2. **Parent Search**: Otherwise, searches for any directory containing `cache.tsv` in current and parent directories
+3. **Default**: If no `cache.tsv` is found, creates new cache in `./cache`
+
+This allows you to run url2md commands from any subdirectory within your project, and it will automatically find and use the appropriate cache directory.
+
+```bash
+# Running from project root
+project/
+├── cache/
+│   └── cache.tsv    # Uses this cache
+└── subdir/
+    └── (working here) # Automatically finds ../cache
+
+# Custom cache directory names are supported
+project/
+├── my_url_cache/
+│   └── cache.tsv    # Uses this cache (directory name is flexible)
+└── src/
+```
+
 ## Command Reference
 
 ### `fetch` - Download and cache URLs

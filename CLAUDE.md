@@ -94,7 +94,10 @@ uv run url2md [global-options] <subcommand> [options]
 ```
 
 **Global Options:**
-- `--cache-dir PATH`: Cache directory (default: cache/)
+- `--cache-dir PATH`: Cache directory (default: auto-detected or `./cache`)
+  - Auto-detection: Searches for directories containing `cache.tsv` in current and parent directories
+  - Priority: `./cache/cache.tsv` is preferred if it exists
+  - Flexible naming: Any directory name containing `cache.tsv` is recognized
 - `--debug`: Enable debug mode with full stack traces
 - `--version`: Show version information
 - `--help`: Show help message
@@ -198,41 +201,48 @@ The test suite includes the following files:
    - Filename collision handling and domain throttling
    - CacheResult object testing
 
-2. **test_integration.py** - Integration and end-to-end tests
+2. **test_cache_dir_detection.py** - Cache directory auto-detection tests
+   - Cache detection in current and parent directories
+   - Priority handling for `./cache/cache.tsv`
+   - Support for custom cache directory names
+   - Permission error handling
+
+3. **test_integration.py** - Integration and end-to-end tests
    - Command-line interface integration
    - Module import and dependency testing
    - Complete workflow integration
    - Schema file accessibility verification
 
-3. **test_models.py** - Data model tests
+4. **test_models.py** - Data model tests
    - URLInfo creation, serialization, and validation
    - TSV format handling and error escaping
    - URL loading from files and stdin
    - Content fetching with error handling
 
-4. **test_report.py** - Report generation tests
+5. **test_report.py** - Report generation tests
    - Tag matching weight calculations
    - URL classification algorithms
    - Markdown report formatting
    - Theme analysis and statistics
 
-5. **test_schema_structure.py** - Schema and code structure validation
+6. **test_schema_structure.py** - Schema and code structure validation
    - JSON schema validation for AI operations
    - Package structure verification
    - Import path consistency checks
    - Schema-code alignment validation
 
-6. **test_summarize.py** - AI summarization tests
+7. **test_summarize.py** - AI summarization tests
    - Schema validation and structure testing
    - Prompt generation functionality
    - File operations and JSON handling
    - Mock-based content summarization testing
 
-7. **test_utils.py** - HTML processing utility tests
+8. **test_utils.py** - HTML processing utility tests
    - HTML content extraction and cleaning
    - Title extraction and text processing
    - Minification and content validation
    - Edge case handling for malformed HTML
+   - Cache directory detection functionality
 
 ### Mock Considerations
 When testing:
@@ -290,6 +300,16 @@ Follow the comprehensive testing guidelines and workflow detailed in [NOTES.md](
 - Commands include progress bars using `tqdm`
 - Error messages should be clear and actionable
 - Use `--debug` flag for full stack traces during development: `uv run url2md --debug <command>`
+
+### Shell Commands
+- **Directory Changes**: When changing directories in shell commands, use subshells with parentheses `()` to avoid affecting the current shell's working directory:
+  ```bash
+  # Correct - uses subshell, directory change doesn't persist
+  (cd tmp/test_dir && uv run pytest)
+  
+  # Avoid - changes current shell's directory
+  cd tmp/test_dir && uv run pytest
+  ```
 
 ### Performance Considerations
 - Cache management prevents redundant downloads

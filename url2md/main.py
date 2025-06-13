@@ -18,6 +18,8 @@ from typing import List, Optional
 def create_parser() -> argparse.ArgumentParser:
     """Create main parser and subcommands"""
     from .gemini import default_model
+    from .utils import find_cache_dir
+    
     parser = argparse.ArgumentParser(
         description="url2md - URL analysis and classification tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -42,7 +44,7 @@ For more information on each command, use:
     from . import __version__
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode (show full traceback on errors)')
-    parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
+    parser.add_argument('--cache-dir', type=Path, default=find_cache_dir(), help='Cache directory (auto-detected from parent dirs)')
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
