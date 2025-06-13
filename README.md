@@ -365,15 +365,10 @@ uv run pytest --cov=url2md --cov-report=html
 
 For detailed testing commands and development workflows, see [CLAUDE.md](CLAUDE.md#test-development).
 
-## Contributing
-
-This project welcomes contributions. The codebase is designed to be modular and extensible.
-
-### Documentation
+## Documentation
 
 - **[README.md](README.md)** - User documentation and command reference
 - **[CLAUDE.md](CLAUDE.md)** - Development guidelines and technical specifications  
 - **[NOTES.md](NOTES.md)** - Development philosophy and lessons learned
+- **[docs/error-handling.md](docs/error-handling.md)** - Error handling policies and patterns
 - **[docs/resource-support.md](docs/resource-support.md)** - Resource handling and packaging details
-
-For detailed architecture information, development guidelines, and troubleshooting, see [CLAUDE.md](CLAUDE.md).
