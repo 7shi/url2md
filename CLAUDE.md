@@ -132,7 +132,9 @@ uv run url2md [global-options] <subcommand> [options]
    - Implementation: `url2md/main.py` (run_init function)
    - Purpose: Create cache directory structure with cache.tsv file
    - **Required**: Must be run before other commands
+   - **Default Directory**: Creates `url2md-cache/` (configurable via `DEFAULT_CACHE_DIR`)
    - **Argument Conflict**: Error if both `--cache-dir` and directory argument specified
+   - **Cache Detection**: Creates marker file `cache.tsv` for auto-detection by other commands
 
 1. **fetch**: Download and cache URLs
    - Implementation: `url2md/fetch.py` (functions), `url2md/main.py` (CLI integration)
@@ -289,6 +291,15 @@ For detailed methodology and rationale, see [NOTES.md](NOTES.md#development-meth
 2. Update `models.py` for URLInfo changes
 3. Ensure backward compatibility with existing cache files
 
+#### Configuration Changes
+When modifying configurable values (directory names, defaults, etc.):
+1. **Define constants** in appropriate modules (e.g., `DEFAULT_CACHE_DIR` in `utils.py`)
+2. **Update all references** throughout the codebase to use the constant
+3. **Update documentation** to reflect new defaults (README.md, CLAUDE.md, help text)
+4. **Update tests** to use constants instead of hardcoded values
+5. **Update gitignore patterns** if directory names change
+6. **Verify consistency** across Examples, help text, and documentation
+
 ## Debugging and Troubleshooting
 
 ### Common Issues
@@ -326,6 +337,20 @@ Follow the comprehensive testing guidelines and workflow detailed in [NOTES.md](
 - Progress bars provide user feedback for long operations
 
 ## Code Style and Conventions
+
+### Constants and Configuration
+- **Centralized Constants**: Define configurable values as constants in appropriate modules
+  - Example: `DEFAULT_CACHE_DIR = "url2md-cache"` in `utils.py`
+  - Avoid hardcoding strings throughout the codebase
+  - Reference constants from a single source to enable easy configuration changes
+
+### Import Organization
+- **Module-level imports**: Import commonly used project modules at the top of files
+  - Standard library imports first
+  - Third-party imports second  
+  - Project imports last
+- **Local imports**: Import specialized modules locally within functions when appropriate
+- **Avoid redundant imports**: If imported at module level, don't re-import in functions
 
 ### Language
 - All code, comments, and docstrings are in English

@@ -222,7 +222,7 @@ url2md report -c classification.json -t "Programming:1.5" -t "Education:0.8"
 url2md workflow -u urls.txt -c classification.json -o final-report.md
 
 # With custom settings
-url2md --cache-dir cache workflow \
+url2md --cache-dir url2md-cache workflow \
     -u urls.txt \
     --playwright \
     -c classification.json \
