@@ -8,6 +8,7 @@ Provides HTML content preprocessing and text extraction functionality.
 import re
 import html
 from pathlib import Path
+from importlib import resources
 
 
 # Default cache directory name
@@ -90,3 +91,17 @@ def find_cache_dir() -> Path:
     
     # If no cache.tsv found, require initialization
     raise ValueError("No cache directory found. Run 'url2md init' to initialize.")
+
+
+def get_resource_path(filename: str) -> Path:
+    """Get path to a resource file in the package
+    
+    Args:
+        filename: Resource filename relative to package root
+        
+    Returns:
+        Path object pointing to the resource file
+    """
+    # For Python 3.9+
+    files = resources.files("url2md")
+    return files / filename

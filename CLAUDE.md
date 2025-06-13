@@ -30,9 +30,8 @@ url2md/
 ├── README.md               # User documentation
 ├── CLAUDE.md              # This file - development guidelines
 ├── NOTES.md                # Development philosophy and lessons learned
-├── schemas/               # JSON schemas for AI operations
-│   ├── summarize.json     # Schema for summarize command
-│   └── classify.json      # Schema for classify command
+├── docs/                  # Additional documentation
+│   └── resource-support.md # Resource handling documentation
 ├── tests/                 # Test directory with comprehensive test suite
 └── url2md/               # Main package
     ├── __init__.py       # Package entry point
@@ -44,8 +43,11 @@ url2md/
     ├── classify.py       # Tag classification functions
     ├── report.py         # Report generation functions
     ├── gemini.py         # Gemini API integration with thinking capabilities
-    ├── utils.py          # HTML processing utilities
-    └── download.py       # Playwright dynamic rendering
+    ├── utils.py          # HTML processing and resource utilities
+    ├── download.py       # Playwright dynamic rendering
+    └── schemas/          # JSON schemas for AI operations
+        ├── summarize.json# Schema for summarize command
+        └── classify.json # Schema for classify command
 ```
 
 ## Development Environment
@@ -145,14 +147,14 @@ uv run url2md [global-options] <subcommand> [options]
 2. **summarize**: Generate AI summaries
    - Implementation: `url2md/summarize.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Create structured summaries using Gemini API with thinking process visualization
-   - Schema: `schemas/summarize.json`
+   - Schema: `url2md/schemas/summarize.json`
    - **AI Thinking**: Displays real-time reasoning process during summarization
    - **Language Support**: Use `-l/--language` to specify output language (e.g., Japanese, Chinese, French)
    
 3. **classify**: Classify content by topic
    - Implementation: `url2md/classify.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Extract tags and classify by theme using LLM with reasoning insights (default action)
-   - Schema: `schemas/classify.json`
+   - Schema: `url2md/schemas/classify.json`
    - **AI Thinking**: Shows step-by-step classification reasoning and decision process
    - **Default Behavior**: Classification runs automatically unless `--extract-tags` or `--show-prompt` specified
    - **Language Support**: Use `-l/--language` to specify output language for theme names and descriptions
@@ -251,12 +253,13 @@ The test suite includes the following files:
    - File operations and JSON handling
    - Mock-based content summarization testing
 
-8. **test_utils.py** - HTML processing utility tests
+8. **test_utils.py** - HTML processing and resource utility tests
    - HTML content extraction and cleaning
    - Title extraction and text processing
    - Minification and content validation
    - Edge case handling for malformed HTML
    - Cache directory detection functionality
+   - Resource path resolution functionality
 
 ### Mock Considerations
 When testing:
@@ -313,7 +316,7 @@ Use the **two-phase development approach**: start with a standalone module for p
 For detailed rationale, see [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development).
 
 #### Modifying AI Operations
-1. Update relevant JSON schema in `schemas/`
+1. Update relevant JSON schema in `url2md/schemas/`
 2. Modify prompt generation in the command module
 3. Configure thinking parameters in `generate_content_retry()` calls if needed
 4. Test with actual API calls
@@ -343,6 +346,7 @@ When modifying configurable values (directory names, defaults, etc.):
 4. **API Errors**: Verify `GEMINI_API_KEY` environment variable
 5. **Playwright Issues**: Run `uv run playwright install` for browser support
 6. **Test Failures**: Run `uv run pytest -v` to see detailed test output and error messages
+7. **Tool Not Updated**: After code changes, use `uv cache clean url2md` before `uv tool install .` to ensure latest version
 
 ### Test Development
 

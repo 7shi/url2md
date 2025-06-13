@@ -64,15 +64,7 @@ def build_schema_from_json(json_data):
             raise ValueError(f"Unsupported type: {t}")
 
 def config_from_schema(schema_filename):
-    # If schema_filename is a relative path starting with "schemas/", 
-    # resolve it relative to the package directory
-    if schema_filename.startswith("schemas/"):
-        package_dir = Path(__file__).parent.parent
-        schema_path = package_dir / schema_filename
-    else:
-        schema_path = Path(schema_filename)
-    
-    with open(schema_path, 'r', encoding='utf-8') as f:
+    with open(schema_filename, 'r', encoding='utf-8') as f:
         schema = build_schema_from_json(json.load(f))
     return types.GenerateContentConfig(
         response_mime_type="application/json",

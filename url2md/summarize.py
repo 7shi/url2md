@@ -17,7 +17,7 @@ from tqdm import tqdm
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, models, upload_file, delete_file
 from .models import URLInfo
-from .utils import extract_body_content, extract_html_title
+from .utils import extract_body_content, extract_html_title, get_resource_path
 
 
 def generate_summary_prompt(url: str, content_type: str, language: str = None) -> str:
@@ -43,7 +43,7 @@ def generate_summary_prompt(url: str, content_type: str, language: str = None) -
     return "\n".join(prompt_parts)
 
 
-def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema_file: str = "schemas/summarize.json", language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema_file: str = None, language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]:
     """Generate structured JSON summary for a single file using Gemini"""
     if model is None:
         model = models[0]  # Use default model
@@ -61,7 +61,11 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
     
     try:
         # Load JSON schema configuration
-        config = config_from_schema(schema_file)
+        if schema_file is None:
+            schema_path = get_resource_path("schemas/summarize.json")
+        else:
+            schema_path = schema_file
+        config = config_from_schema(str(schema_path))
         
         # Generate prompt
         prompt = generate_summary_prompt(url, content_type, language)

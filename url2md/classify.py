@@ -13,6 +13,7 @@ from typing import List, Dict, Any
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, models
 from .models import URLInfo
+from .utils import get_resource_path
 
 
 def extract_tags(cache: Cache, url_infos: List[URLInfo]) -> List[str]:
@@ -138,7 +139,7 @@ The output should include complete tag frequency information for use in URL clas
 
 
 def classify_tags_with_llm(tag_counter: Counter, model: str = None, 
-                          schema_file: str = "schemas/classify.json", language: str = None) -> Dict[str, Any]:
+                          schema_file: str = None, language: str = None) -> Dict[str, Any]:
     """Classify tags using LLM and return structured result"""
     if model is None:
         model = models[0]  # Use default model
@@ -153,7 +154,11 @@ def classify_tags_with_llm(tag_counter: Counter, model: str = None,
     print(f"Frequent tags (>=2 occurrences): {len(get_frequent_tags_with_counts(tag_counter))}")
     
     # Load JSON schema configuration
-    config = config_from_schema(schema_file)
+    if schema_file is None:
+        schema_path = get_resource_path("schemas/classify.json")
+    else:
+        schema_path = schema_file
+    config = config_from_schema(str(schema_path))
     
     # Generate classification
     response = generate_content_retry(model, config, [prompt])

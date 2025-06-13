@@ -378,5 +378,6 @@ This project welcomes contributions. The codebase is designed to be modular and 
 - **[README.md](README.md)** - User documentation and command reference
 - **[CLAUDE.md](CLAUDE.md)** - Development guidelines and technical specifications  
 - **[NOTES.md](NOTES.md)** - Development philosophy and lessons learned
+- **[docs/resource-support.md](docs/resource-support.md)** - Resource handling and packaging details
 
 For detailed architecture information, development guidelines, and troubleshooting, see [CLAUDE.md](CLAUDE.md).
