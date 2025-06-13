@@ -97,7 +97,7 @@ uv run url2md [global-options] <subcommand> [options]
 **Global Options:**
 - `--cache-dir PATH`: Cache directory (auto-detected if not specified)
   - Auto-detection: Searches for directories containing `cache.tsv` in current and parent directories
-  - Priority: `./cache/cache.tsv` is preferred if it exists
+  - Priority: `./url2md-cache/cache.tsv` is preferred if it exists
   - Flexible naming: Any directory name containing `cache.tsv` is recognized
   - Initialization: If no cache found, requires `url2md init` to create one
 - `--debug`: Enable debug mode with full stack traces
@@ -171,7 +171,7 @@ init → URLs → fetch → summarize → classify → report → Markdown Repor
 
 ### Data Storage
 
-- **Cache Directory**: `cache/` (configurable with `--cache-dir`)
+- **Cache Directory**: `url2md-cache/` (configurable with `--cache-dir`)
   - `cache.tsv`: Metadata index with URL info
   - `content/`: Downloaded files (HTML, PDF, images, etc.)
   - `summary/`: AI-generated summaries as JSON files
@@ -211,7 +211,7 @@ The test suite includes the following files:
 
 2. **test_cache_dir_detection.py** - Cache directory auto-detection tests
    - Cache detection in current and parent directories
-   - Priority handling for `./cache/cache.tsv`
+   - Priority handling for `./url2md-cache/cache.tsv`
    - Support for custom cache directory names
    - Permission error handling
 

@@ -14,6 +14,8 @@ from collections import Counter
 from pathlib import Path
 from typing import List, Optional
 
+from .utils import DEFAULT_CACHE_DIR, find_cache_dir
+
 
 def create_parser() -> argparse.ArgumentParser:
     """Create main parser and subcommands"""
@@ -22,10 +24,10 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="url2md - URL analysis and classification tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+        epilog=f"""
 Examples:
-  # Initialize cache directory (required first step)
-  %(prog)s init [cache_dir]
+  # Initialize cache directory (required first step, creates {DEFAULT_CACHE_DIR}/)
+  %(prog)s init
 
   # Standard workflow
   %(prog)s fetch -u urls.txt --playwright
@@ -93,7 +95,7 @@ For more information on each command, use:
     
     # init subcommand
     init_parser = subparsers.add_parser('init', help='Initialize cache directory')
-    init_parser.add_argument('directory', nargs='?', default='cache', help='Cache directory name (default: cache)')
+    init_parser.add_argument('directory', nargs='?', default=None, help=f'Cache directory name (default: {DEFAULT_CACHE_DIR})')
     
     # workflow subcommand
     workflow_parser = subparsers.add_parser('workflow', help='Run complete workflow (fetch → summarize → classify → report)')
@@ -135,14 +137,16 @@ def run_init(args) -> None:
     from .cache import Cache
     
     # Check for conflicting directory specifications
-    if args.cache_dir and args.directory != 'cache':
+    if args.cache_dir and args.directory:
         raise ValueError("Cannot specify both --cache-dir and directory argument for init command")
     
     # Determine cache directory
     if args.cache_dir:
         cache_dir = args.cache_dir
-    else:
+    elif args.directory:
         cache_dir = Path(args.directory)
+    else:
+        cache_dir = Path(DEFAULT_CACHE_DIR)
     
     # Check if cache already exists
     cache_tsv = cache_dir / "cache.tsv"
@@ -456,7 +460,6 @@ def main() -> int:
     
     # Set cache_dir if not provided (except for init command)
     if not args.cache_dir and args.command != 'init':
-        from .utils import find_cache_dir
         try:
             args.cache_dir = find_cache_dir()
         except ValueError as e:

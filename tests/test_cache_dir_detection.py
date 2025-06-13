@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 import pytest
 
-from url2md.utils import find_cache_dir
+from url2md.utils import find_cache_dir, DEFAULT_CACHE_DIR
 
 
 class TestCacheDirectoryDetection:
@@ -150,12 +150,12 @@ class TestCacheDirectoryDetection:
                 os.chdir(original_cwd)
     
     def test_prefer_current_cache_directory(self):
-        """Test that cache/cache.tsv in current directory is preferred"""
+        """Test that default cache directory in current directory is preferred"""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             
-            # Create cache/cache.tsv in current directory
-            current_cache = temp_path / "cache"
+            # Create default cache directory in current directory
+            current_cache = temp_path / DEFAULT_CACHE_DIR
             current_cache.mkdir()
             current_tsv = current_cache / "cache.tsv"
             current_tsv.write_text("# Current cache\n")
@@ -172,7 +172,7 @@ class TestCacheDirectoryDetection:
             try:
                 os.chdir(temp_path)
                 result = find_cache_dir()
-                # Should return relative path "cache" for current directory
-                assert result == Path("cache")
+                # Should return relative path for default cache directory
+                assert result == Path(DEFAULT_CACHE_DIR)
             finally:
                 os.chdir(original_cwd)

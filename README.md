@@ -81,7 +81,7 @@ url2md --debug --cache-dir /custom/cache summarize -u urls.txt
 
 url2md automatically detects cache directories by looking for `cache.tsv` files in parent directories, similar to how git finds `.git` directories:
 
-1. **Priority**: If `cache/cache.tsv` exists in the current directory, it uses `cache` (relative path)
+1. **Priority**: If `url2md-cache/cache.tsv` exists in the current directory, it uses `url2md-cache` (relative path)
 2. **Parent Search**: Otherwise, searches for any directory containing `cache.tsv` in current and parent directories
 3. **Initialization Required**: If no `cache.tsv` is found, you must run `url2md init` to create a cache
 
@@ -90,10 +90,10 @@ This allows you to run url2md commands from any subdirectory within your project
 ```bash
 # Running from project root
 project/
-├── cache/
+├── url2md-cache/
 │   └── cache.tsv    # Uses this cache
 └── subdir/
-    └── (working here) # Automatically finds ../cache
+    └── (working here) # Automatically finds ../url2md-cache
 
 # Custom cache directory names are supported
 project/
@@ -109,7 +109,7 @@ project/
 **Required first step**: Creates cache directory structure with `cache.tsv` file.
 
 ```bash
-# Initialize cache in current directory (creates ./cache/)
+# Initialize cache in current directory (creates ./url2md-cache/)
 url2md init
 
 # Initialize with custom directory name
@@ -297,7 +297,7 @@ https://third-site.com
 
 ### Cache Structure
 ```
-cache/
+url2md-cache/
 ├── cache.tsv              # Metadata index
 ├── content/               # Downloaded content
 │   ├── abc123.html

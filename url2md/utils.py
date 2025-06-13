@@ -10,6 +10,10 @@ import html
 from pathlib import Path
 
 
+# Default cache directory name
+DEFAULT_CACHE_DIR = "url2md-cache"
+
+
 def extract_body_content(html_content: str) -> str:
     """Extract innerHTML from body tag and remove script and style tags"""
     try:
@@ -58,12 +62,12 @@ def find_cache_dir() -> Path:
     """
     current_dir = Path.cwd()
     
-    # First, check if cache/cache.tsv exists in current directory
-    default_cache = current_dir / "cache"
+    # First, check if default cache directory exists in current directory
+    default_cache = current_dir / DEFAULT_CACHE_DIR
     default_tsv = default_cache / "cache.tsv"
     try:
         if default_tsv.exists():
-            return Path("cache")  # Return relative path for current directory
+            return Path(DEFAULT_CACHE_DIR)  # Return relative path for current directory
     except PermissionError:
         pass
     
