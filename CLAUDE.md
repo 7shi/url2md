@@ -130,8 +130,8 @@ uv run url2md <subcommand> [options]
    - Implementation: `url2md/report.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Create comprehensive Markdown reports from classification data
    
-5. **pipeline**: Complete workflow
-   - Implementation: `url2md/main.py` (run_pipeline function)
+5. **workflow**: Complete workflow
+   - Implementation: `url2md/main.py` (run_workflow function)
    - Purpose: Execute entire workflow (fetch → summarize → classify → report)
 
 ## Data Flow

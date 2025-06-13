@@ -27,7 +27,7 @@ Examples:
   %(prog)s summarize -u urls.txt
   %(prog)s classify -u urls.txt -o class.json
   %(prog)s report -u urls.txt -c class.json -o report.md
-  %(prog)s pipeline -u urls.txt --cache-dir cache -o report.md
+  %(prog)s workflow -u urls.txt --cache-dir cache -o report.md
 
 For more information on each command, use:
   %(prog)s <command> --help
@@ -82,17 +82,17 @@ For more information on each command, use:
     report_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
                               help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
     
-    # pipeline subcommand
-    pipeline_parser = subparsers.add_parser('pipeline', help='Run complete pipeline (fetch → summarize → classify → report)')
-    pipeline_parser.add_argument('urls', nargs='*', help='URLs to process (multiple allowed)')
-    pipeline_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
-    pipeline_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
-    pipeline_parser.add_argument('--classification-output', help='Classification result file')
-    pipeline_parser.add_argument('-o', '--output', help='Final report output file')
-    pipeline_parser.add_argument('--force-fetch', action='store_true', help='Force re-fetch URLs')
-    pipeline_parser.add_argument('--force-summary', action='store_true', help='Force re-summarize')
-    pipeline_parser.add_argument('--playwright', action='store_true', help='Use Playwright for fetch')
-    pipeline_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
+    # workflow subcommand
+    workflow_parser = subparsers.add_parser('workflow', help='Run complete workflow (fetch → summarize → classify → report)')
+    workflow_parser.add_argument('urls', nargs='*', help='URLs to process (multiple allowed)')
+    workflow_parser.add_argument('-u', '--urls-file', dest='file', help='URL list file')
+    workflow_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
+    workflow_parser.add_argument('--classification-output', help='Classification result file')
+    workflow_parser.add_argument('-o', '--output', help='Final report output file')
+    workflow_parser.add_argument('--force-fetch', action='store_true', help='Force re-fetch URLs')
+    workflow_parser.add_argument('--force-summary', action='store_true', help='Force re-summarize')
+    workflow_parser.add_argument('--playwright', action='store_true', help='Use Playwright for fetch')
+    workflow_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     
     return parser
 
@@ -107,8 +107,8 @@ def run_subcommand(args) -> None:
         run_classify(args)
     elif args.command == 'report':
         run_report(args)
-    elif args.command == 'pipeline':
-        run_pipeline(args)
+    elif args.command == 'workflow':
+        run_workflow(args)
     else:
         raise ValueError(f"Unknown command: {args.command}")
 
@@ -326,9 +326,9 @@ def run_report(args) -> None:
         print(report_content)
 
 
-def run_pipeline(args) -> None:
-    """Run pipeline subcommand (complete workflow)"""
-    print("🔄 URL analysis pipeline started")
+def run_workflow(args) -> None:
+    """Run workflow subcommand (complete workflow)"""
+    print("🔄 URL analysis workflow started")
     
     # Step 1: fetch
     print("\n📥 Step 1: URL fetching and caching")
@@ -382,7 +382,7 @@ def run_pipeline(args) -> None:
     )
     run_report(report_args)
     
-    print("\n✅ Pipeline completed successfully")
+    print("\n✅ Workflow completed successfully")
     if args.output:
         print(f"📄 Final report: {args.output}")
 

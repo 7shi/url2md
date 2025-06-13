@@ -46,8 +46,8 @@ uv run url2md summarize -u urls.txt
 uv run url2md classify -u urls.txt -o class.json
 uv run url2md report -u urls.txt -c class.json -o report.md
 
-# Complete pipeline in one command
-uv run url2md pipeline -u urls.txt --cache-dir cache -o report.md
+# Complete workflow in one command
+uv run url2md workflow -u urls.txt --cache-dir cache -o report.md
 ```
 
 For more command details, use `uv run url2md <command> --help`.
@@ -135,14 +135,14 @@ url2md report "https://example.com" -c classification.json -o report.md
 url2md report -c classification.json -t "Programming:1.5" -t "Education:0.8"
 ```
 
-### `pipeline` - Complete workflow
+### `workflow` - Complete workflow
 
 ```bash
-# Run complete pipeline
-url2md pipeline -u urls.txt -o final-report.md
+# Run complete workflow
+url2md workflow -u urls.txt -o final-report.md
 
 # With custom settings
-url2md pipeline \
+url2md workflow \
     -u urls.txt \
     --cache-dir cache \
     --playwright \
@@ -150,7 +150,7 @@ url2md pipeline \
     -o report.md
 
 # With theme weight adjustments
-url2md pipeline \
+url2md workflow \
     -u urls.txt \
     -t "Programming:1.5" \
     -t "Education:0.8" \
