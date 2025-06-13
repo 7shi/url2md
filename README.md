@@ -19,11 +19,13 @@ pip install url2md
 # For dynamic rendering support (optional)
 playwright install
 
-# Development setup with uv
-git clone <repository>
+# Source installation with uv
+git clone https://github.com/7shi/url2md.git
 cd url2md
 uv sync
-uv run playwright install  # Optional for dynamic rendering
+
+# Optional for dynamic rendering
+uv run playwright install
 ```
 
 ## Workflow Overview
@@ -350,12 +352,19 @@ CC0-1.0 - Public Domain
 ## Testing
 
 ```bash
+# Install development dependencies first (if not done already)
+uv sync --dev
+
 # Run all tests
 uv run pytest
 
 # Run tests with coverage
 uv run pytest --cov=url2md --cov-report=html
 ```
+
+**Development vs Usage**:
+- **For development**: Use `uv sync --dev` to install development tools like pytest, black, and flake8
+- **For usage only**: Use `uv sync` to install only runtime dependencies needed to run url2md
 
 For detailed testing commands and development workflows, see [CLAUDE.md](CLAUDE.md#test-development).
 
