@@ -117,20 +117,23 @@ def classify_url_to_theme(url_summary: Dict, themes: List[Dict], theme_weights: 
     return best_theme, best_score
 
 
-def classify_all_urls(url_summaries: Dict[str, Dict], classification_data: Dict) -> Dict[str, str]:
+def classify_all_urls(url_summaries: Dict[str, Dict], classification_data: Dict, theme_weights: Dict[str, float] = None) -> Dict[str, Dict]:
     """Classify all URLs to themes
     
     Args:
         url_summaries: URL summary data
         classification_data: Classification data
+        theme_weights: Optional theme weight mapping
     
     Returns:
-        Dict[str, str]: URL -> theme_name mapping
+        Dict[str, Dict]: URL -> {theme, score} mapping
     """
     # Extract themes from classification data (new schema format)
     themes_data = classification_data.get('themes', [])
     themes = []
-    theme_weights = {}
+    
+    if theme_weights is None:
+        theme_weights = {}
     
     for theme_info in themes_data:
         theme_name = theme_info.get('theme_name', '')
@@ -138,7 +141,9 @@ def classify_all_urls(url_summaries: Dict[str, Dict], classification_data: Dict)
             'name': theme_name,
             'tags': theme_info.get('tags', [])
         })
-        theme_weights[theme_name] = 1.0  # Default weight since new schema doesn't include weights
+        # Use provided weight or default to 1.0
+        if theme_name not in theme_weights:
+            theme_weights[theme_name] = 1.0
     
     # Classify each URL
     url_classifications = {}
@@ -146,17 +151,20 @@ def classify_all_urls(url_summaries: Dict[str, Dict], classification_data: Dict)
     for url, summary in url_summaries.items():
         theme, score = classify_url_to_theme(summary, themes, theme_weights)
         if theme:
-            url_classifications[url] = theme
+            url_classifications[url] = {
+                'theme': theme,
+                'score': score
+            }
     
     return url_classifications
 
 
-def generate_markdown_report(url_classifications: Dict[str, str], classification_data: Dict, 
+def generate_markdown_report(url_classifications: Dict[str, Dict], classification_data: Dict, 
                            url_summaries: Dict[str, Dict]) -> str:
     """Generate Markdown format report
     
     Args:
-        url_classifications: URL -> theme mapping
+        url_classifications: URL -> {theme, score} mapping
         classification_data: Theme classification data
         url_summaries: URL summary data
     
@@ -164,7 +172,7 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
         str: Markdown report content
     """
     # Count classifications by theme
-    theme_counts = Counter(url_classifications.values())
+    theme_counts = Counter(classification['theme'] for classification in url_classifications.values())
     total_classified = len(url_classifications)
     total_urls = len(url_summaries)
     unclassified_count = total_urls - total_classified
@@ -175,10 +183,10 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
     lines.append("")
     lines.append("## Summary")
     lines.append("")
-    lines.append(f"- **Total URLs**: {total_urls}")
+    lines.append(f"- **Total URLs**: {total_urls:,}")
     if total_urls > 0:
-        lines.append(f"- **Classified**: {total_classified} ({total_classified/total_urls*100:.1f}%)")
-        lines.append(f"- **Unclassified**: {unclassified_count} ({unclassified_count/total_urls*100:.1f}%)")
+        lines.append(f"- **Classified**: {total_classified:,} ({total_classified/total_urls*100:.1f}%)")
+        lines.append(f"- **Unclassified**: {unclassified_count:,} ({unclassified_count/total_urls*100:.1f}%)")
     else:
         lines.append("- **Classified**: 0 (0.0%)")
         lines.append("- **Unclassified**: 0 (0.0%)")
@@ -189,12 +197,10 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
     lines.append("")
     
     themes_data = classification_data.get('themes', [])
-    theme_names = [theme.get('theme_name', '') for theme in themes_data]
-    for theme_name in sorted(theme_names):
-        count = theme_counts.get(theme_name, 0)
-        if count > 0:
-            percentage = count / total_urls * 100
-            lines.append(f"- **{theme_name}**: {count} URLs ({percentage:.1f}%)")
+    # Sort by count descending
+    for theme_name, count in theme_counts.most_common():
+        percentage = count / total_urls * 100
+        lines.append(f"- **{theme_name}**: {count} URLs ({percentage:.1f}%)")
     
     lines.append("")
     
@@ -204,18 +210,35 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
     
     # Group URLs by theme
     urls_by_theme = {}
-    for url, theme in url_classifications.items():
+    for url, classification in url_classifications.items():
+        theme = classification['theme']
         if theme not in urls_by_theme:
             urls_by_theme[theme] = []
-        urls_by_theme[theme].append(url)
+        urls_by_theme[theme].append((url, classification['score']))
     
-    # Output each theme
-    for theme_name in sorted(urls_by_theme.keys()):
-        urls = urls_by_theme[theme_name]
-        lines.append(f"### {theme_name} ({len(urls)} URLs)")
+    # Get theme descriptions
+    theme_descriptions = {}
+    for theme_info in themes_data:
+        theme_name = theme_info.get('theme_name', '')
+        theme_descriptions[theme_name] = theme_info.get('theme_description', '')
+    
+    # Output each theme (sorted by count descending)
+    for theme_name, count in theme_counts.most_common():
+        if theme_name not in urls_by_theme:
+            continue
+        urls_with_scores = urls_by_theme[theme_name]
+        lines.append(f"### {theme_name} ({len(urls_with_scores)} URLs)")
         lines.append("")
         
-        for url in sorted(urls):
+        # Add theme description if available
+        if theme_name in theme_descriptions and theme_descriptions[theme_name]:
+            lines.append(theme_descriptions[theme_name])
+            lines.append("")
+        
+        # Sort by score descending
+        urls_with_scores.sort(key=lambda x: x[1], reverse=True)
+        
+        for url, score in urls_with_scores:
             summary = url_summaries.get(url, {})
             title = summary.get('title', [''])[0] if summary.get('title') else url
             one_line = summary.get('summary_one_line', '')
@@ -241,22 +264,6 @@ def generate_markdown_report(url_classifications: Dict[str, str], classification
                 if one_line:
                     lines.append(f"  {one_line}")
                 lines.append("")
-    
-    # Theme definitions
-    lines.append("## Theme Definitions")
-    lines.append("")
-    
-    for theme_info in themes_data:
-        theme_name = theme_info.get('theme_name', '')
-        theme_description = theme_info.get('theme_description', '')
-        tags = theme_info.get('tags', [])
-        
-        lines.append(f"### {theme_name}")
-        lines.append("")
-        if theme_description:
-            lines.append(f"- **Description**: {theme_description}")
-        lines.append(f"- **Tags**: {', '.join(tags)}")
-        lines.append("")
     
     return "\n".join(lines)
 
@@ -296,6 +303,8 @@ Examples:
     parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     parser.add_argument('--format', choices=['markdown', 'html'], default='markdown', help='Output format')
     parser.add_argument('-o', '--output', help='Output file (stdout if not specified)')
+    parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
+                       help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
     
     parsed_args = parser.parse_args(args)
     
@@ -311,6 +320,18 @@ Examples:
         return 1
     
     cache = Cache(parsed_args.cache_dir)
+    
+    # Parse theme weights
+    theme_weights = {}
+    if parsed_args.theme_weight:
+        for weight_spec in parsed_args.theme_weight:
+            try:
+                theme_name, weight_str = weight_spec.rsplit(':', 1)
+                weight = float(weight_str)
+                theme_weights[theme_name] = weight
+                print(f"Theme weight set: {theme_name} = {weight}")
+            except ValueError:
+                print(f"Warning: Invalid weight specification ignored: {weight_spec}", file=sys.stderr)
     
     # Determine target URLs
     target_urls = []
@@ -339,7 +360,14 @@ Examples:
     
     try:
         # Classify URLs
-        url_classifications = classify_all_urls(url_summaries, classification_data)
+        url_classifications = classify_all_urls(url_summaries, classification_data, theme_weights)
+        
+        # Display classification results
+        theme_counts = Counter(classification['theme'] for classification in url_classifications.values())
+        print("Classification results:")
+        for theme, count in theme_counts.most_common():
+            print(f"  {theme}: {count} URLs")
+        print(f"Classification completed: {len(url_classifications)} URLs")
         
         # Generate report
         if parsed_args.format == 'markdown':

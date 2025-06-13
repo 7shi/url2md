@@ -106,6 +106,9 @@ url2md report classification.json --output report.md
 
 # Specify URL subset
 url2md report classification.json --file urls.txt
+
+# Adjust theme weights for classification
+url2md report classification.json --theme-weight "Programming:1.5" --theme-weight "Education:0.8"
 ```
 
 ### `pipeline` - Complete workflow
@@ -120,6 +123,13 @@ url2md pipeline \
     --cache-dir cache \
     --playwright \
     --classification-output classification.json \
+    --output report.md
+
+# With theme weight adjustments
+url2md pipeline \
+    --file urls.txt \
+    --theme-weight "Programming:1.5" \
+    --theme-weight "Education:0.8" \
     --output report.md
 ```
 

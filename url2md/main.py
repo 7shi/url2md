@@ -69,6 +69,8 @@ For more information on each command, use:
     report_parser.add_argument('--cache-dir', type=Path, default=Path('cache'), help='Cache directory')
     report_parser.add_argument('--format', choices=['markdown', 'html'], default='markdown', help='Output format')
     report_parser.add_argument('-o', '--output', help='Output file (stdout if not specified)')
+    report_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
+                              help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
     
     # pipeline subcommand
     pipeline_parser = subparsers.add_parser('pipeline', help='Run complete pipeline (fetch → summarize → classify → report)')
@@ -211,6 +213,10 @@ def run_report(args) -> int:
         
         if args.output:
             report_args.extend(['-o', args.output])
+        
+        if hasattr(args, 'theme_weight') and args.theme_weight:
+            for weight_spec in args.theme_weight:
+                report_args.extend(['-t', weight_spec])
         
         return report_main(report_args)
         
