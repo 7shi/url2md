@@ -29,17 +29,14 @@ Examples:
   # Initialize cache directory (required first step, creates {DEFAULT_CACHE_DIR}/)
   %(prog)s init
 
-  # Standard workflow
+  # Step-by-step workflow
   %(prog)s fetch -u urls.txt --playwright
-  %(prog)s summarize -u urls.txt -l Japanese
-  %(prog)s classify -u urls.txt -o class.json -l Japanese
+  %(prog)s summarize -u urls.txt
+  %(prog)s classify -u urls.txt -o class.json
   %(prog)s report -u urls.txt -c class.json -o report.md
 
-  # Complete workflow (fetch → summarize → classify → report)
-  %(prog)s workflow -u urls.txt --playwright -c class.json -o report.md -l Japanese
-
-  # Global options (specify before subcommand)
-  %(prog)s --cache-dir /custom/cache fetch -u urls.txt
+  # Complete workflow in one command (fetch → summarize → classify → report)
+  %(prog)s workflow -u urls.txt --playwright -c class.json -o report.md
 
 For more information on each command, use:
   %(prog)s <command> --help

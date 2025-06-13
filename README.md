@@ -43,7 +43,7 @@ url2md follows a standard workflow to analyze URLs and generate reports:
 Here are the standard workflow commands (same as shown by `uv run url2md`):
 
 ```bash
-# Initialize cache directory (required first step)
+# Initialize cache directory (required first step, creates `url2md-cache/`)
 uv run url2md init
 
 # Step-by-step workflow
@@ -52,7 +52,7 @@ uv run url2md summarize -u urls.txt
 uv run url2md classify -u urls.txt -o class.json
 uv run url2md report -u urls.txt -c class.json -o report.md
 
-# Complete workflow in one command (after init)
+# Complete workflow in one command (fetch → summarize → classify → report)
 uv run url2md workflow -u urls.txt --playwright -c class.json -o report.md
 
 # With Japanese language output for AI operations
