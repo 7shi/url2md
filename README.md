@@ -72,12 +72,8 @@ These options must be specified before the subcommand:
 # Cache directory (applies to all commands)
 url2md --cache-dir /custom/cache <command> [options]
 
-# Debug mode (shows full stack traces)
-url2md --debug <command> [options]
-
 # Examples
 url2md --cache-dir /tmp/cache fetch -u urls.txt
-url2md --debug --cache-dir /custom/cache summarize -u urls.txt
 ```
 
 ### Cache Directory Detection

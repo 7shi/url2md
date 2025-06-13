@@ -105,7 +105,6 @@ uv run url2md [global-options] <subcommand> [options]
   - Priority: `./url2md-cache/cache.tsv` is preferred if it exists
   - Flexible naming: Any directory name containing `cache.tsv` is recognized
   - Initialization: If no cache found, requires `url2md init` to create one
-- `--debug`: Enable debug mode with full stack traces
 - `--version`: Show version information
 - `--help`: Show help message
 
@@ -122,8 +121,7 @@ uv run url2md [global-options] <subcommand> [options]
 1. **Argument Parsing**: All done in `main.py` using subparsers
 2. **Command Routing**: `run_subcommand()` dispatches to appropriate `run_*()` function
 3. **Function Import**: Each `run_*()` function imports only what it needs locally
-4. **Error Handling**: Exception-based, with try-catch only in `main()`
-5. **Debug Support**: `--debug` flag bypasses exception handling for full tracebacks
+4. **Error Handling**: Exception-based with natural propagation for debugging
 
 ### Available Subcommands
 
@@ -396,7 +394,7 @@ For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy
 - Use `print()` statements for user-facing progress information
 - Commands include progress bars using `tqdm`
 - Error messages should be clear and actionable
-- Use `--debug` flag for full stack traces during development: `uv run url2md --debug <command>`
+- Full stack traces are enabled by default for debugging during development
 
 ### Shell Commands
 - **Directory Changes**: When changing directories in shell commands, use subshells with parentheses `()` to avoid affecting the current shell's working directory:
