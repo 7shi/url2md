@@ -48,7 +48,8 @@ url2md/
 uv run url2md --help
 uv run url2md fetch "https://example.com"
 uv run url2md fetch -u urls.txt
-uv run url2md classify -u urls.txt -o classification.json
+uv run url2md summarize -u urls.txt -l Japanese
+uv run url2md classify -u urls.txt -o classification.json -l Japanese
 
 # Avoid direct Python execution
 python -m url2md        # ❌ Don't use this
@@ -119,12 +120,14 @@ uv run url2md <subcommand> [options]
    - Implementation: `url2md/summarize.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Create structured summaries using Gemini API
    - Schema: `schemas/summarize.json`
+   - **Language Support**: Use `-l/--language` to specify output language (e.g., Japanese, Chinese, French)
    
 3. **classify**: Classify content by topic
    - Implementation: `url2md/classify.py` (functions), `url2md/main.py` (CLI integration)
    - Purpose: Extract tags and classify by theme using LLM (default action)
    - Schema: `schemas/classify.json`
    - **Default Behavior**: Classification runs automatically unless `--extract-tags` or `--show-prompt` specified
+   - **Language Support**: Use `-l/--language` to specify output language for theme names and descriptions
    
 4. **report**: Generate Markdown reports
    - Implementation: `url2md/report.py` (functions), `url2md/main.py` (CLI integration)
@@ -133,6 +136,7 @@ uv run url2md <subcommand> [options]
 5. **workflow**: Complete workflow
    - Implementation: `url2md/main.py` (run_workflow function)
    - Purpose: Execute entire workflow (fetch → summarize → classify → report)
+   - **Language Support**: Use `-l/--language` to specify output language for summarize and classify steps
 
 ## Data Flow
 

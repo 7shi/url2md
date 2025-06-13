@@ -48,6 +48,11 @@ uv run url2md report -u urls.txt -c class.json -o report.md
 
 # Complete workflow in one command
 uv run url2md workflow -u urls.txt --playwright -c class.json -o report.md
+
+# With Japanese language output for AI operations
+uv run url2md summarize -u urls.txt -l Japanese
+uv run url2md classify -u urls.txt -o class.json -l Japanese
+uv run url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
 ```
 
 For more command details, use `uv run url2md <command> --help`.
@@ -98,6 +103,12 @@ url2md summarize --limit 10
 
 # Force re-summarize
 url2md summarize --force
+
+# Generate summaries in Japanese
+url2md summarize -u urls.txt -l Japanese
+
+# Generate summaries in Chinese
+url2md summarize -u urls.txt -l Chinese
 ```
 
 ### `classify` - Classify content by topic
@@ -114,6 +125,12 @@ url2md classify -u urls.txt -o classification.json
 
 # Show classification prompt only (no LLM call)
 url2md classify --show-prompt
+
+# Classify with Japanese theme names and descriptions
+url2md classify -u urls.txt -o classification.json -l Japanese
+
+# Show classification prompt in specified language
+url2md classify --show-prompt -l Japanese
 ```
 
 ### `report` - Generate Markdown reports
@@ -156,7 +173,43 @@ url2md workflow \
     -t "Programming:1.5" \
     -t "Education:0.8" \
     -o report.md
+
+# With Japanese language output for AI operations
+url2md workflow \
+    -u urls.txt \
+    -c classification.json \
+    -o report.md \
+    -l Japanese
 ```
+
+## Language Support
+
+url2md supports multi-language output for AI operations (summarize and classify commands):
+
+```bash
+# Supported languages (examples)
+url2md summarize -u urls.txt -l Japanese
+url2md summarize -u urls.txt -l Chinese
+url2md summarize -u urls.txt -l French
+url2md summarize -u urls.txt -l Spanish
+
+# Apply to classification as well
+url2md classify -u urls.txt -o class.json -l Japanese
+
+# Use in complete workflow
+url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
+```
+
+**Language Support Features:**
+- **Summarize**: Generates titles, summaries, and tags in specified language
+- **Classify**: Creates theme names and descriptions in specified language  
+- **Workflow**: Applies language setting to both summarize and classify steps
+- **Prompts**: Use `--show-prompt -l LANGUAGE` to see localized classification prompts
+
+**Notes:**
+- Language setting only affects AI-generated content (summaries, themes)
+- Original URLs and technical metadata remain unchanged
+- Any language name can be specified (e.g., "Japanese", "中文", "Français")
 
 ## Environment Variables
 

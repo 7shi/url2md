@@ -87,7 +87,7 @@ def get_frequent_tags_with_counts(tag_counter: Counter, min_frequency: int = 2) 
     return [(tag, count) for tag, count in tag_counter.items() if count >= min_frequency]
 
 
-def create_tag_classification_prompt(tag_counter: Counter) -> str:
+def create_tag_classification_prompt(tag_counter: Counter, language: str = None) -> str:
     """Generate prompt for tag classification"""
     # Get frequent tags with usage counts
     frequent_tags = get_frequent_tags_with_counts(tag_counter, min_frequency=2)
@@ -131,17 +131,20 @@ Requirements:
 
 The output should include complete tag frequency information for use in URL classification algorithms."""
     
+    if language:
+        prompt += f"\n\nIMPORTANT: Output all text content (theme names, descriptions) in {language}."
+    
     return prompt
 
 
 def classify_tags_with_llm(tag_counter: Counter, model: str = None, 
-                          schema_file: str = "schemas/classify.json") -> Dict[str, Any]:
+                          schema_file: str = "schemas/classify.json", language: str = None) -> Dict[str, Any]:
     """Classify tags using LLM and return structured result"""
     if model is None:
         model = models[0]  # Use default model
     
     # Generate prompt
-    prompt = create_tag_classification_prompt(tag_counter)
+    prompt = create_tag_classification_prompt(tag_counter, language)
     if not prompt:
         raise ValueError("No frequent tags found for classification")
     

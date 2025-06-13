@@ -24,10 +24,10 @@ def create_parser() -> argparse.ArgumentParser:
         epilog="""
 Examples:
   %(prog)s fetch -u urls.txt --playwright
-  %(prog)s summarize -u urls.txt
-  %(prog)s classify -u urls.txt -o class.json
+  %(prog)s summarize -u urls.txt -l Japanese
+  %(prog)s classify -u urls.txt -o class.json -l Japanese
   %(prog)s report -u urls.txt -c class.json -o report.md
-  %(prog)s workflow -u urls.txt --playwright -c class.json -o report.md
+  %(prog)s workflow -u urls.txt --playwright -c class.json -o report.md -l Japanese
 
 For more information on each command, use:
   %(prog)s <command> --help
@@ -60,6 +60,7 @@ For more information on each command, use:
     summarize_parser.add_argument('--limit', type=int, help='Maximum number to process')
     summarize_parser.add_argument('--force', action='store_true', help='Force re-summarize existing summaries')
     summarize_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
+    summarize_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
     # classify subcommand
     classify_parser = subparsers.add_parser('classify', help='Analyze tags and classify with LLM')
@@ -70,6 +71,7 @@ For more information on each command, use:
     classify_parser.add_argument('--show-prompt', action='store_true', help='Show classification prompt only (no LLM call)')
     classify_parser.add_argument('-o', '--output', required=True, help='Classification result output file (required)')
     classify_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
+    classify_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
     # report subcommand
     report_parser = subparsers.add_parser('report', help='Generate Markdown report from classification')
@@ -95,6 +97,7 @@ For more information on each command, use:
     workflow_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     workflow_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
                               help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
+    workflow_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
     return parser
 
@@ -185,7 +188,8 @@ def run_summarize(args) -> None:
         cache,
         force=args.force,
         limit=args.limit,
-        model=args.model
+        model=args.model,
+        language=getattr(args, 'language', None)
     )
 
 
@@ -232,7 +236,7 @@ def run_classify(args) -> None:
         display_tag_statistics(tag_counter)
     
     if args.show_prompt:
-        prompt = create_tag_classification_prompt(tag_counter)
+        prompt = create_tag_classification_prompt(tag_counter, language=getattr(args, 'language', None))
         if prompt:
             print("\n=== CLASSIFICATION PROMPT ===")
             print(prompt)
@@ -240,7 +244,7 @@ def run_classify(args) -> None:
             print("No frequent tags found for prompt generation")
     
     if perform_classification:
-        classification_result = classify_tags_with_llm(tag_counter, model=args.model)
+        classification_result = classify_tags_with_llm(tag_counter, model=args.model, language=getattr(args, 'language', None))
         
         # Save to file
         with open(args.output, 'w', encoding='utf-8') as f:
@@ -354,7 +358,8 @@ def run_workflow(args) -> None:
         hash=None,
         limit=None,
         force=getattr(args, 'force_summary', False),
-        model=args.model
+        model=args.model,
+        language=getattr(args, 'language', None)
     )
     run_summarize(summarize_args)
     
@@ -372,7 +377,8 @@ def run_workflow(args) -> None:
             extract_tags=False,
             show_prompt=False,
             output=classification_file,
-            model=args.model
+            model=args.model,
+            language=getattr(args, 'language', None)
         )
         run_classify(classify_args)
     

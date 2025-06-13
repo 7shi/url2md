@@ -20,7 +20,7 @@ from .models import URLInfo
 from .utils import extract_body_content, extract_html_title
 
 
-def generate_summary_prompt(url: str, content_type: str) -> str:
+def generate_summary_prompt(url: str, content_type: str, language: str = None) -> str:
     """Generate prompt for summarization"""
     prompt_parts = [
         "Please summarize the content of this document as structured JSON.",
@@ -35,10 +35,15 @@ def generate_summary_prompt(url: str, content_type: str) -> str:
         "- tags: List of tags representing the content (e.g., linguistics, mathematics, physics, programming, etc.)",
         "- is_valid_content: Whether this is meaningful content (true if not error page or empty page)",
     ]
+    
+    if language:
+        prompt_parts.append("")
+        prompt_parts.append(f"IMPORTANT: Output all text content (title, summaries, tags) in {language}.")
+    
     return "\n".join(prompt_parts)
 
 
-def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema_file: str = "schemas/summarize.json") -> Tuple[bool, Dict[str, Any], Optional[str]]:
+def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema_file: str = "schemas/summarize.json", language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]:
     """Generate structured JSON summary for a single file using Gemini"""
     if model is None:
         model = models[0]  # Use default model
@@ -59,7 +64,7 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
         config = config_from_schema(schema_file)
         
         # Generate prompt
-        prompt = generate_summary_prompt(url, content_type)
+        prompt = generate_summary_prompt(url, content_type, language)
         
         # For text/*, preprocess and read directly; otherwise upload
         uploaded_file = None
@@ -208,7 +213,7 @@ def filter_url_infos_by_hash(cache: Cache, target_hash: str) -> List[URLInfo]:
 
 
 def summarize_urls(url_infos: List[URLInfo], cache: Cache, force: bool = False, 
-                  limit: Optional[int] = None, model: str = None) -> None:
+                  limit: Optional[int] = None, model: str = None, language: str = None) -> None:
     """
     Summarize multiple URLs
     
@@ -218,6 +223,7 @@ def summarize_urls(url_infos: List[URLInfo], cache: Cache, force: bool = False,
         force: Force re-summarization of existing summaries
         limit: Maximum number to process
         model: Gemini model to use
+        language: Output language for summaries
     """
     if not url_infos:
         print("No URLs to summarize")
@@ -267,7 +273,7 @@ def summarize_urls(url_infos: List[URLInfo], cache: Cache, force: bool = False,
         for url_info in urls_to_summarize:
             pbar.set_description(f"Summarizing: {url_info.url[:50]}...")
             
-            success, summary_data, error = summarize_content(cache, url_info, model=model)
+            success, summary_data, error = summarize_content(cache, url_info, model=model, language=language)
             
             if success:
                 # Save summary to JSON file
