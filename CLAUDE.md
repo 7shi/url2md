@@ -74,11 +74,31 @@ Test and development dependencies:
 
 ## Command Architecture
 
-url2md follows a subcommand architecture:
+url2md follows a **centralized command architecture** with function modules:
 
 ```bash
 uv run url2md <subcommand> [options]
 ```
+
+### Implementation Strategy
+
+**Core Design Pattern:**
+- **Single Entry Point**: `url2md/main.py` serves as the central command orchestrator
+- **Function Modules**: Each subcommand is implemented as a pure function module (no standalone execution)
+- **Clean Separation**: CLI logic centralized, business logic distributed
+
+**Benefits of Centralized Architecture:**
+- **Reduced Code Volume**: Eliminates duplicate argparse implementations across modules
+- **Lower AI Context Consumption**: Smaller codebase requires less context for AI assistance
+- **Improved Maintainability**: Single point of CLI logic maintenance
+- **Consistent Error Handling**: Unified exception handling across all commands
+
+**Command Flow:**
+1. **Argument Parsing**: All done in `main.py` using subparsers
+2. **Command Routing**: `run_subcommand()` dispatches to appropriate `run_*()` function
+3. **Function Import**: Each `run_*()` function imports only what it needs locally
+4. **Error Handling**: Exception-based, with try-catch only in `main()`
+5. **Debug Support**: `--debug` flag bypasses exception handling for full tracebacks
 
 ### Available Subcommands
 
@@ -218,12 +238,31 @@ When testing:
 ### Common Development Tasks
 
 #### Adding a New Subcommand
-1. Create new module in `url2md/` (e.g., `new_command.py`) with core functions
-2. Add argument parser in `main.py`'s `create_parser()` function
-3. Add command handler function `run_new_command()` in `main.py`
-4. Update `run_subcommand()` function to include new command
-5. Update `__init__.py` if new functions need to be exported
-6. Add comprehensive tests covering all functionality
+
+**Development Phase (Standalone Module):**
+1. Create new module in `url2md/` (e.g., `new_command.py`) with standalone execution capability
+2. Include argparse, main() function, and `if __name__ == '__main__':` block for testing
+3. Implement core functions and test thoroughly as standalone script
+4. Use local imports and self-contained error handling during development
+5. Test extensively until functionality is stable
+
+**Integration Phase (Centralized Control):**
+1. Remove argparse imports and main() function from the module
+2. Keep only core functions (business logic)
+3. Add argument parser in `main.py`'s `create_parser()` function with `default_model` import
+4. Add command handler function `run_new_command()` in `main.py` with local imports
+5. Update `run_subcommand()` function to include new command case
+6. Follow import strategy: standard modules global, project modules local in run function
+7. Use exception-based error handling (no return codes)
+8. Update `__init__.py` if new functions need to be exported
+9. Add comprehensive tests covering all functionality
+10. Verify integration works correctly with existing command structure
+
+**Benefits of This Approach:**
+- **Safe Development**: Standalone testing without affecting main codebase
+- **Gradual Integration**: Control delegation only after stability confirmation
+- **Reduced Risk**: Isolated development prevents breaking existing commands
+- **Easier Debugging**: Standalone execution simplifies troubleshooting during development
 
 #### Modifying AI Operations
 1. Update relevant JSON schema in `schemas/`
@@ -313,8 +352,10 @@ uv run pytest -x
 - This CLAUDE.md provides development documentation
 
 ### Error Handling
-- Use appropriate exception types
-- Provide meaningful error messages
+- **Exception-based**: All `run_*()` functions use exceptions instead of return values
+- **Single Catch Point**: Only `main()` has try-except blocks
+- **Meaningful Messages**: ValueError for user errors, generic Exception for system errors
+- **Debug Mode**: `--debug` flag shows full stack traces for development
 - Graceful degradation when possible (e.g., fallback from Playwright to requests)
 
 ### Git Commit Messages
@@ -331,10 +372,12 @@ This package is designed to be independent and redistributable without dependenc
 
 ## Future Development
 
-The architecture is designed to be extensible:
-- New subcommands can be easily added
-- AI operations can be extended with new schemas
-- Output formats can be expanded beyond Markdown
-- Additional content types can be supported
+The centralized architecture is designed to be extensible:
+- **New subcommands**: Add function module + CLI integration in main.py
+- **AI operations**: Extend with new schemas and prompt generation
+- **Output formats**: Expand beyond Markdown with new format modules
+- **Content types**: Support additional types through fetch/utils modules
+- **Import optimization**: Standard modules global, project modules local
+- **Error handling**: Maintain exception-based pattern for consistency
 
-When making changes, maintain the modular architecture and ensure all components remain loosely coupled for maintainability.
+When making changes, maintain the centralized CLI pattern while keeping business logic in separate function modules for maintainability.
