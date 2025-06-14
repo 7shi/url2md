@@ -2,6 +2,8 @@
 
 URL analysis and classification tool - Generate Markdown reports from URLs through AI-powered content analysis, summarization, and classification.
 
+For output examples, see the [Wiki](https://github.com/7shi/url2md/wiki).
+
 ## Features
 
 - **URL Fetching**: Download and cache web content with support for dynamic rendering via Playwright
