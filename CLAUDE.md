@@ -57,17 +57,7 @@ url2md/
 **IMPORTANT**: Always use `uv run` for executing Python scripts and commands. See [README.md](README.md) for complete command examples.
 
 ### Dependencies
-Dependencies are managed in `pyproject.toml`. Key dependencies include:
-- **google-genai>=1.19.0**: Gemini API integration with thinking capabilities support
-- **requests>=2.31.0**: HTTP client
-- **playwright>=1.52.0**: Dynamic rendering (optional)
-- **tqdm>=4.67.1**: Progress bars
-- **minify-html>=0.16.4**: HTML minification
-- **pillow>=10.0.0**: Image processing (GIF→PNG conversion)
-- **colorama>=0.4.6**: Terminal color formatting for Markdown display
-
-### Environment Variables
-See [README.md](README.md#environment-variables) for required environment variables.
+Dependencies are managed in `pyproject.toml`. See [README.md](README.md#installation) for dependency details and [README.md](README.md#environment-variables) for required environment variables.
 
 ## Command Architecture
 
@@ -113,30 +103,7 @@ uv run url2md [global-options] <subcommand> [options]
 
 #### Adding a New Subcommand
 
-Use the **two-phase development approach**: start with a standalone module for prototyping, then integrate into the centralized architecture once stable.
-
-**Development Phase (Standalone Module):**
-1. Create new module in `url2md/` (e.g., `new_command.py`) with standalone execution capability
-2. Include argparse, main() function, and `if __name__ == '__main__':` block for testing
-3. Implement core functions and test thoroughly as standalone script
-4. Use local imports and self-contained error handling during development
-5. Test extensively until functionality is stable
-
-**Integration Phase (Centralized Control):**
-1. Remove argparse imports and main() function from the module
-2. Keep only core functions (business logic)
-3. Add argument parser in `main.py`'s `create_parser()` function with `default_model` import
-4. Add command handler function `run_new_command()` in `main.py` with local imports
-5. Update `run_subcommand()` function to include new command case
-6. Follow import strategy: standard modules global, project modules local in run function
-7. Use exception-based error handling (no return codes)
-8. Update `__init__.py` if new functions need to be exported
-9. Add comprehensive tests covering all functionality
-10. Verify integration works correctly with existing command structure
-
-**Benefits:** Safe development, gradual integration, reduced risk, easier debugging during development.
-
-For detailed rationale, see [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development).
+Use the **two-phase development approach**: start with standalone module for prototyping, then integrate into centralized architecture. See [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development) for detailed methodology and benefits.
 
 #### Modifying AI Operations
 1. Update relevant JSON schema in `url2md/schemas/`
@@ -152,126 +119,55 @@ For detailed rationale, see [NOTES.md](NOTES.md#development-methodology-two-phas
 3. Ensure backward compatibility with existing cache files
 
 #### Configuration Changes
-When modifying configurable values (directory names, defaults, etc.):
-1. **Define constants** in appropriate modules (e.g., `DEFAULT_CACHE_DIR` in `utils.py`)
-2. **Update all references** throughout the codebase to use the constant
-3. **Update documentation** to reflect new defaults (README.md, CLAUDE.md, help text)
-4. **Update tests** to use constants instead of hardcoded values
-5. **Update gitignore patterns** if directory names change
-6. **Verify consistency** across Examples, help text, and documentation
+When modifying configurable values: define constants in appropriate modules, update all references, documentation, tests, and verify consistency across examples and help text.
 
 ## Testing
 
-### Running Tests
-See [README.md](README.md#testing) for basic testing commands. 
-
 ### Test Execution Workflow
-Before making any changes to the codebase:
-1. Run `uv run pytest` to ensure all tests pass
-2. For development dependencies, use `uv sync --dev` if pytest is not available
-3. Fix any failing tests before proceeding with new development
-4. Run tests again after making changes to verify fixes
+Before making changes: run `uv run pytest`, fix any failures, then run tests again after changes.
 
-### Test Development Guidelines
-- Use descriptive test names that explain what is being tested
-- Include both positive and negative test cases
-- Test edge cases and error conditions
-- Use temporary directories for file system tests
-- Mock external dependencies appropriately
-- Follow the existing test patterns in the test suite
-- **Error Handling Tests**: Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases and `pytest.raises(ExceptionType)` for natural propagation
-- **Resource Access**: Use `get_resource_path()` for accessing schema files in tests
+### Key Guidelines
+- Use descriptive test names and test both positive/negative cases
+- Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases
+- Use `get_resource_path()` for accessing schema files in tests
+- Follow existing test patterns in the test suite
 
-For comprehensive testing philosophy, see [NOTES.md](NOTES.md#testing-philosophy-and-practices).
+See [docs/testing.md](docs/testing.md) for comprehensive testing guidelines and [README.md](README.md#testing) for basic commands.
 
 ## Debugging and Troubleshooting
 
-### Common Issues
-
-1. **Cache Not Found**: Run `uv run url2md init` to initialize cache directory before other commands
-2. **Import Errors**: Ensure using `uv run` instead of direct Python execution
-3. **Missing Dependencies**: Check `pyproject.toml` and run `uv sync`
-4. **API Errors**: Verify `GEMINI_API_KEY` environment variable
-5. **Playwright Issues**: Run `uv run playwright install` for browser support
-6. **Test Failures**: Run `uv run pytest -v` to see detailed test output and error messages
-7. **Tool Not Updated**: After code changes, use `uv cache clean url2md` before `uv tool install .` to ensure latest version
-
-### Logging and Debugging
-- Use `print()` statements for user-facing progress information
-- Commands include progress bars using `tqdm`
-- Error messages should be clear and actionable
-- Full stack traces are enabled by default for debugging during development
-
-### Shell Commands
-- **Directory Changes**: When changing directories in shell commands, use subshells with parentheses `()` to avoid affecting the current shell's working directory:
-  ```bash
-  # Correct - uses subshell, directory change doesn't persist
-  (cd tmp/test_dir && uv run pytest)
-  
-  # Avoid - changes current shell's directory
-  cd tmp/test_dir && uv run pytest
-  ```
+See [docs/troubleshooting.md](docs/troubleshooting.md) for comprehensive troubleshooting guide including common issues and debugging tips.
 
 ## Code Style and Conventions
 
 ### Constants and Configuration
-- **Centralized Constants**: Define configurable values as constants in appropriate modules
-  - Example: `DEFAULT_CACHE_DIR = "url2md-cache"` in `utils.py`
-  - Avoid hardcoding strings throughout the codebase
-  - Reference constants from a single source to enable easy configuration changes
+Define configurable values as constants in appropriate modules, avoid hardcoding strings, and reference constants from a single source.
 
 ### Import Organization
-- **Module-level imports**: Import commonly used project modules at the top of files
-  - Standard library imports first
-  - Third-party imports second  
-  - Project imports last
-- **Local imports**: Import specialized modules locally within functions when appropriate
-- **Avoid redundant imports**: If imported at module level, don't re-import in functions
+- Standard library imports first, third-party second, project imports last
+- Use local imports for specialized modules within functions
+- Avoid redundant imports
 
-### Language
-- All code, comments, and docstrings are in English
-- Function and variable names use snake_case
-- Class names use PascalCase
-- JSON schema files must use English descriptions only
-- Avoid language-specific instructions in schema descriptions
-
-### Documentation
-- All functions should have docstrings
-- Type hints are used throughout
-- README.md provides user documentation
-- This CLAUDE.md provides development documentation
+### Language and Style
+- All code, comments, and docstrings in English
+- Use snake_case for functions/variables, PascalCase for classes
+- All functions should have docstrings and type hints
 
 ## Error Handling
 
 **Core Policy**: Prioritize error visibility in development phase (0.1.0)
 
-- **Exception-based**: All `run_*()` functions use exceptions instead of return values
-- **Minimal main() handling**: Let errors propagate for full stack traces
+- **Exception-based**: All `run_*()` functions use exceptions, let errors propagate for full stack traces
 - **Localized try-catch**: Handle exceptions close to their source, avoid broad safety nets
-- **Centralized reporting**: Use `print_error_with_line()` for detailed error information
-- **File operation patterns**:
-  - User input files: Error → `sys.exit(1)`
-  - Output files: Error → Log and continue
-  - Critical system data: Error → `sys.exit(1)`
-  - Individual data items: Warning → Continue processing
+- **Fail fast**: User input files → `sys.exit(1)`, critical system data → `sys.exit(1)`
 - **Graceful degradation**: Only for optional operations (cache detection, HTML parsing)
 
-For detailed error handling guidelines, see [docs/error-handling.md](docs/error-handling.md).
+See [docs/error-handling.md](docs/error-handling.md) for detailed guidelines and [NOTES.md](NOTES.md#error-handling-philosophy) for philosophical background.
 
 ## Future Development
 
-The centralized architecture is designed to be extensible:
-- **New subcommands**: Add function module + CLI integration in main.py
-- **AI operations**: Extend with new schemas and prompt generation
-- **Output formats**: Expand beyond Markdown with new format modules
-- **Content types**: Support additional types through fetch/utils modules
-- **Import optimization**: Standard modules global, project modules local
-- **Error handling**: Maintain exception-based pattern for consistency
-
-When making changes, maintain the centralized CLI pattern while keeping business logic in separate function modules for maintainability.
+The centralized architecture supports extension through new subcommands (function module + CLI integration), AI operations (new schemas), output formats, and content types. Maintain centralized CLI patterns while keeping business logic in separate function modules.
 
 ## Development Philosophy
 
-This project evolved through an iterative refinement process, gradually moving from unclear requirements to a clean, coherent design. The development approach resembles a "diffusion model" - starting from noisy prototypes and systematically removing complexity while enhancing clarity.
-
-For detailed lessons learned and development philosophy, see [NOTES.md](NOTES.md).
+This project evolved through iterative refinement, resembling a "diffusion model" - starting from noisy prototypes and systematically removing complexity while enhancing clarity. See [NOTES.md](NOTES.md) for detailed lessons learned and development philosophy.

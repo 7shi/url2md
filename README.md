@@ -399,7 +399,8 @@ For detailed testing commands and development workflows, see [CLAUDE.md](CLAUDE.
 ## Documentation
 
 - **[README.md](README.md)** - User documentation and command reference
-- **[CLAUDE.md](CLAUDE.md)** - Development guidelines and technical specifications  
-- **[NOTES.md](NOTES.md)** - Development philosophy and lessons learned
-- **[docs/error-handling.md](docs/error-handling.md)** - Error handling policies and patterns
-- **[docs/resource-support.md](docs/resource-support.md)** - Resource handling and packaging details
+- **[CLAUDE.md](CLAUDE.md)** - Development guidelines and workflow
+- **[NOTES.md](NOTES.md)** - Development philosophy and key lessons
+- **[docs/](docs/)** - Specialized documentation for architecture, testing, troubleshooting, and detailed development guidance
+
+For a complete overview of all documentation files and their purposes, see **[docs/README.md](docs/README.md)**.
