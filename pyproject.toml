@@ -1,6 +1,6 @@
 [project]
 name = "url2md"
-version = "0.1.0"
+version = "0.2.0"
 description = "URL analysis and classification tool - Generate Markdown reports from URLs"
 readme = "README.md"
 requires-python = ">=3.10"
