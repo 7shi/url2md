@@ -302,3 +302,58 @@ def summarize_urls(url_infos: List[URLInfo], cache: Cache, force: bool = False,
     print(f"Errors: {error_count}")
 
 
+def show_summary_files(cache: Cache, url_infos: List[URLInfo]) -> None:
+    """Display summary file paths and contents for specified URLs"""
+    if not url_infos:
+        print("No URLs specified")
+        return
+    
+    for i, url_info in enumerate(url_infos):
+        if i > 0:
+            print()  # Add blank line between entries
+        
+        # Get summary file path
+        summary_file = cache.get_summary_path(url_info)
+        
+        print(f"URL: {url_info.url}")
+        
+        if not summary_file or not summary_file.exists():
+            print(f"Summary file: Not found")
+            continue
+        
+        print(f"Summary file: {summary_file}")
+        
+        # Display formatted content
+        try:
+            with open(summary_file, 'r', encoding='utf-8') as f:
+                summary_data = json.load(f)
+            
+            print("Content:")
+            print(f"  Title: {summary_data.get('title', 'N/A')}")
+            print(f"  Content Type: {summary_data.get('content_type', 'N/A')}")
+            print(f"  File Size: {summary_data.get('file_size', 'N/A')}")
+            print(f"  Generated: {summary_data.get('generated', 'N/A')}")
+            print(f"  Status: {summary_data.get('status', 'N/A')}")
+            print(f"  Valid Content: {summary_data.get('is_valid_content', 'N/A')}")
+            
+            if 'summary_one_line' in summary_data:
+                print(f"  One-line Summary: {summary_data['summary_one_line']}")
+            
+            if 'summary_detailed' in summary_data:
+                detailed = summary_data['summary_detailed']
+                if len(detailed) > 200:
+                    print(f"  Detailed Summary: {detailed[:200]}...")
+                else:
+                    print(f"  Detailed Summary: {detailed}")
+            
+            if 'tags' in summary_data:
+                tags = summary_data['tags']
+                if isinstance(tags, list):
+                    print(f"  Tags ({len(tags)}): {', '.join(tags)}")
+                else:
+                    print(f"  Tags: {tags}")
+        
+        except Exception as e:
+            print_error_with_line(f"Error reading summary file {summary_file}", e)
+
+

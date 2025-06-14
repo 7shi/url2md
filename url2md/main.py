@@ -72,6 +72,7 @@ For more information on each command, use:
     summarize_parser.add_argument('--hash', help='Summarize specific hash only')
     summarize_parser.add_argument('--limit', type=int, help='Maximum number to process')
     summarize_parser.add_argument('--force', action='store_true', help='Force re-summarize existing summaries')
+    summarize_parser.add_argument('--show-summary', action='store_true', help='Show summary file paths and contents for specified URLs')
     summarize_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
     summarize_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
@@ -203,11 +204,7 @@ def run_fetch(args) -> None:
 
 def run_summarize(args) -> None:
     """Run summarize subcommand"""
-    from .summarize import summarize_urls, filter_url_infos_by_urls, filter_url_infos_by_hash
-    
-    # Check environment variable
-    if not os.environ.get("GEMINI_API_KEY"):
-        raise ValueError("GEMINI_API_KEY environment variable not set")
+    from .summarize import summarize_urls, filter_url_infos_by_urls, filter_url_infos_by_hash, show_summary_files
     
     cache = Cache(args.cache_dir)
     
@@ -227,6 +224,15 @@ def run_summarize(args) -> None:
         url_infos = filter_url_infos_by_urls(cache, target_urls)
     else:
         url_infos = cache.get_all()
+    
+    # Handle --show-summary option
+    if args.show_summary:
+        show_summary_files(cache, url_infos)
+        return
+    
+    # Check environment variable for summarization
+    if not os.environ.get("GEMINI_API_KEY"):
+        raise ValueError("GEMINI_API_KEY environment variable not set")
     
     summarize_urls(
         url_infos,

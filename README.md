@@ -156,6 +156,10 @@ url2md summarize "https://example.com"
 # Summarize URLs from file
 url2md summarize -u urls.txt
 
+# Show summary file paths and contents for specified URLs
+url2md summarize --show-summary "https://example.com"
+url2md summarize --show-summary -u urls.txt
+
 # Limit number of summaries
 url2md summarize --limit 10
 
