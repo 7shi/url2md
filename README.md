@@ -208,6 +208,15 @@ url2md report "https://example.com" -c classification.json -o report.md
 
 # Adjust theme weights for classification
 url2md report -c classification.json -t "Programming:1.5" -t "Education:0.8"
+
+# Create tag subsections within themes (add $ suffix)
+url2md report -c classification.json -t "Programming:1.5$" -t "Education:0.8"
+
+# Load theme weights from file
+url2md report -c classification.json -T theme-weights.txt
+
+# Mix file and command-line theme weights
+url2md report -c classification.json -T theme-weights.txt -t "Emergency:2.0$"
 ```
 
 ### `workflow` - Complete workflow
@@ -229,6 +238,14 @@ url2md workflow \
     -c classification.json \
     -t "Programming:1.5" \
     -t "Education:0.8" \
+    -o report.md
+
+# With tag subsections and theme weight file
+url2md workflow \
+    -u urls.txt \
+    -c classification.json \
+    -T theme-weights.txt \
+    -t "Emergency:2.0$" \
     -o report.md
 
 # With Japanese language output for AI operations
@@ -336,6 +353,20 @@ url2md-cache/
     "classification_approach": "Grouped related tags into thematic categories"
   }
 }
+```
+
+### Theme Weight File Format
+```
+# Comments start with #
+Programming:1.5
+Education:0.8
+
+# Add $ suffix to create tag subsections
+Research:1.2$
+Technology:0.9$
+
+# Empty lines are ignored
+Business:1.0
 ```
 
 ## License

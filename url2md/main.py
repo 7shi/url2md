@@ -92,8 +92,9 @@ For more information on each command, use:
     report_parser.add_argument('-c', '--class', dest='classification', required=True, help='Classification result JSON file')
     report_parser.add_argument('--format', choices=['markdown', 'html'], default='markdown', help='Output format')
     report_parser.add_argument('-o', '--output', help='Output file (stdout if not specified)')
-    report_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
-                              help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
+    report_parser.add_argument('-t', '--theme-weight', action='append', metavar='THEME:WEIGHT',
+                              help='Theme weight adjustment (e.g., -t "Theme Name:0.7"). Add $ suffix to create subsections (e.g., -t "Theme Name:1.5$")')
+    report_parser.add_argument('-T', '--theme-weight-file', help='File containing theme weights (one per line)')
     
     # workflow subcommand
     workflow_parser = subparsers.add_parser('workflow', help='Run complete workflow (fetch → summarize → classify → report)')
@@ -105,8 +106,9 @@ For more information on each command, use:
     workflow_parser.add_argument('--force-summary', action='store_true', help='Force re-summarize')
     workflow_parser.add_argument('--playwright', action='store_true', help='Use Playwright for fetch')
     workflow_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
-    workflow_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
-                              help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
+    workflow_parser.add_argument('-t', '--theme-weight', action='append', metavar='THEME:WEIGHT',
+                              help='Theme weight adjustment (e.g., -t "Theme Name:0.7"). Add $ suffix to create subsections (e.g., -t "Theme Name:1.5$")')
+    workflow_parser.add_argument('-T', '--theme-weight-file', help='File containing theme weights (one per line)')
     workflow_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
     return parser
@@ -316,15 +318,56 @@ def run_report(args) -> None:
     
     cache = Cache(args.cache_dir)
     
-    # Parse theme weights
+    # Parse theme weights and subsections
     theme_weights = {}
+    theme_subsections = []
+    
+    # First, load from file if specified
+    if hasattr(args, 'theme_weight_file') and args.theme_weight_file:
+        try:
+            with open(args.theme_weight_file, 'r', encoding='utf-8') as f:
+                for line_num, line in enumerate(f, 1):
+                    line = line.strip()
+                    # Skip comments and empty lines
+                    if not line or line.startswith('#'):
+                        continue
+                    try:
+                        theme_name, weight_str = line.rsplit(':', 1)
+                        # Check for subsection marker
+                        if weight_str.endswith('$'):
+                            weight = float(weight_str[:-1])
+                            theme_subsections.append(theme_name)
+                        else:
+                            weight = float(weight_str)
+                        theme_weights[theme_name] = weight
+                        print(f"Theme weight set from file: {theme_name} = {weight}" + (" (with subsections)" if theme_name in theme_subsections else ""))
+                    except ValueError as e:
+                        print(f"Error: Invalid weight specification in {args.theme_weight_file}:{line_num}: {line}", file=sys.stderr)
+                        sys.exit(1)
+        except FileNotFoundError:
+            print(f"Error: Theme weight file not found: {args.theme_weight_file}", file=sys.stderr)
+            sys.exit(1)
+        except Exception as e:
+            print_error_with_line("Error reading theme weight file", e)
+            sys.exit(1)
+    
+    # Then, process command-line theme weights (these can override file settings)
     if hasattr(args, 'theme_weight') and args.theme_weight:
         for weight_spec in args.theme_weight:
             try:
                 theme_name, weight_str = weight_spec.rsplit(':', 1)
-                weight = float(weight_str)
+                # Check for subsection marker
+                if weight_str.endswith('$'):
+                    weight = float(weight_str[:-1])
+                    if theme_name not in theme_subsections:
+                        theme_subsections.append(theme_name)
+                else:
+                    weight = float(weight_str)
+                    # Remove from subsections if it was set in file
+                    if theme_name in theme_subsections and not weight_str.endswith('$'):
+                        theme_subsections.remove(theme_name)
                 theme_weights[theme_name] = weight
-                print(f"Theme weight set: {theme_name} = {weight}")
+                print(f"Theme weight set: {theme_name} = {weight}" + (" (with subsections)" if theme_name in theme_subsections else ""))
             except ValueError as e:
                 print(f"Error: Invalid weight specification: {weight_spec}", file=sys.stderr)
                 sys.exit(1)
@@ -359,12 +402,14 @@ def run_report(args) -> None:
     theme_counts = Counter(classification['theme'] for classification in url_classifications.values())
     print("Classification results:")
     for theme, count in theme_counts.most_common():
-        print(f"  {theme}: {count} URLs")
+        subsection_marker = " (subsection)" if theme in theme_subsections else ""
+        print(f"  {theme}: {count} URLs{subsection_marker}")
     print(f"Classification completed: {len(url_classifications)} URLs")
     
     # Generate report
     if args.format == 'markdown':
-        report_content = generate_markdown_report(url_classifications, classification_data, url_summaries)
+        report_content = generate_markdown_report(url_classifications, classification_data, url_summaries,
+                                                theme_subsections=theme_subsections)
     else:
         raise ValueError(f"Format '{args.format}' not yet implemented")
     
@@ -445,7 +490,8 @@ def run_workflow(args) -> None:
         cache_dir=args.cache_dir,
         format='markdown',
         output=args.output,
-        theme_weight=getattr(args, 'theme_weight', None)
+        theme_weight=getattr(args, 'theme_weight', None),
+        theme_weight_file=getattr(args, 'theme_weight_file', None)
     )
     run_report(report_args)
     

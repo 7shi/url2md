@@ -158,14 +158,57 @@ def classify_all_urls(url_summaries: Dict[str, Dict], classification_data: Dict,
     return url_classifications
 
 
+def group_urls_by_tag_in_theme(urls_with_scores: List[Tuple[str, float]], theme_tags: List[str], 
+                               url_summaries: Dict[str, Dict]) -> Dict[str, List[Tuple[str, float]]]:
+    """Group URLs by their first matching tag within a theme
+    
+    Args:
+        urls_with_scores: List of (url, score) tuples for the theme
+        theme_tags: List of tags belonging to the theme
+        url_summaries: URL summary data containing tags
+    
+    Returns:
+        Dict[str, List[Tuple[str, float]]]: tag -> [(url, score), ...] mapping
+    """
+    tag_groups = {}
+    untagged = []
+    
+    for url, score in urls_with_scores:
+        summary = url_summaries.get(url, {})
+        url_tags = summary.get('tags', [])
+        
+        # Find first matching tag
+        matched = False
+        for theme_tag in theme_tags:
+            for url_tag in url_tags:
+                if calculate_tag_match_weight(url_tag, theme_tag) > 0:
+                    if theme_tag not in tag_groups:
+                        tag_groups[theme_tag] = []
+                    tag_groups[theme_tag].append((url, score))
+                    matched = True
+                    break
+            if matched:
+                break
+        
+        if not matched:
+            untagged.append((url, score))
+    
+    # Add untagged if any
+    if untagged:
+        tag_groups['_untagged'] = untagged
+    
+    return tag_groups
+
+
 def generate_markdown_report(url_classifications: Dict[str, Dict], classification_data: Dict, 
-                           url_summaries: Dict[str, Dict]) -> str:
+                           url_summaries: Dict[str, Dict], theme_subsections: Optional[List[str]] = None) -> str:
     """Generate Markdown format report
     
     Args:
         url_classifications: URL -> {theme, score} mapping
         classification_data: Theme classification data
         url_summaries: URL summary data
+        theme_subsections: List of theme names to create subsections for
     
     Returns:
         str: Markdown report content
@@ -178,9 +221,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     
     # Generate report
     lines = []
-    lines.append("# URL Analysis Report")
-    lines.append("")
-    lines.append("## Summary")
+    lines.append("# Summary")
     lines.append("")
     lines.append(f"- **Total URLs**: {total_urls:,}")
     if total_urls > 0:
@@ -192,7 +233,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     lines.append("")
     
     # Theme distribution
-    lines.append("## Theme Distribution")
+    lines.append("# Theme Distribution")
     lines.append("")
     
     themes_data = classification_data.get('themes', [])
@@ -201,10 +242,6 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
         percentage = count / total_urls * 100
         lines.append(f"- **{theme_name}**: {count} URLs ({percentage:.1f}%)")
     
-    lines.append("")
-    
-    # URLs by theme
-    lines.append("## URLs by Theme")
     lines.append("")
     
     # Group URLs by theme
@@ -226,7 +263,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
         if theme_name not in urls_by_theme:
             continue
         urls_with_scores = urls_by_theme[theme_name]
-        lines.append(f"### {theme_name} ({len(urls_with_scores)} URLs)")
+        lines.append(f"## {theme_name} ({len(urls_with_scores)} URLs)")
         lines.append("")
         
         # Add theme description if available
@@ -237,19 +274,63 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
         # Sort by score descending
         urls_with_scores.sort(key=lambda x: x[1], reverse=True)
         
-        for url, score in urls_with_scores:
-            summary = url_summaries.get(url, {})
-            title = summary.get('title', [''])[0] if summary.get('title') else url
-            one_line = summary.get('summary_one_line', '')
+        if theme_subsections and theme_name in theme_subsections:
+            # Get theme tags
+            theme_tags = []
+            for theme_info in themes_data:
+                if theme_info.get('theme_name', '') == theme_name:
+                    theme_tags = theme_info.get('tags', [])
+                    break
             
-            lines.append(f"- [{title}]({url})" + ("  " if one_line else ""))
-            if one_line:
-                lines.append(f"  {one_line}")
-            lines.append("")
+            # Group URLs by tags
+            tag_groups = group_urls_by_tag_in_theme(urls_with_scores, theme_tags, url_summaries)
+            
+            # Output by tag subsections (preserve theme_tags order)
+            for theme_tag in theme_tags:
+                if theme_tag in tag_groups:
+                    tag_urls = tag_groups[theme_tag]
+                    lines.append(f"### {theme_tag}")
+                    lines.append("")
+                    
+                    for url, score in tag_urls:
+                        summary = url_summaries.get(url, {})
+                        title = summary.get('title', [''])[0] if summary.get('title') else url
+                        one_line = summary.get('summary_one_line', '')
+                        
+                        lines.append(f"- [{title}]({url})" + ("  " if one_line else ""))
+                        if one_line:
+                            lines.append(f"  {one_line}")
+                        lines.append("")
+            
+            # Output untagged URLs if any
+            if '_untagged' in tag_groups:
+                lines.append("### Other")
+                lines.append("")
+                
+                for url, score in tag_groups['_untagged']:
+                    summary = url_summaries.get(url, {})
+                    title = summary.get('title', [''])[0] if summary.get('title') else url
+                    one_line = summary.get('summary_one_line', '')
+                    
+                    lines.append(f"- [{title}]({url})" + ("  " if one_line else ""))
+                    if one_line:
+                        lines.append(f"  {one_line}")
+                    lines.append("")
+        else:
+            # Original flat list output
+            for url, score in urls_with_scores:
+                summary = url_summaries.get(url, {})
+                title = summary.get('title', [''])[0] if summary.get('title') else url
+                one_line = summary.get('summary_one_line', '')
+                
+                lines.append(f"- [{title}]({url})" + ("  " if one_line else ""))
+                if one_line:
+                    lines.append(f"  {one_line}")
+                lines.append("")
     
     # Unclassified URLs
     if unclassified_count > 0:
-        lines.append(f"### Unclassified ({unclassified_count} URLs)")
+        lines.append(f"## Unclassified ({unclassified_count} URLs)")
         lines.append("")
         
         classified_urls = set(url_classifications.keys())
