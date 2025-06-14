@@ -51,6 +51,10 @@ For more information on each command, use:
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
+    # init subcommand
+    init_parser = subparsers.add_parser('init', help='Initialize cache directory')
+    init_parser.add_argument('directory', nargs='?', default=None, help=f'Cache directory name (default: {DEFAULT_CACHE_DIR})')
+    
     # fetch subcommand
     fetch_parser = subparsers.add_parser('fetch', help='Fetch URLs and store in cache')
     fetch_parser.add_argument('urls', nargs='*', help='URLs to fetch (multiple allowed)')
@@ -90,10 +94,6 @@ For more information on each command, use:
     report_parser.add_argument('-o', '--output', help='Output file (stdout if not specified)')
     report_parser.add_argument('--theme-weight', '-t', action='append', metavar='THEME:WEIGHT',
                               help='Theme weight adjustment (e.g., -t "Theme Name:0.7")')
-    
-    # init subcommand
-    init_parser = subparsers.add_parser('init', help='Initialize cache directory')
-    init_parser.add_argument('directory', nargs='?', default=None, help=f'Cache directory name (default: {DEFAULT_CACHE_DIR})')
     
     # workflow subcommand
     workflow_parser = subparsers.add_parser('workflow', help='Run complete workflow (fetch → summarize → classify → report)')
