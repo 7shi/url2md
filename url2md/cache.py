@@ -15,6 +15,8 @@ from typing import Dict, List, Optional
 
 from .urlinfo import URLInfo
 from .utils import print_error_with_line
+from .tsv_manager import TSVManager
+from .translation_cache import TranslationCache
 
 
 @dataclass
@@ -25,7 +27,7 @@ class CacheResult:
     downloaded: bool
 
 
-class Cache:
+class Cache(TSVManager):
     """Class for managing cache"""
     
     def __init__(self, cache_dir: Path = Path("cache")):
@@ -34,16 +36,18 @@ class Cache:
         self._entries: Dict[str, URLInfo] = {}  # url -> URLInfo
         self._domain_access_times: Dict[str, datetime] = {}
         
+        # Initialize TSV manager
+        super().__init__(cache_dir / "cache.tsv")
+        
+        # Initialize translation cache
+        self.translation_cache = TranslationCache(cache_dir)
+        
         # Create directories
         self._create_cache_directories()
         
         # Load existing data
         self.load()
     
-    @property
-    def tsv_path(self) -> Path:
-        """Path to cache.tsv"""
-        return self._cache_dir / "cache.tsv"
     
     @property
     def content_dir(self) -> Path:
@@ -67,26 +71,21 @@ class Cache:
     
     def load(self) -> None:
         """Load data from cache.tsv"""
-        if not self.tsv_path.exists():
-            return
-        
-        self._entries.clear()
         try:
-            with open(self.tsv_path, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
+            super().load()  # Load TSV data
         except Exception as e:
             print_error_with_line("Error", e)
             print("Cannot open cache file:", self.tsv_path, file=sys.stderr)
             sys.exit(1)
         
-        # Skip header line
-        if lines:
-            lines = lines[1:]
-        
-        for line in lines:
-            line = line.strip()
-            if line:
+        self._entries.clear()
+        for row in self.data:
+            if len(row) >= 7:  # Ensure we have minimum required columns
                 try:
+                    # Pad row to 8 columns if necessary (for missing error field)
+                    while len(row) < 8:
+                        row.append('')
+                    line = '\t'.join(row)
                     url_info = URLInfo.from_tsv_line(line)
                     self._entries[url_info.url] = url_info
                 except ValueError as e:
@@ -95,21 +94,17 @@ class Cache:
     def save(self) -> None:
         """Save data to cache.tsv"""
         try:
-            # Save to temporary file
-            temp_path = self.tsv_path.with_suffix('.tmp')
-            with open(temp_path, 'w', encoding='utf-8') as f:
-                # Write header
-                header = ['url', 'hash', 'filename', 'fetch_date', 'status', 'content_type', 'size', 'error']
-                f.write('\t'.join(header) + '\n')
-                
-                # Write data
-                for url_info in self._entries.values():
-                    f.write(url_info.to_tsv_line() + '\n')
+            # Prepare header and data
+            self.header = ['url', 'hash', 'filename', 'fetch_date', 'status', 'content_type', 'size', 'error']
+            self.data = []
             
-            # Atomic operation with rename
-            if self.tsv_path.exists():
-                self.tsv_path.unlink()
-            temp_path.rename(self.tsv_path)
+            # Convert URLInfo entries to TSV rows
+            for url_info in self._entries.values():
+                line = url_info.to_tsv_line()
+                self.data.append(line.split('\t'))
+            
+            # Save using parent class
+            super().save()
             
         except Exception as e:
             print_error_with_line("Error: cache.tsv save error", e)

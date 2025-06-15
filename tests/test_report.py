@@ -3,8 +3,12 @@
 Unit tests for report.py module
 """
 
+import tempfile
+from pathlib import Path
+
 import pytest
 from url2md.report import calculate_tag_match_weight, classify_url_to_theme, generate_markdown_report, group_urls_by_tag_in_theme
+from url2md.cache import Cache
 
 
 class TestCalculateTagMatchWeight:
@@ -256,7 +260,9 @@ class TestGenerateMarkdownReport:
             }
         }
         
-        report = generate_markdown_report(url_classifications, classification_data, url_summaries)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache = Cache(Path(temp_dir))
+            report = generate_markdown_report(cache, url_classifications, classification_data, url_summaries)
         
         # Check basic structure
         assert "# Summary" in report
@@ -296,7 +302,9 @@ class TestGenerateMarkdownReport:
             }
         }
         
-        report = generate_markdown_report(url_classifications, classification_data, url_summaries)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache = Cache(Path(temp_dir))
+            report = generate_markdown_report(cache, url_classifications, classification_data, url_summaries)
         
         assert "**Total URLs**: 2" in report
         assert "**Classified**: 1" in report
@@ -310,7 +318,9 @@ class TestGenerateMarkdownReport:
         classification_data = {"themes": {}}
         url_summaries = {}
         
-        report = generate_markdown_report(url_classifications, classification_data, url_summaries)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache = Cache(Path(temp_dir))
+            report = generate_markdown_report(cache, url_classifications, classification_data, url_summaries)
         
         assert "# Summary" in report
         assert "**Total URLs**: 0" in report

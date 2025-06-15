@@ -9,12 +9,16 @@ import sys
 import json
 from collections import Counter
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models
 from .urlinfo import URLInfo
 from .utils import get_resource_path, print_error_with_line
+
+
+# Global list of terms that need translation
+TRANSLATION_TERMS = ['Summary', 'Themes', 'Total URLs', 'Classified', 'Unclassified', 'URLs', 'Other']
 
 
 def extract_tags(cache: Cache, url_infos: List[URLInfo]) -> List[str]:
@@ -142,7 +146,7 @@ The output should include complete tag frequency information for use in URL clas
     return prompt
 
 
-def classify_tags_with_llm(tag_counter: Counter, model: str = None, 
+def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str = None, 
                           schema_file: str = None, language: str = None) -> Dict[str, Any]:
     """Classify tags using LLM and return structured result"""
     if model is None:
@@ -186,11 +190,14 @@ def classify_tags_with_llm(tag_counter: Counter, model: str = None,
     # Parse JSON response
     classification_data = json.loads(response.strip())
     
-    # Add translations if language is specified
+    # Add language information if specified
     if language:
-        translations = translate_report_terms(language, model)
-        classification_data['translations'] = translations
-        
+        classification_data['language'] = language
+    
+    # Handle translation if language is specified and translation is needed
+    if language and needs_translation(language, cache):
+        translate_report_terms(language, model, cache)
+    
     return classification_data
 
 
@@ -203,28 +210,46 @@ def create_translation_prompt(language: str) -> str:
     Returns:
         str: Translation prompt
     """
+    # Generate term list from global constant
+    term_list = '\n'.join(f'- {term}' for term in TRANSLATION_TERMS)
+    
     return f"""Please translate the following report terms to {language}:
-- Summary
-- Themes
-- Total URLs
-- Classified
-- Unclassified
-- URLs
-- Other
+{term_list}
 
 Return the translations in the exact same order as provided.
 Keep the translations concise and appropriate for report headers."""
 
 
-def translate_report_terms(language: str, model: str = None) -> Dict[str, str]:
-    """Translate report terms to specified language
+def needs_translation(language: str, cache: Optional[Cache] = None) -> bool:
+    """Check if translation is needed for the given language
+    
+    Args:
+        language: Target language to check
+        cache: Cache instance for checking existing translations
+    
+    Returns:
+        bool: True if translation is needed, False if all terms are cached
+    """
+    if not cache or not cache.translation_cache:
+        return True
+    
+    for term in TRANSLATION_TERMS:
+        if not cache.translation_cache.get_translation(term, language):
+            return True
+    
+    return False
+
+
+def translate_report_terms(language: str, model: str = None, cache: Optional[Cache] = None) -> None:
+    """Translate report terms to specified language and update cache
     
     Args:
         language: Target language for translation
         model: Model to use (default: first available model)
+        cache: Cache instance for storing translations
     
     Returns:
-        Dict[str, str]: Mapping of English terms to translated terms
+        None: Translations are stored in cache
     """
     if model is None:
         model = models[0]  # Use default model
@@ -237,8 +262,19 @@ def translate_report_terms(language: str, model: str = None) -> Dict[str, str]:
         with open(schema_path, 'r', encoding='utf-8') as f:
             schema_content = f.read()
         
-        # Replace {language} placeholder with actual language
-        schema_content = schema_content.replace('{language}', language)
+        # Generate schema properties and required fields from TRANSLATION_TERMS
+        properties = []
+        required = []
+        for term in TRANSLATION_TERMS:
+            properties.append(f'"{term}": {{"type": "string", "description": "Translation of \'{term}\' to {language}"}}')
+            required.append(f'"{term}"')
+        
+        properties_str = ', '.join(properties)
+        required_str = ', '.join(required)
+        
+        # Replace placeholders
+        schema_content = schema_content.replace('```translation_properties```', properties_str)
+        schema_content = schema_content.replace('```translation_required```', required_str)
         
         config = config_from_schema_string(schema_content)
     except Exception as e:
@@ -251,8 +287,14 @@ def translate_report_terms(language: str, model: str = None) -> Dict[str, str]:
     
     # Parse JSON response
     translation_data = json.loads(response.strip())
+    llm_translations = translation_data.get('translations', {})
     
-    return translation_data.get('translations', {})
+    # Add to cache if available
+    if cache and cache.translation_cache:
+        for term, translation in llm_translations.items():
+            if term in TRANSLATION_TERMS:  # Only cache the predefined terms
+                cache.translation_cache.add_translation(term, language, translation)
+        cache.translation_cache.save()
 
 
 def filter_url_infos_by_urls(cache: Cache, target_urls: List[str]) -> List[URLInfo]:

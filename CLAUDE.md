@@ -39,7 +39,8 @@ url2md/
 ├── CHANGELOG.md            # Version history following Keep a Changelog format
 ├── NOTES.md                # Development philosophy and lessons learned
 ├── docs/                  # Additional documentation
-│   └── resource-support.md # Resource handling documentation
+│   ├── resource-support.md # Resource handling documentation
+│   └── translation-strategy.md # Translation implementation details
 ├── tests/                 # Test directory with comprehensive test suite
 │   ├── test_report.py          # Core report functionality tests
 │   ├── test_report_translations.py # Report translation functionality tests
@@ -49,6 +50,8 @@ url2md/
     ├── main.py           # CLI entry point and subcommand dispatcher
     ├── urlinfo.py        # Data models (URLInfo, load_urls_from_file)
     ├── cache.py          # Cache management (Cache, CacheResult)
+    ├── tsv_manager.py    # Base class for TSV file operations
+    ├── translation_cache.py # Translation caching system
     ├── fetch.py          # URL fetching functions
     ├── summarize.py      # AI summarization functions
     ├── classify.py       # Tag classification functions
@@ -133,11 +136,14 @@ Use the **two-phase development approach**: start with standalone module for pro
 - Translation functionality: `create_translation_prompt()` for prompt generation, `translate_report_terms()` for execution
 
 #### Report Translation Implementation
-- Translation data is included in classification JSON when language is specified
-- Report generation (`generate_markdown_report()`) automatically uses translations when available
-- Translation terms: "Summary", "Themes", "Total URLs", "Classified", "Unclassified", "URLs", "Other"
-- Fallback mechanism: uses English terms when translations are missing
-- Test translation functionality in `test_report_translations.py` with complete and partial translation scenarios
+- **Translation Cache System**: Uses TSV-based caching (`cache/terms.tsv`) to store translations persistently
+- **Cache-First Approach**: Check cache before calling LLM for efficiency
+- **Automatic Integration**: Classification commands with language option automatically handle translation cache
+- **Report Usage**: Report generation reads translations from cache via language field in classification data
+- **Translation terms**: "Summary", "Themes", "Total URLs", "Classified", "Unclassified", "URLs", "Other"
+- **Architecture**: TSVManager base class provides common file operations, TranslationCache inherits for specialized functionality
+- **Fallback mechanism**: Uses English terms when translations are missing from cache
+- **Testing**: Test translation functionality in `test_report_translations.py` with complete and partial translation scenarios
 
 #### Cache Management Changes
 1. Modify `cache.py` for data model changes

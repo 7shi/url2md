@@ -224,10 +224,11 @@ url2md report -c classification.json -T theme-weights.txt -t "Emergency:2.0$"
 ```
 
 **Translation Support:**
-- Reports automatically use translated headers and UI terms when available in classification data
+- Reports automatically use translated headers and UI terms from translation cache when available
 - Translation terms include: "Summary", "Themes", "Total URLs", "Classified", "Unclassified", "URLs", "Other"
-- If classification was generated with language option (`-l`), reports will display translated interface elements
-- Falls back to English terms when translations are not available
+- If classification was generated with language option (`-l`), translations are cached and used in reports
+- Cache-first approach: subsequent runs with same language use cached translations for instant performance
+- Falls back to English terms when translations are not available in cache
 
 ### `workflow` - Complete workflow
 
@@ -286,15 +287,17 @@ url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
 
 **Language Support Features:**
 - **Summarize**: Generates titles, summaries, and tags in specified language
-- **Classify**: Creates theme names and descriptions in specified language, automatically generates report term translations
-- **Report**: Uses translated headers and UI terms when available from classification data
+- **Classify**: Creates theme names and descriptions in specified language, automatically generates and caches report term translations
+- **Report**: Uses translated headers and UI terms from translation cache when available
 - **Workflow**: Applies language setting to both summarize and classify steps, generating fully translated reports
+- **Translation Caching**: Translations are cached in `terms.tsv` to avoid repeated LLM calls for same language
 - **Prompts**: Use `--show-prompt -l LANGUAGE` to see localized classification and translation prompts
 
 **Notes:**
 - Language setting only affects AI-generated content (summaries, themes)
 - Original URLs and technical metadata remain unchanged
 - Any language name can be specified (e.g., "Japanese", "中文", "Français")
+- Translation cache persists across sessions for improved performance
 
 ## Environment Variables
 
@@ -322,6 +325,7 @@ https://third-site.com
 ```
 url2md-cache/
 ├── cache.tsv              # Metadata index
+├── terms.tsv              # Translation cache (English/Language/Translation)
 ├── content/               # Downloaded content
 │   ├── abc123.html
 │   ├── def456.pdf
@@ -363,15 +367,7 @@ url2md-cache/
     "total_themes_created": 2,
     "classification_approach": "Grouped related tags into thematic categories"
   },
-  "translations": {
-    "Summary": "概要",
-    "Themes": "テーマ",
-    "Total URLs": "合計URL数",
-    "Classified": "分類済",
-    "Unclassified": "未分類",
-    "URLs": "URL",
-    "Other": "その他"
-  }
+  "language": "Japanese"
 }
 ```
 

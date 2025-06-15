@@ -200,11 +200,12 @@ def group_urls_by_tag_in_theme(urls_with_scores: List[Tuple[str, float]], theme_
     return tag_groups
 
 
-def generate_markdown_report(url_classifications: Dict[str, Dict], classification_data: Dict, 
+def generate_markdown_report(cache: Cache, url_classifications: Dict[str, Dict], classification_data: Dict, 
                            url_summaries: Dict[str, Dict], theme_subsections: Optional[List[str]] = None) -> str:
     """Generate Markdown format report
     
     Args:
+        cache: Cache instance for translation lookup
         url_classifications: URL -> {theme, score} mapping
         classification_data: Theme classification data
         url_summaries: URL summary data
@@ -213,12 +214,18 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     Returns:
         str: Markdown report content
     """
-    # Get translations if available
-    translations = classification_data.get('translations', {})
+    # Get language from classification data
+    language = classification_data.get('language')
     
     # Translation helper function
-    def translate_term(term: str) -> str:
-        return translations.get(term, term)
+    def t(term: str) -> str:
+        # Use cache for translation lookup
+        if cache.translation_cache and language:
+            cached = cache.translation_cache.get_translation(term, language)
+            if cached:
+                return cached
+        # Default to original term
+        return term
     # Count classifications by theme
     theme_counts = Counter(classification['theme'] for classification in url_classifications.values())
     total_classified = len(url_classifications)
@@ -227,26 +234,26 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     
     # Generate report
     lines = []
-    lines.append(f"# {translate_term('Summary')}")
+    lines.append(f"# {t('Summary')}")
     lines.append("")
-    lines.append(f"- **{translate_term('Total URLs')}**: {total_urls:,}")
+    lines.append(f"- **{t('Total URLs')}**: {total_urls:,}")
     if total_urls > 0:
-        lines.append(f"- **{translate_term('Classified')}**: {total_classified:,} ({total_classified/total_urls*100:.1f}%)")
-        lines.append(f"- **{translate_term('Unclassified')}**: {unclassified_count:,} ({unclassified_count/total_urls*100:.1f}%)")
+        lines.append(f"- **{t('Classified')}**: {total_classified:,} ({total_classified/total_urls*100:.1f}%)")
+        lines.append(f"- **{t('Unclassified')}**: {unclassified_count:,} ({unclassified_count/total_urls*100:.1f}%)")
     else:
-        lines.append(f"- **{translate_term('Classified')}**: 0 (0.0%)")
-        lines.append(f"- **{translate_term('Unclassified')}**: 0 (0.0%)")
+        lines.append(f"- **{t('Classified')}**: 0 (0.0%)")
+        lines.append(f"- **{t('Unclassified')}**: 0 (0.0%)")
     lines.append("")
     
     # Theme distribution
-    lines.append(f"# {translate_term('Themes')}")
+    lines.append(f"# {t('Themes')}")
     lines.append("")
     
     themes_data = classification_data.get('themes', [])
     # Sort by count descending
     for theme_name, count in theme_counts.most_common():
         percentage = count / total_urls * 100
-        lines.append(f"- **{theme_name}**: {count} {translate_term('URLs')} ({percentage:.1f}%)")
+        lines.append(f"- **{theme_name}**: {count} {t('URLs')} ({percentage:.1f}%)")
     
     lines.append("")
     
@@ -269,7 +276,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
         if theme_name not in urls_by_theme:
             continue
         urls_with_scores = urls_by_theme[theme_name]
-        lines.append(f"## {theme_name} ({len(urls_with_scores)} {translate_term('URLs')})")
+        lines.append(f"## {theme_name} ({len(urls_with_scores)} {t('URLs')})")
         lines.append("")
         
         # Add theme description if available
@@ -310,7 +317,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
             
             # Output untagged URLs if any
             if '_untagged' in tag_groups:
-                lines.append(f"### {translate_term('Other')}")
+                lines.append(f"### {t('Other')}")
                 lines.append("")
                 
                 for url, score in tag_groups['_untagged']:
@@ -336,7 +343,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     
     # Unclassified URLs
     if unclassified_count > 0:
-        lines.append(f"## {translate_term('Unclassified')} ({unclassified_count} {translate_term('URLs')})")
+        lines.append(f"## {t('Unclassified')} ({unclassified_count} {t('URLs')})")
         lines.append("")
         
         classified_urls = set(url_classifications.keys())

@@ -296,14 +296,20 @@ def run_classify(args) -> None:
         else:
             print("No frequent tags found for prompt generation")
         
-        # Also show translation prompt if language is specified
+        # Show translation prompt if language is specified and translation is needed
         if args.language:
-            translation_prompt = create_translation_prompt(args.language)
-            print("\n=== TRANSLATION PROMPT ===")
-            print(translation_prompt)
+            from .classify import needs_translation, create_translation_prompt
+            if needs_translation(args.language, cache):
+                print(f"\n=== TRANSLATION PROMPT ({args.language}) ===")
+                translation_prompt = create_translation_prompt(args.language)
+                print(translation_prompt)
+            else:
+                print(f"\n=== TRANSLATION STATUS ===")
+                print(f"All translation terms for '{args.language}' are already cached.")
+                print("No translation prompt needed.")
     
     if perform_classification:
-        classification_result = classify_tags_with_llm(tag_counter, model=args.model, language=args.language)
+        classification_result = classify_tags_with_llm(cache, tag_counter, model=args.model, language=args.language)
         
         # Save to file
         try:
@@ -420,7 +426,7 @@ def run_report(args) -> None:
     
     # Generate report
     if args.format == 'markdown':
-        report_content = generate_markdown_report(url_classifications, classification_data, url_summaries,
+        report_content = generate_markdown_report(cache, url_classifications, classification_data, url_summaries,
                                                 theme_subsections=theme_subsections)
     else:
         raise ValueError(f"Format '{args.format}' not yet implemented")
