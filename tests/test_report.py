@@ -4,7 +4,7 @@ Unit tests for report.py module
 """
 
 import pytest
-from url2md.report import calculate_tag_match_weight, classify_url_to_theme, generate_markdown_report
+from url2md.report import calculate_tag_match_weight, classify_url_to_theme, generate_markdown_report, group_urls_by_tag_in_theme
 
 
 class TestCalculateTagMatchWeight:
@@ -124,6 +124,102 @@ class TestClassifyUrlToTheme:
         assert score == 0.0
 
 
+class TestGroupUrlsByTagInTheme:
+    """Tests for URL grouping by tags within themes"""
+    
+    def test_url_tag_order_priority(self):
+        """Test that URL tag order is prioritized over theme tag order"""
+        urls_with_scores = [
+            ("https://example1.com", 1.0),
+            ("https://example2.com", 0.8),
+        ]
+        
+        theme_tags = ["AI", "Technology", "Research"]
+        
+        url_summaries = {
+            "https://example1.com": {
+                "tags": ["Research", "AI", "Technology"]  # Research comes first
+            },
+            "https://example2.com": {
+                "tags": ["Technology", "AI"]  # Technology comes first
+            }
+        }
+        
+        result = group_urls_by_tag_in_theme(urls_with_scores, theme_tags, url_summaries)
+        
+        # URL1 should go to Research (its first tag)
+        assert "Research" in result
+        assert ("https://example1.com", 1.0) in result["Research"]
+        
+        # URL2 should go to Technology (its first tag)
+        assert "Technology" in result
+        assert ("https://example2.com", 0.8) in result["Technology"]
+    
+    def test_partial_match_grouping(self):
+        """Test grouping with partial tag matches (both directions)"""
+        urls_with_scores = [
+            ("https://example1.com", 1.0),
+            ("https://example2.com", 0.9),
+            ("https://example3.com", 0.8),
+        ]
+        
+        theme_tags = ["mathematics", "programming", "ling"]
+        
+        url_summaries = {
+            "https://example1.com": {
+                "tags": ["math", "computational"]  # "math" is contained in "mathematics"
+            },
+            "https://example2.com": {
+                "tags": ["python_programming", "algorithm"]  # "python_programming" contains "programming"
+            },
+            "https://example3.com": {
+                "tags": ["linguistics", "phonology"]  # "linguistics" contains "ling"
+            }
+        }
+        
+        result = group_urls_by_tag_in_theme(urls_with_scores, theme_tags, url_summaries)
+        
+        # URL1: "math" should match with "mathematics" (url tag in theme tag)
+        assert "mathematics" in result
+        assert ("https://example1.com", 1.0) in result["mathematics"]
+        
+        # URL2: "python_programming" should match with "programming" (theme tag in url tag)
+        assert "programming" in result
+        assert ("https://example2.com", 0.9) in result["programming"]
+        
+        # URL3: "linguistics" should match with "ling" (theme tag in url tag)
+        assert "ling" in result
+        assert ("https://example3.com", 0.8) in result["ling"]
+    
+    def test_untagged_urls(self):
+        """Test handling of URLs without matching tags"""
+        urls_with_scores = [
+            ("https://example1.com", 1.0),
+            ("https://example2.com", 0.8),
+        ]
+        
+        theme_tags = ["AI", "Technology"]
+        
+        url_summaries = {
+            "https://example1.com": {
+                "tags": ["AI"]
+            },
+            "https://example2.com": {
+                "tags": ["Biology", "Chemistry"]  # No matching tags
+            }
+        }
+        
+        result = group_urls_by_tag_in_theme(urls_with_scores, theme_tags, url_summaries)
+        
+        # URL1 should be in AI
+        assert "AI" in result
+        assert ("https://example1.com", 1.0) in result["AI"]
+        
+        # URL2 should be in _untagged
+        assert "_untagged" in result
+        assert ("https://example2.com", 0.8) in result["_untagged"]
+
+
 class TestGenerateMarkdownReport:
     """Tests for Markdown report generation"""
     
@@ -163,13 +259,13 @@ class TestGenerateMarkdownReport:
         report = generate_markdown_report(url_classifications, classification_data, url_summaries)
         
         # Check basic structure
-        assert "# URL Analysis Report" in report
-        assert "## Summary" in report
+        assert "# Summary" in report
+        assert "# Themes" in report
         assert "**Total URLs**: 2" in report
         assert "**Classified**: 2" in report
         assert "**Unclassified**: 0" in report
-        assert "### Linguistics (1 URLs)" in report
-        assert "### Programming (1 URLs)" in report
+        assert "## Linguistics (1 URLs)" in report
+        assert "## Programming (1 URLs)" in report
         assert "[Linguistics Introduction](https://example1.com)" in report
         assert "Basic linguistics concepts" in report
     
@@ -205,7 +301,7 @@ class TestGenerateMarkdownReport:
         assert "**Total URLs**: 2" in report
         assert "**Classified**: 1" in report
         assert "**Unclassified**: 1" in report
-        assert "### Unclassified (1 URLs)" in report
+        assert "## Unclassified (1 URLs)" in report
         assert "[Unrelated Content](https://example2.com)" in report
     
     def test_empty_classifications(self):
@@ -216,7 +312,7 @@ class TestGenerateMarkdownReport:
         
         report = generate_markdown_report(url_classifications, classification_data, url_summaries)
         
-        assert "# URL Analysis Report" in report
+        assert "# Summary" in report
         assert "**Total URLs**: 0" in report
         assert "**Classified**: 0" in report
         assert "**Unclassified**: 0" in report

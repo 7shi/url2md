@@ -246,7 +246,7 @@ def run_summarize(args) -> None:
 
 def run_classify(args) -> None:
     """Run classify subcommand"""
-    from .classify import extract_tags, display_tag_statistics, create_tag_classification_prompt, classify_tags_with_llm, filter_url_infos_by_urls
+    from .classify import extract_tags, display_tag_statistics, create_tag_classification_prompt, create_translation_prompt, classify_tags_with_llm, filter_url_infos_by_urls
     
     # Default action is classification unless --extract-tags or --show-prompt is specified
     perform_classification = not (args.extract_tags or args.show_prompt)
@@ -295,6 +295,12 @@ def run_classify(args) -> None:
             print(prompt)
         else:
             print("No frequent tags found for prompt generation")
+        
+        # Also show translation prompt if language is specified
+        if args.language:
+            translation_prompt = create_translation_prompt(args.language)
+            print("\n=== TRANSLATION PROMPT ===")
+            print(translation_prompt)
     
     if perform_classification:
         classification_result = classify_tags_with_llm(tag_counter, model=args.model, language=args.language)

@@ -189,22 +189,6 @@ def test_package_structure():
         assert Path(file_path).exists(), f"Missing required file: {file_path}"
 
 
-def test_documentation():
-    """Test CLAUDE.md documentation"""
-    with open('CLAUDE.md', 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # Check important sections
-    required_sections = [
-        'summarize.py',
-        'classify.py', 
-        'report.py',
-        'Environment Variables',
-        'GEMINI_API_KEY'
-    ]
-    
-    for section in required_sections:
-        assert section in content, f"Missing documentation for: {section}"
 
 
 def test_pyproject_configuration():

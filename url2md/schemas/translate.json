@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "properties": {
+    "translations": {
+      "type": "object",
+      "properties": {
+        "Summary": {
+          "type": "string",
+          "description": "Translation of 'Summary' to {language}"
+        },
+        "Themes": {
+          "type": "string",
+          "description": "Translation of 'Themes' to {language}"
+        },
+        "Total URLs": {
+          "type": "string",
+          "description": "Translation of 'Total URLs' to {language}"
+        },
+        "Classified": {
+          "type": "string",
+          "description": "Translation of 'Classified' to {language}"
+        },
+        "Unclassified": {
+          "type": "string",
+          "description": "Translation of 'Unclassified' to {language}"
+        },
+        "URLs": {
+          "type": "string",
+          "description": "Translation of 'URLs' to {language}"
+        },
+        "Other": {
+          "type": "string",
+          "description": "Translation of 'Other' (for untagged items in subsections) to {language}"
+        }
+      },
+      "required": ["Summary", "Themes", "Total URLs", "Classified", "Unclassified", "URLs", "Other"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["translations"],
+  "additionalProperties": false
+}

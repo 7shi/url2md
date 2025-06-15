@@ -191,7 +191,7 @@ url2md classify --show-prompt
 # Classify with Japanese theme names and descriptions
 url2md classify -u urls.txt -o classification.json -l Japanese
 
-# Show classification prompt in specified language
+# Show classification and translation prompts in specified language
 url2md classify --show-prompt -l Japanese
 ```
 
@@ -222,6 +222,12 @@ url2md report -c classification.json -T theme-weights.txt
 # Mix file and command-line theme weights
 url2md report -c classification.json -T theme-weights.txt -t "Emergency:2.0$"
 ```
+
+**Translation Support:**
+- Reports automatically use translated headers and UI terms when available in classification data
+- Translation terms include: "Summary", "Themes", "Total URLs", "Classified", "Unclassified", "URLs", "Other"
+- If classification was generated with language option (`-l`), reports will display translated interface elements
+- Falls back to English terms when translations are not available
 
 ### `workflow` - Complete workflow
 
@@ -280,9 +286,10 @@ url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
 
 **Language Support Features:**
 - **Summarize**: Generates titles, summaries, and tags in specified language
-- **Classify**: Creates theme names and descriptions in specified language  
-- **Workflow**: Applies language setting to both summarize and classify steps
-- **Prompts**: Use `--show-prompt -l LANGUAGE` to see localized classification prompts
+- **Classify**: Creates theme names and descriptions in specified language, automatically generates report term translations
+- **Report**: Uses translated headers and UI terms when available from classification data
+- **Workflow**: Applies language setting to both summarize and classify steps, generating fully translated reports
+- **Prompts**: Use `--show-prompt -l LANGUAGE` to see localized classification and translation prompts
 
 **Notes:**
 - Language setting only affects AI-generated content (summaries, themes)
@@ -355,6 +362,15 @@ url2md-cache/
     "total_tags_processed": 35,
     "total_themes_created": 2,
     "classification_approach": "Grouped related tags into thematic categories"
+  },
+  "translations": {
+    "Summary": "概要",
+    "Themes": "テーマ",
+    "Total URLs": "合計URL数",
+    "Classified": "分類済",
+    "Unclassified": "未分類",
+    "URLs": "URL",
+    "Other": "その他"
   }
 }
 ```

@@ -12,9 +12,9 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 from .cache import Cache
-from .gemini import generate_content_retry, config_from_schema, models
+from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models
 from .urlinfo import URLInfo
-from .utils import get_resource_path
+from .utils import get_resource_path, print_error_with_line
 
 
 def extract_tags(cache: Cache, url_infos: List[URLInfo]) -> List[str]:
@@ -163,15 +163,96 @@ def classify_tags_with_llm(tag_counter: Counter, model: str = None,
         schema_path = get_resource_path("schemas/classify.json")
     else:
         schema_path = schema_file
-    config = config_from_schema(str(schema_path))
+    
+    try:
+        with open(schema_path, 'r', encoding='utf-8') as f:
+            schema_content = f.read()
+        
+        # Replace { in language} placeholder with actual language or empty string
+        if language:
+            schema_content = schema_content.replace('{ in language}', f' in {language}')
+        else:
+            schema_content = schema_content.replace('{ in language}', '')
+        
+        config = config_from_schema_string(schema_content)
+    except Exception as e:
+        print_error_with_line("Error", e)
+        print(f"Cannot open schema file: {schema_path}", file=sys.stderr)
+        sys.exit(1)
     
     # Generate classification
     response = generate_content_retry(model, config, [prompt])
     
     # Parse JSON response
     classification_data = json.loads(response.strip())
+    
+    # Add translations if language is specified
+    if language:
+        translations = translate_report_terms(language, model)
+        classification_data['translations'] = translations
         
     return classification_data
+
+
+def create_translation_prompt(language: str) -> str:
+    """Generate prompt for translating report terms
+    
+    Args:
+        language: Target language for translation
+    
+    Returns:
+        str: Translation prompt
+    """
+    return f"""Please translate the following report terms to {language}:
+- Summary
+- Themes
+- Total URLs
+- Classified
+- Unclassified
+- URLs
+- Other
+
+Return the translations in the exact same order as provided.
+Keep the translations concise and appropriate for report headers."""
+
+
+def translate_report_terms(language: str, model: str = None) -> Dict[str, str]:
+    """Translate report terms to specified language
+    
+    Args:
+        language: Target language for translation
+        model: Model to use (default: first available model)
+    
+    Returns:
+        Dict[str, str]: Mapping of English terms to translated terms
+    """
+    if model is None:
+        model = models[0]  # Use default model
+    
+    # Get translation prompt
+    prompt = create_translation_prompt(language)
+    # Load translation schema and replace {language} placeholder
+    schema_path = get_resource_path("schemas/translate.json")
+    try:
+        with open(schema_path, 'r', encoding='utf-8') as f:
+            schema_content = f.read()
+        
+        # Replace {language} placeholder with actual language
+        schema_content = schema_content.replace('{language}', language)
+        
+        config = config_from_schema_string(schema_content)
+    except Exception as e:
+        print_error_with_line("Error", e)
+        print(f"Cannot open schema file: {schema_path}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Generate translations
+    response = generate_content_retry(model, config, [prompt])
+    
+    # Parse JSON response
+    translation_data = json.loads(response.strip())
+    
+    return translation_data.get('translations', {})
 
 
 def filter_url_infos_by_urls(cache: Cache, target_urls: List[str]) -> List[URLInfo]:

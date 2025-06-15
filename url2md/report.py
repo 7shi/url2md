@@ -177,10 +177,10 @@ def group_urls_by_tag_in_theme(urls_with_scores: List[Tuple[str, float]], theme_
         summary = url_summaries.get(url, {})
         url_tags = summary.get('tags', [])
         
-        # Find first matching tag
+        # Find first matching tag (prioritize URL tag order)
         matched = False
-        for theme_tag in theme_tags:
-            for url_tag in url_tags:
+        for url_tag in url_tags:
+            for theme_tag in theme_tags:
                 if calculate_tag_match_weight(url_tag, theme_tag) > 0:
                     if theme_tag not in tag_groups:
                         tag_groups[theme_tag] = []
@@ -213,6 +213,12 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     Returns:
         str: Markdown report content
     """
+    # Get translations if available
+    translations = classification_data.get('translations', {})
+    
+    # Translation helper function
+    def translate_term(term: str) -> str:
+        return translations.get(term, term)
     # Count classifications by theme
     theme_counts = Counter(classification['theme'] for classification in url_classifications.values())
     total_classified = len(url_classifications)
@@ -221,26 +227,26 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     
     # Generate report
     lines = []
-    lines.append("# Summary")
+    lines.append(f"# {translate_term('Summary')}")
     lines.append("")
-    lines.append(f"- **Total URLs**: {total_urls:,}")
+    lines.append(f"- **{translate_term('Total URLs')}**: {total_urls:,}")
     if total_urls > 0:
-        lines.append(f"- **Classified**: {total_classified:,} ({total_classified/total_urls*100:.1f}%)")
-        lines.append(f"- **Unclassified**: {unclassified_count:,} ({unclassified_count/total_urls*100:.1f}%)")
+        lines.append(f"- **{translate_term('Classified')}**: {total_classified:,} ({total_classified/total_urls*100:.1f}%)")
+        lines.append(f"- **{translate_term('Unclassified')}**: {unclassified_count:,} ({unclassified_count/total_urls*100:.1f}%)")
     else:
-        lines.append("- **Classified**: 0 (0.0%)")
-        lines.append("- **Unclassified**: 0 (0.0%)")
+        lines.append(f"- **{translate_term('Classified')}**: 0 (0.0%)")
+        lines.append(f"- **{translate_term('Unclassified')}**: 0 (0.0%)")
     lines.append("")
     
     # Theme distribution
-    lines.append("# Theme Distribution")
+    lines.append(f"# {translate_term('Themes')}")
     lines.append("")
     
     themes_data = classification_data.get('themes', [])
     # Sort by count descending
     for theme_name, count in theme_counts.most_common():
         percentage = count / total_urls * 100
-        lines.append(f"- **{theme_name}**: {count} URLs ({percentage:.1f}%)")
+        lines.append(f"- **{theme_name}**: {count} {translate_term('URLs')} ({percentage:.1f}%)")
     
     lines.append("")
     
@@ -263,7 +269,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
         if theme_name not in urls_by_theme:
             continue
         urls_with_scores = urls_by_theme[theme_name]
-        lines.append(f"## {theme_name} ({len(urls_with_scores)} URLs)")
+        lines.append(f"## {theme_name} ({len(urls_with_scores)} {translate_term('URLs')})")
         lines.append("")
         
         # Add theme description if available
@@ -304,7 +310,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
             
             # Output untagged URLs if any
             if '_untagged' in tag_groups:
-                lines.append("### Other")
+                lines.append(f"### {translate_term('Other')}")
                 lines.append("")
                 
                 for url, score in tag_groups['_untagged']:
@@ -330,7 +336,7 @@ def generate_markdown_report(url_classifications: Dict[str, Dict], classificatio
     
     # Unclassified URLs
     if unclassified_count > 0:
-        lines.append(f"## Unclassified ({unclassified_count} URLs)")
+        lines.append(f"## {translate_term('Unclassified')} ({unclassified_count} {translate_term('URLs')})")
         lines.append("")
         
         classified_urls = set(url_classifications.keys())

@@ -3,20 +3,20 @@
   "properties": {
     "title": {
       "type": "string",
-      "description": "Page title (appropriate title inferred from content)"
+      "description": "Page title{ in language} (appropriate title inferred from content)"
     },
     "summary_one_line": {
       "type": "string",
-      "description": "Concise one-line summary within 50 characters"
+      "description": "Concise one-line summary{ in language} within 50 characters"
     },
     "summary_detailed": {
       "type": "string", 
-      "description": "Detailed summary of 200-400 characters including main topics, content, academic/educational value, and technical fields"
+      "description": "Detailed summary{ in language} of 200-400 characters including main topics, content, academic/educational value, and technical fields"
     },
     "tags": {
       "type": "array",
       "items": {"type": "string"},
-      "description": "List of tags representing the content (e.g., linguistics, mathematics, physics, programming)"
+      "description": "List of tags{ in language} representing the content (e.g., linguistics, mathematics, physics, programming)"
     },
     "is_valid_content": {
       "type": "boolean",

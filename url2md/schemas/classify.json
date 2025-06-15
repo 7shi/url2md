@@ -8,11 +8,11 @@
         "properties": {
           "theme_name": {
             "type": "string",
-            "description": "Name of the theme"
+            "description": "Name of the theme{ in language}"
           },
           "theme_description": {
             "type": "string", 
-            "description": "Brief description of the theme"
+            "description": "Brief description of the theme{ in language}"
           },
           "tags": {
             "type": "array",
@@ -39,7 +39,7 @@
         },
         "classification_approach": {
           "type": "string",
-          "description": "Explanation of classification approach and methodology"
+          "description": "Explanation of classification approach and methodology{ in language}"
         }
       },
       "required": ["total_tags_processed", "total_themes_created", "classification_approach"]

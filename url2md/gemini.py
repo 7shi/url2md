@@ -3,7 +3,6 @@ from pathlib import Path
 from google import genai
 from google.genai import types
 from .terminal import convert_markdown, MarkdownStreamConverter
-from .utils import print_error_with_line
 
 models = [
     "gemini-2.5-flash-preview-05-20",
@@ -65,18 +64,28 @@ def build_schema_from_json(json_data):
         case _:
             raise ValueError(f"Unsupported type: {t}")
 
-def config_from_schema(schema_filename):
-    try:
-        with open(schema_filename, 'r', encoding='utf-8') as f:
-            schema = build_schema_from_json(json.load(f))
-    except Exception as e:
-        print_error_with_line("Error", e)
-        print("Cannot open schema file:", schema_filename, file=sys.stderr)
-        sys.exit(1)
+def config_from_schema_string(schema_content: str):
+    """Create GenerateContentConfig from schema string
+    
+    Args:
+        schema_content: JSON schema as string
+    
+    Returns:
+        types.GenerateContentConfig
+    """
+    schema_dict = json.loads(schema_content)
+    schema = build_schema_from_json(schema_dict)
     return types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=schema,
     )
+
+
+def config_from_schema(schema_filename):
+    with open(schema_filename, 'r', encoding='utf-8') as f:
+        schema_content = f.read()
+    
+    return config_from_schema_string(schema_content)
 
 def generate_content_retry(model, config, contents, include_thoughts=True, thinking_budget=None):
     # Add thinking configuration to config if requested
@@ -144,7 +153,7 @@ def generate_content_retry(model, config, contents, include_thoughts=True, think
             return text
         except genai.errors.APIError as e:
             if hasattr(e, "code") and e.code in [429, 500, 503]:
-                print_error_with_line("API Error", e)
+                print(e, file=sys.stderr)
                 # Skip waiting for the last attempt
                 if attempt == 1:
                     continue

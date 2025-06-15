@@ -16,11 +16,11 @@ url2md is a command-line tool for URL analysis and classification that generates
 
 **Key Features:**
 - URL fetching with dynamic rendering support (Playwright)
-- AI-powered content summarization using Gemini API
+- AI-powered content summarization using Gemini API with multi-language support
 - LLM-based tag classification and theme analysis with thinking process visualization
 - AI reasoning insights through Gemini 2.5's thinking capabilities
-- Markdown report generation
-- Complete pipeline processing
+- Multi-language report generation with automatic translation of UI terms
+- Complete pipeline processing with subsection ordering by URL tag priority
 
 ## Package Structure
 
@@ -33,6 +33,9 @@ url2md/
 ├── docs/                  # Additional documentation
 │   └── resource-support.md # Resource handling documentation
 ├── tests/                 # Test directory with comprehensive test suite
+│   ├── test_report.py          # Core report functionality tests
+│   ├── test_report_translations.py # Report translation functionality tests
+│   └── ...
 └── url2md/               # Main package
     ├── __init__.py       # Package entry point
     ├── main.py           # CLI entry point and subcommand dispatcher
@@ -48,7 +51,8 @@ url2md/
     ├── terminal.py       # Terminal formatting and Markdown conversion utilities
     └── schemas/          # JSON schemas for AI operations
         ├── summarize.json# Schema for summarize command
-        └── classify.json # Schema for classify command
+        ├── classify.json # Schema for classify command
+        └── translate.json# Schema for report term translation
 ```
 
 ## Development Environment
@@ -110,8 +114,22 @@ Use the **two-phase development approach**: start with standalone module for pro
 2. Modify prompt generation in the command module
 3. Configure thinking parameters in `generate_content_retry()` calls if needed
 4. Use `get_resource_path()` for schema file access in tests and code
-5. Test with actual API calls
-6. Verify structured output format and thinking process display
+5. For language-specific operations, use `{ in language}` placeholder in schema descriptions
+6. Test with actual API calls
+7. Verify structured output format and thinking process display
+
+#### Language Support and Schema Placeholders
+- Use `{ in language}` placeholder in JSON schema descriptions for language-specific fields
+- Schemas automatically replace placeholders: if language specified → ` in {language}`, if not → empty string
+- Use `config_from_schema_string()` for dynamic schema modification with placeholders
+- Translation functionality: `create_translation_prompt()` for prompt generation, `translate_report_terms()` for execution
+
+#### Report Translation Implementation
+- Translation data is included in classification JSON when language is specified
+- Report generation (`generate_markdown_report()`) automatically uses translations when available
+- Translation terms: "Summary", "Themes", "Total URLs", "Classified", "Unclassified", "URLs", "Other"
+- Fallback mechanism: uses English terms when translations are missing
+- Test translation functionality in `test_report_translations.py` with complete and partial translation scenarios
 
 #### Cache Management Changes
 1. Modify `cache.py` for data model changes
@@ -131,6 +149,9 @@ Before making changes: run `uv run pytest`, fix any failures, then run tests aga
 - Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases
 - Use `get_resource_path()` for accessing schema files in tests
 - Follow existing test patterns in the test suite
+- For report generation tests, include tests for subsection URL tag ordering priority
+- Translation functionality tests should be in separate test files (e.g., `test_report_translations.py`)
+- Test both complete translations and partial translations (fallback scenarios)
 
 See [docs/testing.md](docs/testing.md) for comprehensive testing guidelines and [README.md](README.md#testing) for basic commands.
 

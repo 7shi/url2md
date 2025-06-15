@@ -15,7 +15,7 @@ import minify_html
 from tqdm import tqdm
 
 from .cache import Cache
-from .gemini import generate_content_retry, config_from_schema, models, upload_file, delete_file
+from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models, upload_file, delete_file
 from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title, get_resource_path, print_error_with_line
 
@@ -65,7 +65,22 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
             schema_path = get_resource_path("schemas/summarize.json")
         else:
             schema_path = schema_file
-        config = config_from_schema(str(schema_path))
+        
+        try:
+            with open(schema_path, 'r', encoding='utf-8') as f:
+                schema_content = f.read()
+            
+            # Replace { in language} placeholder with actual language or empty string
+            if language:
+                schema_content = schema_content.replace('{ in language}', f' in {language}')
+            else:
+                schema_content = schema_content.replace('{ in language}', '')
+            
+            config = config_from_schema_string(schema_content)
+        except Exception as e:
+            print_error_with_line("Error", e)
+            print(f"Cannot open schema file: {schema_path}", file=sys.stderr)
+            sys.exit(1)
         
         # Generate prompt
         prompt = generate_summary_prompt(url, content_type, language)
