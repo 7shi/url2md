@@ -10,6 +10,13 @@ This file provides guidelines for Claude Code (claude.ai/code) when working with
 - Use clear, concise commit messages in English
 - Do not include promotional text or AI-generated signatures
 
+### CHANGELOG Guidelines
+- Follow [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format
+- Keep entries concise and user-focused
+- Use **bold** for feature names, avoid technical implementation details
+- Focus on user-visible changes and benefits
+- Group changes under Added/Changed/Fixed sections as appropriate
+
 ## Project Overview
 
 url2md is a command-line tool for URL analysis and classification that generates Markdown reports through AI-powered content analysis, summarization, and classification.
@@ -29,6 +36,7 @@ url2md/
 ├── pyproject.toml          # Package configuration (CC0 license, Python 3.10+)
 ├── README.md               # User documentation and command reference
 ├── CLAUDE.md              # This file - development guidelines
+├── CHANGELOG.md            # Version history following Keep a Changelog format
 ├── NOTES.md                # Development philosophy and lessons learned
 ├── docs/                  # Additional documentation
 │   └── resource-support.md # Resource handling documentation
