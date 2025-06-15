@@ -77,6 +77,17 @@ Technical details about resource management and packaging:
 
 **When to use**: Working with package resources, schema files, or deployment scenarios.
 
+### [translation-strategy.md](translation-strategy.md)
+**Multi-language support and translation architecture**
+
+Comprehensive documentation of the LLM-powered translation approach:
+- Two-phase translation strategy (content generation + UI translation)
+- Schema-based language support with placeholder system
+- Dynamic translation without static resource files
+- Future expansion opportunities and implementation strategies
+
+**When to use**: Working with multi-language features, extending translation coverage, or understanding the translation architecture.
+
 ## Navigation Guide
 
 ### For New Developers
@@ -110,7 +121,7 @@ architecture.md (Technical Design & Methodology)
     ↓
 development-history.md (Detailed Examples & Evolution)
     ↓
-testing.md, error-handling.md, resource-support.md (Implementation Specifics)
+testing.md, error-handling.md, resource-support.md, translation-strategy.md (Implementation Specifics)
     ↓
 troubleshooting.md (Practical Problem Solving)
 ```
