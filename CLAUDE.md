@@ -52,6 +52,7 @@ url2md/
     ├── cache.py          # Cache management (Cache, CacheResult)
     ├── tsv_manager.py    # Base class for TSV file operations
     ├── translation_cache.py # Translation caching system
+    ├── translate.py      # Generic translation functions
     ├── fetch.py          # URL fetching functions
     ├── summarize.py      # AI summarization functions
     ├── classify.py       # Tag classification functions
@@ -133,7 +134,7 @@ Use the **two-phase development approach**: start with standalone module for pro
 - Use `{ in language}` placeholder in JSON schema descriptions for language-specific fields
 - Schemas automatically replace placeholders: if language specified → ` in {language}`, if not → empty string
 - Use `config_from_schema_string()` for dynamic schema modification with placeholders
-- Translation functionality: `create_translation_prompt()` for prompt generation, `translate_report_terms()` for execution
+- Generic translation module (`translate.py`): `translate_terms()` for any term list, `create_translation_schema()` and `create_translation_prompt()` for dynamic generation
 
 #### Report Translation Implementation
 - **Translation Cache System**: Uses TSV-based caching (`cache/terms.tsv`) to store translations persistently
@@ -142,6 +143,7 @@ Use the **two-phase development approach**: start with standalone module for pro
 - **Report Usage**: Report generation reads translations from cache via language field in classification data
 - **Translation terms**: "Summary", "Themes", "Total URLs", "Classified", "Unclassified", "URLs", "Other"
 - **Architecture**: TSVManager base class provides common file operations, TranslationCache inherits for specialized functionality
+- **Generic Translation**: `translate.py` module provides reusable translation functions for any terms
 - **Fallback mechanism**: Uses English terms when translations are missing from cache
 - **Testing**: Test translation functionality in `test_report_translations.py` with complete and partial translation scenarios
 

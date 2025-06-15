@@ -13,6 +13,7 @@ from typing import List, Dict, Any, Optional
 
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models
+from .translate import translate_terms
 from .urlinfo import URLInfo
 from .utils import get_resource_path, print_error_with_line
 
@@ -201,23 +202,6 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str = None
     return classification_data
 
 
-def create_translation_prompt(language: str) -> str:
-    """Generate prompt for translating report terms
-    
-    Args:
-        language: Target language for translation
-    
-    Returns:
-        str: Translation prompt
-    """
-    # Generate term list from global constant
-    term_list = '\n'.join(f'- {term}' for term in TRANSLATION_TERMS)
-    
-    return f"""Please translate the following report terms to {language}:
-{term_list}
-
-Return the translations in the exact same order as provided.
-Keep the translations concise and appropriate for report headers."""
 
 
 def needs_translation(language: str, cache: Optional[Cache] = None) -> bool:
@@ -251,47 +235,24 @@ def translate_report_terms(language: str, model: str = None, cache: Optional[Cac
     Returns:
         None: Translations are stored in cache
     """
-    if model is None:
-        model = models[0]  # Use default model
-    
-    # Get translation prompt
-    prompt = create_translation_prompt(language)
-    # Load translation schema and replace {language} placeholder
-    schema_path = get_resource_path("schemas/translate.json")
-    try:
-        with open(schema_path, 'r', encoding='utf-8') as f:
-            schema_content = f.read()
-        
-        # Generate schema properties and required fields from TRANSLATION_TERMS
-        properties = []
-        required = []
+    # Get missing terms to translate
+    terms_to_translate = []
+    if cache and cache.translation_cache:
         for term in TRANSLATION_TERMS:
-            properties.append(f'"{term}": {{"type": "string", "description": "Translation of \'{term}\' to {language}"}}')
-            required.append(f'"{term}"')
-        
-        properties_str = ', '.join(properties)
-        required_str = ', '.join(required)
-        
-        # Replace placeholders
-        schema_content = schema_content.replace('```translation_properties```', properties_str)
-        schema_content = schema_content.replace('```translation_required```', required_str)
-        
-        config = config_from_schema_string(schema_content)
-    except Exception as e:
-        print_error_with_line("Error", e)
-        print(f"Cannot open schema file: {schema_path}", file=sys.stderr)
-        sys.exit(1)
+            if not cache.translation_cache.get_translation(term, language):
+                terms_to_translate.append(term)
+    else:
+        terms_to_translate = TRANSLATION_TERMS
     
-    # Generate translations
-    response = generate_content_retry(model, config, [prompt])
+    if not terms_to_translate:
+        return  # All terms already cached
     
-    # Parse JSON response
-    translation_data = json.loads(response.strip())
-    llm_translations = translation_data.get('translations', {})
+    # Translate missing terms
+    translations = translate_terms(terms_to_translate, language, model)
     
     # Add to cache if available
     if cache and cache.translation_cache:
-        for term, translation in llm_translations.items():
+        for term, translation in translations.items():
             if term in TRANSLATION_TERMS:  # Only cache the predefined terms
                 cache.translation_cache.add_translation(term, language, translation)
         cache.translation_cache.save()

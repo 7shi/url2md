@@ -70,16 +70,37 @@ Other	Japanese	その他
 
 ### Implementation Details
 
-**Translation Cache Architecture**:
+**Translation Module Architecture**:
+- **Generic Translation Module** (`translate.py`): Provides reusable translation functionality
+  - `translate_terms()`: Main translation function for any list of terms
+  - `create_translation_schema()`: Dynamic schema generation
+  - `create_translation_prompt()`: Flexible prompt creation
 - **TSVManager Base Class**: Common TSV file operations (load, save, sanitization)
 - **TranslationCache Class**: Inherits from TSVManager, manages translation storage
 - **Cache Integration**: Cache class includes translation_cache field
 
-**Automatic Translation Integration** (`classify.py:197-200`):
+**Automatic Translation Integration** (`classify.py`):
 ```python
 # Handle translation if language is specified and translation is needed
 if language and needs_translation(language, cache):
     translate_report_terms(language, model, cache)
+```
+
+**Generic Translation Function** (`translate.py`):
+```python
+def translate_terms(terms: List[str], language: str, model: str = None) -> Dict[str, str]:
+    """Translate a list of terms to the specified language"""
+    # Generate schema dynamically based on terms
+    schema_content = create_translation_schema(terms, language)
+    prompt = create_translation_prompt(terms, language)
+    
+    # Configure and call LLM
+    config = config_from_schema_string(schema_content)
+    response = generate_content_retry(model, config, [prompt])
+    
+    # Return translations
+    translation_data = json.loads(response.strip())
+    return translation_data.get('translations', {})
 ```
 
 **Translation Process**:
@@ -134,31 +155,79 @@ if language and needs_translation(language, cache):
 
 ## Implementation Strategy for Extensions
 
-### 1. Identify Translation Candidates
-Review user-facing text in:
-- Terminal output messages
-- Error handling strings
-- Progress indicators
-- Statistical summaries
+### 1. Using the Generic Translation Module
 
-### 2. Extend Translation Schema
-Add new translation terms to `schemas/translate.json`:
-```json
-{
-  "translations": {
-    // Existing terms...
-    "progress_classifying": {
-      "description": "Translation of 'Classifying tags using model' to {language}"
-    },
-    "stats_unique_tags": {
-      "description": "Translation of 'Total unique tags' to {language}"
-    }
-  }
-}
+The `translate.py` module provides a flexible foundation for adding translation support to any part of the application:
+
+```python
+from url2md.translate import translate_terms
+
+# Example: Translate custom terms
+terms_to_translate = ["Progress", "Error", "Complete", "Failed"]
+translations = translate_terms(terms_to_translate, "Japanese")
+
+# Use translations with fallback
+def get_translated(term, translations):
+    return translations.get(term, term)  # Fallback to original
+
+print(get_translated("Progress", translations))  # Shows translated term or "Progress"
 ```
 
-### 3. Update Translation Function
-Extend `translate_report_terms()` to include additional terms and return comprehensive translation mapping.
+### 2. Extending Report Terms
+
+To add new report terms:
+
+```python
+# In classify.py, extend TRANSLATION_TERMS
+TRANSLATION_TERMS = [
+    'Summary', 'Themes', 'Total URLs', 'Classified', 
+    'Unclassified', 'URLs', 'Other',
+    # New terms
+    'Statistics', 'Tags', 'Frequency'
+]
+```
+
+### 3. Creating Domain-Specific Translation Functions
+
+For specialized translation needs:
+
+```python
+def translate_error_messages(language: str, cache: Optional[Cache] = None) -> Dict[str, str]:
+    """Translate common error messages"""
+    ERROR_TERMS = [
+        "File not found",
+        "Invalid URL",
+        "Network error",
+        "API key missing"
+    ]
+    
+    # Check cache first
+    missing_terms = []
+    translations = {}
+    
+    if cache and cache.translation_cache:
+        for term in ERROR_TERMS:
+            cached = cache.translation_cache.get_translation(term, language)
+            if cached:
+                translations[term] = cached
+            else:
+                missing_terms.append(term)
+    else:
+        missing_terms = ERROR_TERMS
+    
+    # Translate missing terms
+    if missing_terms:
+        new_translations = translate_terms(missing_terms, language)
+        translations.update(new_translations)
+        
+        # Update cache
+        if cache and cache.translation_cache:
+            for term, translation in new_translations.items():
+                cache.translation_cache.add_translation(term, language, translation)
+            cache.translation_cache.save()
+    
+    return translations
+```
 
 ### 4. Apply Translations
 Modify output functions to use translated terms when available, with English fallback.
@@ -171,6 +240,7 @@ Modify output functions to use translated terms when available, with English fal
 - **Flexible Coverage**: Can handle specialized terminology dynamically
 - **Efficient Caching**: Persistent cache reduces API usage and improves performance
 - **Modular Architecture**: TSVManager base class enables code reuse
+- **Generic Translation Module**: Reusable translation functionality for any terms
 
 ### User Benefits
 - **Complete Localization**: Both content and interface in target language
@@ -179,9 +249,10 @@ Modify output functions to use translated terms when available, with English fal
 - **Fast Performance**: Cached translations provide instant response
 
 ### Development Benefits
-- **Extensible Design**: Easy to add new translatable elements
+- **Extensible Design**: Easy to add new translatable elements using generic module
 - **Clean Architecture**: Clear separation between content and UI translation
 - **Testable Components**: Each translation aspect can be tested independently
+- **Reusable Functions**: Generic translation module can be used throughout the codebase
 
 ## Future Considerations
 

@@ -298,10 +298,11 @@ def run_classify(args) -> None:
         
         # Show translation prompt if language is specified and translation is needed
         if args.language:
-            from .classify import needs_translation, create_translation_prompt
+            from .classify import needs_translation, TRANSLATION_TERMS
+            from .translate import create_translation_prompt
             if needs_translation(args.language, cache):
                 print(f"\n=== TRANSLATION PROMPT ({args.language}) ===")
-                translation_prompt = create_translation_prompt(args.language)
+                translation_prompt = create_translation_prompt(TRANSLATION_TERMS, args.language)
                 print(translation_prompt)
             else:
                 print(f"\n=== TRANSLATION STATUS ===")
