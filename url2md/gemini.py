@@ -120,7 +120,7 @@ def generate_content_retry(model, config, contents, include_thoughts=True, think
             converter = MarkdownStreamConverter()
             
             for chunk in response:
-                if hasattr(chunk, 'candidates') and chunk.candidates:
+                if hasattr(chunk, "candidates") and chunk.candidates and chunk.candidates[0].content and chunk.candidates[0].content.parts:
                     for part in chunk.candidates[0].content.parts:
                         if not part.text:
                             continue
@@ -138,7 +138,7 @@ def generate_content_retry(model, config, contents, include_thoughts=True, think
                         print(converter.feed(part.text), end="", flush=True)
                 else:
                     # Fallback for older API responses
-                    if chunk.text:
+                    if hasattr(chunk, "text") and chunk.text:
                         text += chunk.text
                         # Convert markdown formatting for output
                         print(converter.feed(chunk.text), end="", flush=True)
