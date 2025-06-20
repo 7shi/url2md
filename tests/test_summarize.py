@@ -222,7 +222,7 @@ def test_summarize_content_mock(mock_config, mock_generate):
         )
         
         # Test summarize_content
-        success, summary_data, error = summarize_content(cache, url_info)
+        success, summary_data, error = summarize_content(cache, url_info, model="test-model")
         
         assert success is True
         assert error is None

@@ -57,10 +57,8 @@ url2md/
     ├── summarize.py      # AI summarization functions
     ├── classify.py       # Tag classification functions
     ├── report.py         # Report generation functions
-    ├── gemini.py         # Gemini API integration with thinking capabilities
     ├── utils.py          # HTML processing and resource utilities
     ├── download.py       # Playwright dynamic rendering
-    ├── terminal.py       # Terminal formatting and Markdown conversion utilities
     └── schemas/          # JSON schemas for AI operations
         ├── summarize.json# Schema for summarize command
         ├── classify.json # Schema for classify command
@@ -73,7 +71,7 @@ url2md/
 **IMPORTANT**: Always use `uv run` for executing Python scripts and commands. See [README.md](README.md) for complete command examples.
 
 ### Dependencies
-Dependencies are managed in `pyproject.toml`. See [README.md](README.md#installation) for dependency details and [README.md](README.md#environment-variables) for required environment variables.
+Dependencies are managed in `pyproject.toml`. The project uses the **llm7shi** package for Gemini API integration and terminal formatting utilities. See [README.md](README.md#installation) for dependency details and [README.md](README.md#environment-variables) for required environment variables.
 
 ## Command Architecture
 
@@ -124,11 +122,12 @@ Use the **two-phase development approach**: start with standalone module for pro
 #### Modifying AI Operations
 1. Update relevant JSON schema in `url2md/schemas/`
 2. Modify prompt generation in the command module
-3. Configure thinking parameters in `generate_content_retry()` calls if needed
-4. Use `get_resource_path()` for schema file access in tests and code
-5. For language-specific operations, use `{ in language}` placeholder in schema descriptions
-6. Test with actual API calls
-7. Verify structured output format and thinking process display
+3. Import Gemini functions from `llm7shi` package: `from llm7shi import generate_content_retry, config_from_schema`
+4. Configure thinking parameters in `generate_content_retry()` calls if needed
+5. Use `get_resource_path()` for schema file access in tests and code
+6. For language-specific operations, use `{ in language}` placeholder in schema descriptions
+7. Test with actual API calls
+8. Verify structured output format and thinking process display
 
 #### Language Support and Schema Placeholders
 - Use `{ in language}` placeholder in JSON schema descriptions for language-specific fields

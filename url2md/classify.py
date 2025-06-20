@@ -14,7 +14,6 @@ from typing import List, Dict, Any, Optional
 
 from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, config_from_schema_string
-from llm7shi.gemini import models
 from .translate import translate_terms
 from .urlinfo import URLInfo
 from .utils import get_resource_path
@@ -150,11 +149,9 @@ The output should include complete tag frequency information for use in URL clas
     return prompt
 
 
-def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str = None, 
+def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str, 
                           schema_file: str = None, language: str = None) -> Dict[str, Any]:
     """Classify tags using LLM and return structured result"""
-    if model is None:
-        model = models[0]  # Use default model
     
     # Generate prompt
     prompt = create_tag_classification_prompt(tag_counter, language)

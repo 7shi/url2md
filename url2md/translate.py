@@ -9,7 +9,6 @@ import json
 from typing import List, Dict, Optional
 
 from llm7shi import generate_content_retry, config_from_schema_string
-from llm7shi.gemini import models
 from .utils import get_resource_path
 
 
@@ -65,19 +64,17 @@ Return the translations in the exact same order as provided.
 Keep the translations concise and appropriate for their context."""
 
 
-def translate_terms(terms: List[str], language: str, model: str = None) -> Dict[str, str]:
+def translate_terms(terms: List[str], language: str, model: str) -> Dict[str, str]:
     """Translate a list of terms to the specified language
     
     Args:
         terms: List of terms to translate
         language: Target language
-        model: Model to use (default: first available model)
+        model: Model to use for translation
     
     Returns:
         Dict[str, str]: Mapping of original terms to translations
     """
-    if model is None:
-        model = models[0]  # Use default model
     
     # Generate schema and prompt
     schema_content = create_translation_schema(terms, language)

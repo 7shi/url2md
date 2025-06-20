@@ -18,7 +18,6 @@ from tqdm import tqdm
 
 from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, config_from_schema_string, upload_file, delete_file
-from llm7shi.gemini import models
 from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title, get_resource_path
 
@@ -46,10 +45,8 @@ def generate_summary_prompt(url: str, content_type: str, language: str = None) -
     return "\n".join(prompt_parts)
 
 
-def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema_file: str = None, language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+def summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: str = None, language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]:
     """Generate structured JSON summary for a single file using Gemini"""
-    if model is None:
-        model = models[0]  # Use default model
     
     url = url_info.url
     content_path = cache.get_content_path(url_info)
