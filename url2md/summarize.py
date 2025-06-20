@@ -7,6 +7,8 @@ and save as structured JSON files in cache/summary directory.
 """
 
 import json
+import sys
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
@@ -17,7 +19,7 @@ from tqdm import tqdm
 from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models, upload_file, delete_file
 from .urlinfo import URLInfo
-from .utils import extract_body_content, extract_html_title, get_resource_path, print_error_with_line
+from .utils import extract_body_content, extract_html_title, get_resource_path
 
 
 def generate_summary_prompt(url: str, content_type: str, language: str = None) -> str:
@@ -78,8 +80,8 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
             
             config = config_from_schema_string(schema_content)
         except Exception as e:
-            print_error_with_line("Error", e)
-            print(f"Cannot open schema file: {schema_path}", file=sys.stderr)
+            print(f"Error: Cannot open schema file: {schema_path}", file=sys.stderr)
+            traceback.print_exc()
             sys.exit(1)
         
         # Generate prompt
@@ -179,7 +181,8 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
                 return True, summary_data, None
             except json.JSONDecodeError as e:
                 error_msg = "JSON parsing error"
-                print_error_with_line(f"  {error_msg}", e)
+                print(f"  {error_msg}", file=sys.stderr)
+                traceback.print_exc()
                 print(f"  Response: {response[:200]}...")
                 return False, {}, f"{error_msg}: {e}"
             
@@ -189,11 +192,13 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str = None, schema
                 try:
                     delete_file(uploaded_file)
                 except Exception as e:
-                    print_error_with_line("  Warning: Failed to delete uploaded file", e)
+                    print("  Warning: Failed to delete uploaded file", file=sys.stderr)
+                    traceback.print_exc()
         
     except Exception as e:
         error_msg = "Summary generation error"
-        print_error_with_line(f"  {error_msg}", e)
+        print(f"  {error_msg}", file=sys.stderr)
+        traceback.print_exc()
         return False, {}, f"{error_msg}: {e}"
 
 
@@ -369,6 +374,7 @@ def show_summary_files(cache: Cache, url_infos: List[URLInfo]) -> None:
                     print(f"  Tags: {tags}")
         
         except Exception as e:
-            print_error_with_line(f"Error reading summary file {summary_file}", e)
+            print(f"Error reading summary file {summary_file}", file=sys.stderr)
+            traceback.print_exc()
 
 

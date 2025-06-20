@@ -22,7 +22,7 @@ This document outlines the error handling policies and patterns used in the url2
 **Development Phase (0.1.0)**: Prioritize error visibility over user-friendly messages
 - Full stack traces help with debugging
 - Detailed error information aids development
-- Use `print_error_with_line()` for comprehensive error reporting
+- Use `traceback.print_exc()` for comprehensive error reporting
 
 **Production Considerations**: May need user-friendly error messages in future versions
 
@@ -39,8 +39,8 @@ try:
     with open(user_file, 'r', encoding='utf-8') as f:
         data = process_file(f)
 except Exception as e:
-    print_error_with_line("Error", e)
-    print("Cannot read file:", user_file, file=sys.stderr)
+    print(f"Error: Cannot read file: {user_file}", file=sys.stderr)
+    traceback.print_exc()
     sys.exit(1)
 ```
 
@@ -58,8 +58,8 @@ try:
         f.write(content)
     print(f"File saved: {output_file}")
 except Exception as e:
-    print_error_with_line("Error", e)
-    print("Cannot write to file:", output_file, file=sys.stderr)
+    print(f"Error: Cannot write to file: {output_file}", file=sys.stderr)
+    traceback.print_exc()
     # Continue execution - don't exit
 ```
 
@@ -76,8 +76,8 @@ try:
     with open(critical_file, 'r', encoding='utf-8') as f:
         data = process_critical_data(f)
 except Exception as e:
-    print_error_with_line("Error", e)
-    print("Cannot open critical file:", critical_file, file=sys.stderr)
+    print(f"Error: Cannot open critical file: {critical_file}", file=sys.stderr)
+    traceback.print_exc()
     sys.exit(1)
 ```
 
@@ -94,7 +94,8 @@ for item in items:
     try:
         process_item(item)
     except Exception as e:
-        print_error_with_line(f"Warning: Failed to process {item}", e)
+        print(f"Warning: Failed to process {item}", file=sys.stderr)
+        traceback.print_exc()
         continue  # Process remaining items
 ```
 
@@ -118,28 +119,35 @@ except Exception:
 
 ## Error Reporting Function
 
-### `print_error_with_line(error_message: str, error: Exception)`
+### `traceback.print_exc()`
 
-Centralized error reporting that provides:
-- File name and line number where error occurred
-- Function name
-- Source code line that caused the error
-- Custom error message
-- Exception details
+Python's built-in error reporting that provides:
+- Full stack trace showing the call hierarchy
+- File names and line numbers for each level
+- Function names throughout the call stack
+- Source code lines that caused the error
+- Complete exception details
 
 **Usage**:
 ```python
 try:
     risky_operation()
 except Exception as e:
-    print_error_with_line("Operation failed", e)
+    print("Error: Operation failed", file=sys.stderr)
+    traceback.print_exc()
 ```
 
 **Output Example**:
 ```
-Error in /path/to/file.py:123 in function_name()
+Error: Operation failed
+Traceback (most recent call last):
+  File "/path/to/main.py", line 45, in main
+    run_command(args)
+  File "/path/to/file.py", line 123, in function_name
     risky_operation()
-Operation failed: ValueError: invalid input
+  File "/path/to/utils.py", line 67, in risky_operation
+    raise ValueError("invalid input")
+ValueError: invalid input
 ```
 
 ## File Operation Categories
@@ -185,7 +193,8 @@ try:
     with open(file_path, 'r') as f:
         content = f.read()
 except Exception as e:  # FileNotFoundError, PermissionError, etc.
-    print_error_with_line("File access failed", e)
+    print("Error: File access failed", file=sys.stderr)
+    traceback.print_exc()
     sys.exit(1)
 ```
 
@@ -232,7 +241,8 @@ try:
     converted_data = process_gif(image)
     return converted_data
 except Exception as e:
-    print_error_with_line("GIF conversion error", e)
+    print("Error: GIF conversion error", file=sys.stderr)
+    traceback.print_exc()
     # Complex fallback to original file upload
     return fallback_upload(original_file)
 ```
@@ -262,7 +272,8 @@ def complex_function():
         step4_data = process_data(step3_data)
         return save_data(step4_data)
     except Exception as e:
-        print_error_with_line("Something went wrong", e)
+        print("Error: Something went wrong", file=sys.stderr)
+        traceback.print_exc()
         return None
 ```
 
@@ -279,7 +290,8 @@ def complex_function():
     try:
         return save_data(step4_data)
     except PermissionError as e:
-        print_error_with_line("Cannot save data - permission denied", e)
+        print("Error: Cannot save data - permission denied", file=sys.stderr)
+        traceback.print_exc()
         print("Check file permissions and try again", file=sys.stderr)
         sys.exit(1)
 ```
@@ -393,4 +405,4 @@ When refactoring error handling patterns:
 1. **Update test expectations**: Change from return code assertions to exception assertions
 2. **Test specific exception types**: Verify that specific exceptions propagate correctly
 3. **Test error message content**: Ensure error messages are informative and actionable
-4. **Test stderr output**: Verify that `print_error_with_line()` produces expected output format
+4. **Test stderr output**: Verify that `traceback.print_exc()` produces expected stack trace format

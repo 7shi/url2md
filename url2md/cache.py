@@ -8,13 +8,13 @@ Handles URL caching, file storage, and metadata management.
 import mimetypes
 import sys
 import time
+import traceback
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from .urlinfo import URLInfo
-from .utils import print_error_with_line
 from .tsv_manager import TSVManager
 from .translation_cache import TranslationCache
 
@@ -74,8 +74,8 @@ class Cache(TSVManager):
         try:
             super().load()  # Load TSV data
         except Exception as e:
-            print_error_with_line("Error", e)
-            print("Cannot open cache file:", self.tsv_path, file=sys.stderr)
+            print(f"Error: Cannot open cache file: {self.tsv_path}", file=sys.stderr)
+            traceback.print_exc()
             sys.exit(1)
         
         self._entries.clear()
@@ -89,7 +89,8 @@ class Cache(TSVManager):
                     url_info = URLInfo.from_tsv_line(line)
                     self._entries[url_info.url] = url_info
                 except ValueError as e:
-                    print_error_with_line("Warning: Failed to parse TSV line", e)
+                    print("Warning: Failed to parse TSV line", file=sys.stderr)
+                    traceback.print_exc()
     
     def save(self) -> None:
         """Save data to cache.tsv"""
@@ -107,7 +108,8 @@ class Cache(TSVManager):
             super().save()
             
         except Exception as e:
-            print_error_with_line("Error: cache.tsv save error", e)
+            print("Error: cache.tsv save error", file=sys.stderr)
+            traceback.print_exc()
             sys.exit(1)
     
     def add(self, url_info: URLInfo) -> None:

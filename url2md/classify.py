@@ -7,6 +7,7 @@ Extract all tags from summary files, aggregate them, and classify by theme using
 
 import sys
 import json
+import traceback
 from collections import Counter
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -15,7 +16,7 @@ from .cache import Cache
 from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models
 from .translate import translate_terms
 from .urlinfo import URLInfo
-from .utils import get_resource_path, print_error_with_line
+from .utils import get_resource_path
 
 
 # Global list of terms that need translation
@@ -49,7 +50,8 @@ def extract_tags(cache: Cache, url_infos: List[URLInfo]) -> List[str]:
                     tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
                     all_tags.extend(tag_list)
             except Exception as e:
-                print_error_with_line(f"Warning: Summary file read error ({url_info.url})", e)
+                print(f"Warning: Summary file read error ({url_info.url})", file=sys.stderr)
+                traceback.print_exc()
     
     return all_tags
 
@@ -181,8 +183,8 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str = None
         
         config = config_from_schema_string(schema_content)
     except Exception as e:
-        print_error_with_line("Error", e)
-        print(f"Cannot open schema file: {schema_path}", file=sys.stderr)
+        print(f"Error: Cannot open schema file: {schema_path}", file=sys.stderr)
+        traceback.print_exc()
         sys.exit(1)
     
     # Generate classification

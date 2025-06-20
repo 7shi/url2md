@@ -10,13 +10,14 @@ import argparse
 import json
 import os
 import sys
+import traceback
 from collections import Counter
 from pathlib import Path
 from typing import List, Optional
 
 from .cache import Cache
 from .urlinfo import URLInfo, load_urls_from_file
-from .utils import DEFAULT_CACHE_DIR, find_cache_dir, print_error_with_line
+from .utils import DEFAULT_CACHE_DIR, find_cache_dir
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -318,8 +319,8 @@ def run_classify(args) -> None:
                 json.dump(classification_result, f, ensure_ascii=False, indent=2)
             print(f"Classification results saved to: {args.output}")
         except Exception as e:
-            print_error_with_line("Error", e)
-            print(f"Cannot write to file '{args.output}'", file=sys.stderr)
+            print(f"Error: Cannot write to file '{args.output}'", file=sys.stderr)
+            traceback.print_exc()
 
 
 def run_report(args) -> None:
@@ -331,8 +332,8 @@ def run_report(args) -> None:
         with open(args.classification, 'r', encoding='utf-8') as f:
             classification_data = json.load(f)
     except Exception as e:
-        print_error_with_line("Error", e)
-        print(f"Cannot open file '{args.classification}'", file=sys.stderr)
+        print(f"Error: Cannot open file '{args.classification}'", file=sys.stderr)
+        traceback.print_exc()
         sys.exit(1)
     
     cache = Cache(args.cache_dir)
@@ -367,7 +368,8 @@ def run_report(args) -> None:
             print(f"Error: Theme weight file not found: {args.theme_weight_file}", file=sys.stderr)
             sys.exit(1)
         except Exception as e:
-            print_error_with_line("Error reading theme weight file", e)
+            print(f"Error reading theme weight file: {args.theme_weight_file}", file=sys.stderr)
+            traceback.print_exc()
             sys.exit(1)
     
     # Then, process command-line theme weights (these can override file settings)
@@ -439,8 +441,8 @@ def run_report(args) -> None:
                 f.write(report_content)
             print(f"Report saved to: {args.output}")
         except Exception as e:
-            print_error_with_line("Error", e)
-            print(f"Cannot write to file '{args.output}'", file=sys.stderr)
+            print(f"Error: Cannot write to file '{args.output}'", file=sys.stderr)
+            traceback.print_exc()
     else:
         print(report_content)
 
@@ -533,7 +535,8 @@ def main() -> int:
         try:
             args.cache_dir = find_cache_dir()
         except ValueError as e:
-            print_error_with_line("Error", e)
+            print(f"Error: {e}", file=sys.stderr)
+            traceback.print_exc()
             return 1
     
     # Run subcommand - let errors propagate for debugging

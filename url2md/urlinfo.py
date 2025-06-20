@@ -9,14 +9,15 @@ import hashlib
 import mimetypes
 import re
 import requests
+import sys
 import time
+import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 from urllib.parse import urlparse
 
 from .download import PLAYWRIGHT_AVAILABLE, download, is_text, user_agent
-from .utils import print_error_with_line
 
 
 @dataclass
@@ -42,7 +43,8 @@ class URLInfo:
                 parsed = urlparse(self.url)
                 self.domain = parsed.netloc.lower()
             except Exception as e:
-                print_error_with_line("URL domain extraction failed, setting empty domain", e)
+                print("URL domain extraction failed, setting empty domain", file=sys.stderr)
+                traceback.print_exc()
                 self.domain = ""
     
     def to_tsv_line(self) -> str:
@@ -100,7 +102,8 @@ class URLInfo:
                 self.content_type = content_type
                 return content
             except Exception as e:
-                print_error_with_line("Playwright failed, falling back to requests", e)
+                print("Playwright failed, falling back to requests", file=sys.stderr)
+                traceback.print_exc()
                 return self._fetch_content_requests()
         else:
             # Use requests
@@ -148,8 +151,8 @@ def load_urls_from_file(filepath: str) -> list[str]:
                     if url and not url.startswith('#'):
                         urls.append(url)
         except Exception as e:
-            print_error_with_line("Error", e)
-            print("Cannot read URL file:", filepath, file=sys.stderr)
+            print(f"Error: Cannot read URL file: {filepath}", file=sys.stderr)
+            traceback.print_exc()
             sys.exit(1)
     
     return urls

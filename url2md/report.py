@@ -6,13 +6,14 @@ Generate comprehensive reports from classification data in Markdown format.
 """
 
 import json
+import sys
+import traceback
 from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from .cache import Cache
 from .urlinfo import URLInfo
-from .utils import print_error_with_line
 
 
 def calculate_tag_match_weight(url_tag: str, theme_tag: str) -> float:
@@ -66,7 +67,8 @@ def load_url_summaries(cache: Cache, url_infos: List[URLInfo]) -> Dict[str, Dict
                     continue
                 url_summaries[url_info.url] = summary_data
             except Exception as e:
-                print_error_with_line(f"Warning: Summary file read error ({url_info.url})", e)
+                print(f"Warning: Summary file read error ({url_info.url})", file=sys.stderr)
+                traceback.print_exc()
     
     if skip_count > 0:
         print(f"Skipped invalid content: {skip_count} items")
