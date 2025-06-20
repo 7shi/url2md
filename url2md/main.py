@@ -22,7 +22,7 @@ from .utils import DEFAULT_CACHE_DIR, find_cache_dir
 
 def create_parser() -> argparse.ArgumentParser:
     """Create main parser and subcommands"""
-    from llm7shi.gemini import default_model
+    from llm7shi import DEFAULT_MODEL
     
     parser = argparse.ArgumentParser(
         description="url2md - URL analysis and classification tool",
@@ -74,7 +74,7 @@ For more information on each command, use:
     summarize_parser.add_argument('--limit', type=int, help='Maximum number to process')
     summarize_parser.add_argument('--force', action='store_true', help='Force re-summarize existing summaries')
     summarize_parser.add_argument('--show-summary', action='store_true', help='Show summary file paths and contents for specified URLs')
-    summarize_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
+    summarize_parser.add_argument('--model', default=DEFAULT_MODEL, help=f'Gemini model to use (default: {DEFAULT_MODEL})')
     summarize_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
     # classify subcommand
@@ -84,7 +84,7 @@ For more information on each command, use:
     classify_parser.add_argument('--extract-tags', action='store_true', help='Extract and count tags only (no classification)')
     classify_parser.add_argument('--show-prompt', action='store_true', help='Show classification prompt only (no LLM call)')
     classify_parser.add_argument('-o', '--output', help='Classification result output file (required for classification)')
-    classify_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
+    classify_parser.add_argument('--model', default=DEFAULT_MODEL, help=f'Gemini model to use (default: {DEFAULT_MODEL})')
     classify_parser.add_argument('-l', '--language', help='Output language (e.g., Japanese, Chinese, French)')
     
     # report subcommand
@@ -107,7 +107,7 @@ For more information on each command, use:
     workflow_parser.add_argument('--force-fetch', action='store_true', help='Force re-fetch URLs')
     workflow_parser.add_argument('--force-summary', action='store_true', help='Force re-summarize')
     workflow_parser.add_argument('--playwright', action='store_true', help='Use Playwright for fetch')
-    workflow_parser.add_argument('--model', default=default_model, help=f'Gemini model to use (default: {default_model})')
+    workflow_parser.add_argument('--model', default=DEFAULT_MODEL, help=f'Gemini model to use (default: {DEFAULT_MODEL})')
     workflow_parser.add_argument('-t', '--theme-weight', action='append', metavar='THEME:WEIGHT',
                               help='Theme weight adjustment (e.g., -t "Theme Name:0.7"). Add $ suffix to create subsections (e.g., -t "Theme Name:1.5$")')
     workflow_parser.add_argument('-T', '--theme-weight-file', help='File containing theme weights (one per line)')
