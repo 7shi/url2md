@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from .cache import Cache
-from llm7shi import generate_content_retry, config_from_schema, config_from_schema_string
+from llm7shi import generate_content_retry, config_from_schema_string
 from .translate import translate_terms
 from .urlinfo import URLInfo
 from .utils import get_resource_path
@@ -186,7 +186,7 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str,
         sys.exit(1)
     
     # Generate classification
-    response = generate_content_retry(model, config, [prompt])
+    response = generate_content_retry([prompt], model=model, config=config)
     
     # Parse JSON response
     classification_data = json.loads(response.strip())

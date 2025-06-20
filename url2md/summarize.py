@@ -17,7 +17,7 @@ import minify_html
 from tqdm import tqdm
 
 from .cache import Cache
-from llm7shi import generate_content_retry, config_from_schema, config_from_schema_string, upload_file, delete_file
+from llm7shi import generate_content_retry, config_from_schema_string, upload_file, delete_file
 from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title, get_resource_path
 
@@ -159,7 +159,7 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: 
         
         try:
             # Generate structured JSON summary
-            response = generate_content_retry(model, config, contents)
+            response = generate_content_retry(contents, model=model, config=config)
             
             # Parse JSON
             try:

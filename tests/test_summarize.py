@@ -189,7 +189,7 @@ def test_json_structure():
 
 
 @patch('url2md.summarize.generate_content_retry')
-@patch('url2md.summarize.config_from_schema')
+@patch('url2md.summarize.config_from_schema_string')
 def test_summarize_content_mock(mock_config, mock_generate):
     """Test summarize_content with mocked dependencies"""
     # Setup mocks

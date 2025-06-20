@@ -84,7 +84,7 @@ def translate_terms(terms: List[str], language: str, model: str) -> Dict[str, st
     config = config_from_schema_string(schema_content)
     
     # Generate translations
-    response = generate_content_retry(model, config, [prompt])
+    response = generate_content_retry([prompt], model=model, config=config)
     
     # Parse JSON response
     translation_data = json.loads(response.strip())
