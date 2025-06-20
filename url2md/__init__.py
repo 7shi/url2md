@@ -11,17 +11,6 @@ __version__ = version("url2md")
 __author__ = "url2md contributors"
 __license__ = "CC0-1.0"
 
-from .gemini import (
-    models,
-    client,
-    config_text,
-    build_schema_from_json,
-    config_from_schema,
-    generate_content_retry,
-    upload_file,
-    delete_file,
-)
-
 from .utils import (
     extract_body_content,
     extract_html_title,
@@ -44,27 +33,11 @@ from .cache import (
     CacheResult,
 )
 
-from .terminal import (
-    bold,
-    convert_markdown,
-    MarkdownStreamConverter,
-)
-
 __all__ = [
     # Version info
     "__version__",
     "__author__",
     "__license__",
-    
-    # Gemini API
-    "models",
-    "client", 
-    "config_text",
-    "build_schema_from_json",
-    "config_from_schema",
-    "generate_content_retry",
-    "upload_file",
-    "delete_file",
     
     # HTML utilities
     "extract_body_content",
@@ -81,11 +54,6 @@ __all__ = [
     "load_urls_from_file",
     "Cache",
     "CacheResult",
-    
-    # Terminal utilities
-    "bold",
-    "convert_markdown",
-    "MarkdownStreamConverter",
 ]
 
 # Function modules are available as submodules:

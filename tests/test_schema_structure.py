@@ -45,29 +45,6 @@ def test_schema_files():
         assert set(properties) == set(expected['properties']), f"Properties mismatch in {schema_file}"
 
 
-def test_gemini_integration():
-    """Test gemini.py integration functionality"""
-    with open('url2md/gemini.py', 'r', encoding='utf-8') as f:
-        code = f.read()
-    
-    # Check important functions
-    required_patterns = [
-        # Schema support
-        (r'def build_schema_from_json\(', "Schema building function"),
-        (r'case "boolean":', "Boolean type support"),
-        (r'if "enum" in json_data:', "Enum support"),
-        
-        # File upload
-        (r'def upload_file\(.*?mime_type.*?\)', "File upload with mime_type"),
-        (r'def delete_file\(', "File deletion function"),
-        
-        # Config generation
-        (r'def config_from_schema\(', "Schema-based config generation"),
-    ]
-    
-    for pattern, description in required_patterns:
-        assert re.search(pattern, code, re.DOTALL), f"Missing: {description}"
-
 
 def test_models_api():
     """Test urlinfo.py API structure"""
@@ -177,7 +154,6 @@ def test_package_structure():
         'url2md/summarize.py',
         'url2md/classify.py',
         'url2md/report.py',
-        'url2md/gemini.py',
         'url2md/utils.py',
         'url2md/download.py',
         'pyproject.toml',

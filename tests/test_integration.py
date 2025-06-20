@@ -222,7 +222,7 @@ class TestWorkflowIntegration:
     
     def test_schema_file_integration(self):
         """Test schema file accessibility"""
-        from url2md.gemini import config_from_schema
+        from llm7shi import config_from_schema
         from url2md.utils import get_resource_path
         
         # Test that schema files can be loaded
@@ -256,7 +256,6 @@ class TestModuleIntegration:
         import url2md.summarize
         import url2md.classify
         import url2md.report
-        import url2md.gemini
         import url2md.utils
         import url2md.download
         
@@ -280,21 +279,6 @@ class TestModuleIntegration:
         assert callable(summarize.summarize_urls)
         assert callable(classify.extract_tags)
         assert callable(report.generate_markdown_report)
-    
-    def test_gemini_integration(self):
-        """Test Gemini API integration setup"""
-        from url2md.gemini import (
-            models, client, build_schema_from_json, 
-            config_from_schema, generate_content_retry
-        )
-        
-        # Test basic functionality exists
-        assert isinstance(models, list)
-        assert len(models) > 0
-        assert client is not None
-        assert callable(build_schema_from_json)
-        assert callable(config_from_schema)
-        assert callable(generate_content_retry)
     
     def test_utils_integration(self):
         """Test utility function integration"""

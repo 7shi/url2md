@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from .cache import Cache
-from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models
+from llm7shi import generate_content_retry, config_from_schema, config_from_schema_string
+from llm7shi.gemini import models
 from .translate import translate_terms
 from .urlinfo import URLInfo
 from .utils import get_resource_path

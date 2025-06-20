@@ -8,7 +8,8 @@ Provides utilities for translating terms using AI models with caching support.
 import json
 from typing import List, Dict, Optional
 
-from .gemini import generate_content_retry, config_from_schema_string, models
+from llm7shi import generate_content_retry, config_from_schema_string
+from llm7shi.gemini import models
 from .utils import get_resource_path
 
 

@@ -17,7 +17,8 @@ import minify_html
 from tqdm import tqdm
 
 from .cache import Cache
-from .gemini import generate_content_retry, config_from_schema, config_from_schema_string, models, upload_file, delete_file
+from llm7shi import generate_content_retry, config_from_schema, config_from_schema_string, upload_file, delete_file
+from llm7shi.gemini import models
 from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title, get_resource_path
 

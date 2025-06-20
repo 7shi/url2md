@@ -22,7 +22,7 @@ from .utils import DEFAULT_CACHE_DIR, find_cache_dir
 
 def create_parser() -> argparse.ArgumentParser:
     """Create main parser and subcommands"""
-    from .gemini import default_model
+    from llm7shi.gemini import default_model
     
     parser = argparse.ArgumentParser(
         description="url2md - URL analysis and classification tool",
