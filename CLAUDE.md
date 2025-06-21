@@ -174,7 +174,7 @@ See [tests/README.md](tests/README.md) for comprehensive testing guidelines, tes
 
 ## Debugging and Troubleshooting
 
-See [docs/troubleshooting.md](docs/troubleshooting.md) for comprehensive troubleshooting guide including common issues and debugging tips.
+See [docs/20250615-troubleshooting.md](docs/20250615-troubleshooting.md) for comprehensive troubleshooting guide including common issues and debugging tips.
 
 ## Code Style and Conventions
 
@@ -200,7 +200,7 @@ Define configurable values as constants in appropriate modules, avoid hardcoding
 - **Fail fast**: User input files → `sys.exit(1)`, critical system data → `sys.exit(1)`
 - **Graceful degradation**: Only for optional operations (cache detection, HTML parsing)
 
-See [docs/error-handling.md](docs/error-handling.md) for detailed guidelines and [NOTES.md](NOTES.md#error-handling-philosophy) for philosophical background.
+See [docs/20250614-error-handling.md](docs/20250614-error-handling.md) for detailed guidelines and [NOTES.md](NOTES.md#error-handling-philosophy) for philosophical background.
 
 ## Future Development
 
@@ -224,6 +224,9 @@ The project maintains comprehensive documentation across multiple levels:
 - **[CLAUDE.md](CLAUDE.md)** - This file - development guidelines and workflows
 - **[NOTES.md](NOTES.md)** - Development philosophy and architectural decisions
 - **[docs/](docs/)** - Specialized documentation for troubleshooting, error handling, and detailed development guidance
+  - Files use `YYYYMMDD-filename.md` naming convention (e.g., `20250615-troubleshooting.md`)
+  - Date prefix enables intuitive understanding of chronological relationships between documents
+  - README.md is the only exception without date prefix
 
 ### Documentation Maintenance
 When making changes:

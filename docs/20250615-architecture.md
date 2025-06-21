@@ -73,7 +73,7 @@ This architectural change exemplifies how better understanding enables better st
 
 One key lesson: **comprehensive tests enable confident refactoring**. Each major architectural change was possible because the test suite provided confidence that functionality remained intact. Tests became the safety net that enabled bold improvements.
 
-The test execution workflow and specific commands are documented in [testing.md](testing.md) for practical development use.
+The test execution workflow and specific commands are documented in [20250615-testing.md](20250615-testing.md) for practical development use.
 
 ### Test-Driven Stabilization Approach
 

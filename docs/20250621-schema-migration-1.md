@@ -1,6 +1,6 @@
 # Schema Migration Phase 1: JSON Files to Code-Based Architecture
 
-> **⚠️ DEPRECATED DOCUMENT**: This document describes Phase 1 of the schema migration (JSON → Code-based dictionaries) which has been superseded by Phase 2 (Code-based dictionaries → Pydantic classes). For the current architecture and latest migration details, please see [schema-migration-2.md](schema-migration-2.md).
+> **⚠️ DEPRECATED DOCUMENT**: This document describes Phase 1 of the schema migration (JSON → Code-based dictionaries) which has been superseded by Phase 2 (Code-based dictionaries → Pydantic classes). For the current architecture and latest migration details, please see [20250621-schema-migration-2.md](20250621-schema-migration-2.md).
 
 ## Overview
 
@@ -283,6 +283,6 @@ The migration from JSON-based to code-based schemas successfully modernized the 
 - ✅ Developer experience improved over JSON editing
 
 **Evolution to Phase 2:**
-This migration established the foundation for the subsequent Phase 2 migration to Pydantic class-based schemas, which further enhanced type safety, IDE support, and developer experience. See [schema-migration-2.md](schema-migration-2.md) for details on the current Pydantic-based architecture.
+This migration established the foundation for the subsequent Phase 2 migration to Pydantic class-based schemas, which further enhanced type safety, IDE support, and developer experience. See [20250621-schema-migration-2.md](20250621-schema-migration-2.md) for details on the current Pydantic-based architecture.
 
 This migration demonstrates the value of iterative architecture improvements and the importance of comprehensive testing during system refactoring.

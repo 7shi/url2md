@@ -248,7 +248,7 @@ The goal is finding the balance between:
 
 The current implementation prioritizes the first element of each pair, with the understanding that this balance will shift as the project matures.
 
-For specific implementation patterns and code examples, see [error-handling.md](error-handling.md).
+For specific implementation patterns and code examples, see [20250614-error-handling.md](20250614-error-handling.md).
 
 ## Key Insights from Historical Analysis
 

@@ -126,7 +126,7 @@ As url2md continues to evolve, maintain these principles:
 - **Simplicity**: Resist feature creep that complicates the core use cases
 - **Documentation**: Keep examples and help text in sync with functionality
 
-For detailed architectural decisions and development methodology, see [docs/architecture.md](docs/architecture.md).
+For detailed architectural decisions and development methodology, see [docs/20250615-architecture.md](docs/20250615-architecture.md).
 
 ## The Diffusion Model Analogy
 
@@ -154,7 +154,7 @@ The goal is to continue the "denoising" process - removing friction and complexi
 ### The Evolution: Simple Until Proven Complex
 Start with the simplest possible error handling and add complexity only when specific use cases demand it. This contrasts with defensive programming, which assumes complexity upfront.
 
-For detailed error handling evolution, examples, and guidelines, see [docs/development-history.md](docs/development-history.md#error-handling-philosophy-evolution) and [docs/error-handling.md](docs/error-handling.md).
+For detailed error handling evolution, examples, and guidelines, see [docs/20250615-development-history.md](docs/20250615-development-history.md#error-handling-philosophy-evolution) and [docs/20250614-error-handling.md](docs/20250614-error-handling.md).
 
 ## Conclusion
 
