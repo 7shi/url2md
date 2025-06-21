@@ -15,6 +15,18 @@ For output examples, see the [Wiki](https://github.com/7shi/url2md/wiki).
 
 ## Installation
 
+### As a tool (recommended)
+
+```bash
+# Install as a tool
+uv tool install https://github.com/7shi/url2md.git
+
+# Optional for dynamic rendering
+playwright install
+```
+
+### From source
+
 ```bash
 # Source installation with uv
 git clone https://github.com/7shi/url2md.git
@@ -24,6 +36,8 @@ uv sync
 # Optional for dynamic rendering
 uv run playwright install
 ```
+
+**Note**: When using source installation, prefix all commands with `uv run` (e.g., `uv run url2md init`).
 
 ## Workflow Overview
 
@@ -37,28 +51,28 @@ url2md follows a standard workflow to analyze URLs and generate reports:
 
 ### Quick Examples
 
-Here are the standard workflow commands (same as shown by `uv run url2md`):
+Here are the standard workflow commands (same as shown by `url2md`):
 
 ```bash
 # Initialize cache directory (required first step, creates `url2md-cache/`)
-uv run url2md init
+url2md init
 
 # Step-by-step workflow
-uv run url2md fetch -u urls.txt --playwright
-uv run url2md summarize -u urls.txt
-uv run url2md classify -u urls.txt -o class.json
-uv run url2md report -u urls.txt -c class.json -o report.md
+url2md fetch -u urls.txt --playwright
+url2md summarize -u urls.txt
+url2md classify -u urls.txt -o class.json
+url2md report -u urls.txt -c class.json -o report.md
 
 # Complete workflow in one command (fetch → summarize → classify → report)
-uv run url2md workflow -u urls.txt --playwright -c class.json -o report.md
+url2md workflow -u urls.txt --playwright -c class.json -o report.md
 
 # With Japanese language output for AI operations
-uv run url2md summarize -u urls.txt -l Japanese
-uv run url2md classify -u urls.txt -o class.json -l Japanese
-uv run url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
+url2md summarize -u urls.txt -l Japanese
+url2md classify -u urls.txt -o class.json -l Japanese
+url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
 ```
 
-For more command details, use `uv run url2md <command> --help`.
+For more command details, use `url2md <command> --help`.
 
 ## Global Options
 

@@ -8,6 +8,7 @@ authors = [
     {name = "url2md contributors"}
 ]
 license = {text = "CC0-1.0"}
+repository = "https://github.com/7shi/url2md"
 keywords = ["url", "markdown", "analysis", "classification", "ai", "summarization"]
 classifiers = [
     "Development Status :: 4 - Beta",
