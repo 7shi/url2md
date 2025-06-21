@@ -392,21 +392,12 @@ CC0-1.0 - Public Domain
 ## Testing
 
 ```bash
-# Install development dependencies first (if not done already)
-uv sync --dev
-
-# Run all tests
-uv run pytest
-
-# Run tests with coverage
-uv run pytest --cov=url2md --cov-report=html
+# Quick test commands
+uv sync --dev        # Install development dependencies
+uv run pytest       # Run all tests
 ```
 
-**Development vs Usage**:
-- **For development**: Use `uv sync --dev` to install development tools like pytest, black, and flake8
-- **For usage only**: Use `uv sync` to install only runtime dependencies needed to run url2md
-
-For detailed testing commands and development workflows, see [CLAUDE.md](CLAUDE.md#test-development).
+For comprehensive testing documentation including test coverage, categories, development workflows, and contributing guidelines, see **[tests/README.md](tests/README.md)**.
 
 ## Documentation
 
@@ -414,4 +405,5 @@ For detailed testing commands and development workflows, see [CLAUDE.md](CLAUDE.
 - **[CLAUDE.md](CLAUDE.md)** - Development guidelines and workflow
 - **[NOTES.md](NOTES.md)** - Development philosophy and key lessons
 - **[url2md/README.md](url2md/README.md)** - Package architecture and module documentation
+- **[tests/README.md](tests/README.md)** - Test suite documentation and coverage overview
 - **[docs/README.md](docs/README.md)** - Specialized documentation for architecture, testing, troubleshooting, and detailed development guidance

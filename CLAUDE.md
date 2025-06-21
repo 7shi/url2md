@@ -42,10 +42,12 @@ url2md/
 │   ├── resource-support.md # Resource handling documentation
 │   └── translation-strategy.md # Translation implementation details
 ├── tests/                 # Test directory with comprehensive test suite
+│   ├── README.md               # Test suite documentation and coverage overview
 │   ├── test_report.py          # Core report functionality tests
 │   ├── test_report_translations.py # Report translation functionality tests
 │   └── ...
 └── url2md/               # Main package
+    ├── README.md         # Package architecture and module documentation
     ├── __init__.py       # Package entry point
     ├── main.py           # CLI entry point and subcommand dispatcher
     ├── urlinfo.py        # Data models (URLInfo, load_urls_from_file)
@@ -59,6 +61,7 @@ url2md/
     ├── report.py         # Report generation functions
     ├── utils.py          # HTML processing and resource utilities
     ├── download.py       # Playwright dynamic rendering
+    ├── *.md              # Individual module documentation
     └── schemas/          # JSON schemas for AI operations
         ├── summarize.json# Schema for summarize command
         ├── classify.json # Schema for classify command
@@ -102,7 +105,8 @@ uv run url2md [global-options] <subcommand> [options]
 3. Add/modify command logic
 4. Update JSON schemas if AI operations are involved
 5. Add tests for new functionality
-6. Update README.md if user-facing changes
+6. Update module documentation if implementation changes
+7. Update README.md if user-facing changes
 
 ### Development Best Practices
 - **Start Simple, Evolve Gradually**: Begin with functional prototypes rather than perfect designs
@@ -168,7 +172,7 @@ Before making changes: run `uv run pytest`, fix any failures, then run tests aga
 - Translation functionality tests should be in separate test files (e.g., `test_report_translations.py`)
 - Test both complete translations and partial translations (fallback scenarios)
 
-See [docs/testing.md](docs/testing.md) for comprehensive testing guidelines and [README.md](README.md#testing) for basic commands.
+See [tests/README.md](tests/README.md) for comprehensive testing guidelines, test suite documentation, and coverage overview.
 
 ## Debugging and Troubleshooting
 
@@ -203,6 +207,33 @@ See [docs/error-handling.md](docs/error-handling.md) for detailed guidelines and
 ## Future Development
 
 The centralized architecture supports extension through new subcommands (function module + CLI integration), AI operations (new schemas), output formats, and content types. Maintain centralized CLI patterns while keeping business logic in separate function modules.
+
+## Documentation Structure
+
+The project maintains comprehensive documentation across multiple levels:
+
+### User Documentation
+- **[README.md](README.md)** - User-facing documentation with command examples and usage
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history following Keep a Changelog format
+
+### Technical Documentation  
+- **[url2md/README.md](url2md/README.md)** - Package architecture overview with Mermaid flow diagrams
+- **[url2md/*.md](url2md/)** - Individual module documentation covering classes, functions, and design patterns
+- **[tests/README.md](tests/README.md)** - Test suite documentation with coverage overview and testing strategies
+- **[tests/*.md](tests/)** - Individual test file documentation explaining test coverage and approaches
+
+### Development Documentation
+- **[CLAUDE.md](CLAUDE.md)** - This file - development guidelines and workflows
+- **[NOTES.md](NOTES.md)** - Development philosophy and architectural decisions
+- **[docs/](docs/)** - Specialized documentation for troubleshooting, error handling, and detailed development guidance
+
+### Documentation Maintenance
+When making changes:
+1. **Module Changes**: Update corresponding `.md` file in `url2md/` directory
+2. **Test Changes**: Update corresponding `.md` file in `tests/` directory and `tests/README.md` if needed
+3. **Architecture Changes**: Update `url2md/README.md` and Mermaid diagrams
+4. **User-Facing Changes**: Update main `README.md`
+5. **Development Process Changes**: Update `CLAUDE.md`
 
 ## Development Philosophy
 
