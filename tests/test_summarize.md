@@ -16,18 +16,19 @@ The `test_summarize.py` module provides comprehensive tests for the summarizatio
 ## Schema and Structure Tests
 
 ### `test_schema_validation()`
-Tests the summarization schema module structure and field requirements.
-- **Purpose**: Verify `build_summarize_schema()` function generates correct field definitions
-- **Schema Module**: `summarize_schema.build_summarize_schema()` function
+Tests the Pydantic summarization schema module structure and field requirements.
+- **Purpose**: Verify `create_summarize_schema_class()` function generates correct type-safe field definitions
+- **Schema Module**: `summarize_schema.create_summarize_schema_class()` function
 - **Required Fields Tested**: `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
 - **Validation Process**:
-  1. Import schema function from summarize_schema module
-  2. Call function to generate schema
-  3. Extract required fields and properties
-  4. Compare against expected field set
-  5. Test language parameter functionality
-- **Key Assertions**: Required fields and properties match expected structure
-- **Language Testing**: Verifies language parameter correctly modifies field descriptions
+  1. Import schema class creation function from summarize_schema module
+  2. Call function to generate Pydantic schema class
+  3. Generate JSON schema using `model_json_schema()`
+  4. Extract required fields and properties
+  5. Compare against expected field set
+  6. Test language parameter functionality with type-safe classes
+- **Key Assertions**: Required fields and properties match expected structure with full type safety
+- **Language Testing**: Verifies language parameter correctly modifies field descriptions in Pydantic models
 
 ### `test_imports()`
 Tests module import structure and availability.

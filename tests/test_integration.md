@@ -118,18 +118,19 @@ Tests fetch command workflow integration with mocked dependencies.
 - **Key Assertion**: Mock called once, command returns success (0)
 
 ### `test_schema_module_integration()`
-Tests schema module accessibility and configuration generation.
-- **Purpose**: Verify schema modules can be loaded and used
+Tests Pydantic schema module accessibility and configuration generation.
+- **Purpose**: Verify Pydantic schema modules can be loaded and used with type safety
 - **Schema Modules Tested**:
-  - `summarize_schema.build_summarize_schema()`
-  - `classify_schema.build_classify_schema()`
-  - `translate_schema.build_translate_schema()`
+  - `summarize_schema.create_summarize_schema_class()`
+  - `classify_schema.create_classify_schema_class()`
+  - `translate_schema.create_translate_schema_class()`
 - **Operations Tested**:
   - Schema module imports
-  - Schema function calls
-  - Schema object creation with language parameters
-  - Config generation from schema
-- **Integration Points**: Code-based schema → llm7shi integration
+  - Pydantic class creation function calls
+  - Schema class generation with language parameters
+  - Config generation from Pydantic classes
+  - Backward compatibility with dict-based schema functions
+- **Integration Points**: Pydantic schema classes → llm7shi integration with `config_from_schema()`
 
 ## Module Integration Tests
 

@@ -9,11 +9,11 @@ import json
 from typing import List, Dict, Optional
 
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
-from .translate_schema import build_translate_schema
+from .translate_schema import create_translate_schema_class
 
 
 def create_translation_schema(terms: List[str], language: str) -> Dict:
-    """Generate translation schema dynamically using code-based approach
+    """Generate translation schema dynamically using Pydantic approach
     
     Args:
         terms: List of terms to translate
@@ -22,7 +22,8 @@ def create_translation_schema(terms: List[str], language: str) -> Dict:
     Returns:
         Dict: JSON schema dictionary
     """
-    return build_translate_schema(terms)
+    schema_class = create_translate_schema_class(terms)
+    return schema_class.model_json_schema()
 
 
 def create_translation_prompt(terms: List[str], language: str) -> str:
@@ -56,15 +57,12 @@ def translate_terms(terms: List[str], language: str, model: str) -> Dict[str, st
         Dict[str, str]: Mapping of original terms to translations
     """
     
-    # Generate schema and prompt
-    schema_dict = create_translation_schema(terms, language)
+    # Generate Pydantic schema class and prompt
+    schema_class = create_translate_schema_class(terms)
     prompt = create_translation_prompt(terms, language)
     
-    # Configure model with schema
-    # Build Schema object from dictionary
-    schema = build_schema_from_json(schema_dict)
-    # Create config from Schema object
-    config = config_from_schema(schema)
+    # Configure model with Pydantic schema
+    config = config_from_schema(schema_class)
     
     # Generate translations
     response = generate_content_retry([prompt], model=model, config=config)

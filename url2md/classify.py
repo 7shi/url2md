@@ -16,7 +16,7 @@ from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
 from .translate import translate_terms
 from .urlinfo import URLInfo
-from .classify_schema import build_classify_schema
+from .classify_schema import create_classify_schema_class
 
 
 # Global list of terms that need translation
@@ -163,11 +163,10 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str,
     print(f"Total unique tags: {len(tag_counter)}")
     print(f"Frequent tags (>=2 occurrences): {len(get_frequent_tags_with_counts(tag_counter))}")
     
-    # Build schema using code-based function
+    # Build Pydantic schema class
     try:
-        schema_dict = build_classify_schema(language=language)
-        schema = build_schema_from_json(schema_dict)
-        config = config_from_schema(schema)
+        schema_class = create_classify_schema_class(language=language)
+        config = config_from_schema(schema_class)
     except Exception as e:
         print(f"Error: Cannot build schema: {e}", file=sys.stderr)
         traceback.print_exc()

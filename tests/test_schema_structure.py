@@ -15,15 +15,15 @@ import pytest
 def test_schema_modules():
     """Test schema module structure"""
     schema_modules = [
-        ('summarize_schema', 'build_summarize_schema', {
+        ('summarize_schema', 'create_summarize_schema_class', {
             'required': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content'],
             'properties': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']
         }),
-        ('classify_schema', 'build_classify_schema', {
+        ('classify_schema', 'create_classify_schema_class', {
             'required': ['themes', 'classification_summary'],
             'properties': ['themes', 'classification_summary']
         }),
-        ('translate_schema', 'build_translate_schema', {
+        ('translate_schema', 'create_translate_schema_class', {
             'required': ['translations'],
             'properties': ['translations']
         }),
@@ -35,11 +35,13 @@ def test_schema_modules():
             schema_func = getattr(module, function_name)
             
             # Test schema creation
-            if function_name == 'build_translate_schema':
+            if function_name == 'create_translate_schema_class':
                 # translate_schema requires terms parameter
-                schema = schema_func(['test', 'example'])
+                schema_class = schema_func(['test', 'example'])
+                schema = schema_class.model_json_schema()
             else:
-                schema = schema_func()
+                schema_class = schema_func()
+                schema = schema_class.model_json_schema()
             
             required_fields = schema.get('required', [])
             properties = list(schema.get('properties', {}).keys())
@@ -51,8 +53,9 @@ def test_schema_modules():
             assert set(properties) == set(expected['properties']), f"Properties mismatch in {module_name}"
             
             # Test language parameter (only for non-translate schemas)
-            if function_name != 'build_translate_schema':
-                schema_lang = schema_func(language='English')
+            if function_name != 'create_translate_schema_class':
+                schema_class_lang = schema_func(language='English')
+                schema_lang = schema_class_lang.model_json_schema()
                 assert schema_lang is not None
             
         except ImportError:

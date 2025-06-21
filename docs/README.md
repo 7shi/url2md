@@ -75,19 +75,32 @@ Historical documentation of the previous resource management system:
 - Resource distribution in different installation scenarios
 - Resource loading under various deployment methods
 
-**When to use**: Understanding legacy architecture or migration context. See [schema-migration.md](schema-migration.md) for current implementation.
+**When to use**: Understanding legacy architecture or migration context. See [schema-migration-1.md](schema-migration-1.md) for current implementation.
 
-### [schema-migration.md](schema-migration.md) ✨ NEW
-**Schema architecture migration documentation**
+### [schema-migration-1.md](schema-migration-1.md) ⚠️ DEPRECATED
+**Phase 1: JSON to Code-based Schema Migration**
 
-Comprehensive documentation of the migration from JSON-based to code-based schemas:
-- Migration methodology and implementation phases
-- Before/after architecture comparison
-- Technical improvements and benefits analysis
-- Code examples and API changes
+Historical documentation of the first phase migration from JSON-based to code-based dictionary schemas:
+- Migration methodology and implementation phases (Phase 1)
+- Before/after architecture comparison (JSON → Dictionaries)
+- Technical improvements and benefits analysis from JSON elimination
+- Legacy code examples and API changes
 - Testing strategy and validation results
 
-**When to use**: Understanding current schema architecture, implementing new AI operations, or learning from architectural improvements.
+**When to use**: Understanding deprecated evolution or legacy architecture context. See [schema-migration-2.md](schema-migration-2.md) for current Pydantic-based implementation.
+
+### [schema-migration-2.md](schema-migration-2.md) ✨ CURRENT
+**Phase 2: Dictionary to Pydantic Schema Migration**
+
+Current schema architecture documentation covering the migration to Pydantic class-based schemas:
+- Complete migration from dictionary-based to Pydantic class generation
+- `create_model` implementation for dynamic schemas
+- Type safety and IDE support enhancements
+- Performance improvements and developer experience gains
+- Comprehensive test updates and documentation changes
+- Gemini API compatibility considerations and fixes
+
+**When to use**: Understanding current schema architecture, implementing new AI operations with type safety, or working with Pydantic-based schemas.
 
 ### [translation-strategy.md](translation-strategy.md)
 **Multi-language support and translation architecture**
@@ -100,11 +113,22 @@ Comprehensive documentation of the LLM-powered translation approach:
 
 **When to use**: Working with multi-language features, extending translation coverage, or understanding the translation architecture.
 
+### [schema-compatibility.md](schema-compatibility.md)
+**Schema design and LLM API compatibility**
+
+Technical guide to schema design constraints and compatibility considerations:
+- LLM API limitations and restrictions (Gemini, OpenAI, etc.)
+- Dynamic schema generation with `create_model` patterns
+- `additionalProperties` compatibility issues and solutions
+- Multi-API compatibility best practices and testing strategies
+
+**When to use**: Designing new schemas, troubleshooting API compatibility issues, or understanding LLM API constraints.
+
 ## Navigation Guide
 
 ### For New Developers
 1. Start with [architecture.md](architecture.md) to understand the system design
-2. Review [schema-migration.md](schema-migration.md) for current schema architecture
+2. Review [schema-migration-2.md](schema-migration-2.md) for current Pydantic-based schema architecture
 3. Check [development-history.md](development-history.md) for context on key decisions
 4. Review [testing.md](testing.md) for testing setup and patterns
 5. Reference [error-handling.md](error-handling.md) when implementing error handling
@@ -116,10 +140,11 @@ Comprehensive documentation of the LLM-powered translation approach:
 
 ### For Adding Features
 1. Follow the methodology in [architecture.md](architecture.md)
-2. Review schema patterns in [schema-migration.md](schema-migration.md) for AI operations
-3. Implement tests according to [testing.md](testing.md)
-4. Handle errors per [error-handling.md](error-handling.md)
-5. Consider lessons from [development-history.md](development-history.md)
+2. Review Pydantic schema patterns in [schema-migration-2.md](schema-migration-2.md) for AI operations
+3. Check API compatibility guidelines in [schema-compatibility.md](schema-compatibility.md) for LLM integrations
+4. Implement tests according to [testing.md](testing.md)
+5. Handle errors per [error-handling.md](error-handling.md)
+6. Consider lessons from [development-history.md](development-history.md)
 
 ### For Understanding Decisions
 1. Read [development-history.md](development-history.md) for detailed examples
@@ -133,11 +158,13 @@ NOTES.md (Philosophy & Core Lessons)
     ↓
 architecture.md (Technical Design & Methodology)
     ↓
-schema-migration.md (Current Schema Architecture) ✨
+schema-migration-2.md (Current Pydantic Schema Architecture) ✨
+    ↓
+schema-migration-1.md (Deprecated Schema Evolution) ⚠️
     ↓
 development-history.md (Detailed Examples & Evolution)
     ↓
-testing.md, error-handling.md, translation-strategy.md (Implementation Specifics)
+testing.md, error-handling.md, translation-strategy.md, schema-compatibility.md (Implementation Specifics)
 resource-support.md (Legacy - DEPRECATED) ⚠️
     ↓
 troubleshooting.md (Practical Problem Solving)

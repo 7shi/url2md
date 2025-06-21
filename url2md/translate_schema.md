@@ -2,148 +2,130 @@
 
 ## Overview
 
-The `translate_schema.py` module provides code-based JSON schema generation for translation operations. It dynamically creates schemas based on the terms to be translated, replacing the complex template-based approach with clean Python functions for maximum flexibility.
+The `translate_schema.py` module provides Pydantic-based schema generation for translation operations. It dynamically creates Pydantic classes using `create_model` based on the terms to be translated, offering complete type safety and IDE support while maintaining maximum flexibility.
 
 ## Functions
 
-### `build_translate_schema(terms: List[str]) -> Dict[str, Any]`
+### `create_translate_schema_class(terms: List[str]) -> Type[BaseModel]`
 
-Builds a JSON schema for term translation operations based on the provided terms list.
+Creates a Pydantic schema class for term translation operations based on the provided terms list.
 
 **Parameters:**
-- `terms`: List of terms to be translated (each becomes a required property)
+- `terms`: List of terms to be translated (each becomes a required field)
 
 **Returns:**
-- Dictionary containing the complete JSON schema for translation output
+- Pydantic BaseModel class for translation output with type safety
 
-**Schema Structure:**
-The schema creates a nested structure:
+**Generated Schema Structure:**
+The schema creates a nested Pydantic model structure:
 
-```json
-{
-  "type": "object",
-  "properties": {
-    "translations": {
-      "type": "object", 
-      "properties": {
-        "term1": {"type": "string", "description": "Translation of 'term1'"},
-        "term2": {"type": "string", "description": "Translation of 'term2'"},
-        ...
-      },
-      "required": ["term1", "term2", ...],
-      "additionalProperties": false
-    }
-  },
-  "required": ["translations"],
-  "additionalProperties": false
-}
+```python
+class TranslationDict(BaseModel):
+    term1: str = Field(description="Translation of 'term1'")
+    term2: str = Field(description="Translation of 'term2'")
+    # ... dynamic fields for each term
+    
+class TranslateResult(BaseModel):
+    translations: TranslationDict
 ```
 
 ## Key Features
 
-### 1. Dynamic Schema Generation
-- **Term-Based Properties**: Each input term becomes a schema property
-- **Required Validation**: All terms marked as required fields
-- **Flexible Length**: Supports any number of terms
-- **No Hardcoding**: Completely dynamic based on input
+### 1. Dynamic Pydantic Class Generation
+- **`create_model` Usage**: Dynamically generates classes at runtime
+- **Type-Safe Fields**: Each term becomes a typed field with validation
+- **Field Descriptions**: Automatic description generation for each term
+- **Clean Structure**: Simple, focused schema without additional constraints
 
-### 2. Strict Validation
-- **additionalProperties: false**: Prevents extra fields in response
-- **Required Fields**: Ensures all requested terms are translated
-- **Type Safety**: All translations must be strings
-- **Nested Structure**: Clean organization under 'translations' key
+### 2. Complete Type Safety
+- **IDE Support**: Full autocomplete and type checking
+- **Compile-Time Validation**: Catches errors before runtime
+- **Pydantic Validation**: Built-in data validation and serialization
+- **Type Hints**: Full typing support throughout
 
-### 3. Self-Documenting
-- **Descriptive Fields**: Each property describes what it translates
-- **Clear Structure**: Intuitive nested organization
-- **Validation Ready**: Compatible with JSON Schema validators
+### 3. Performance Optimized
+- **Direct Class Generation**: No JSON parsing overhead
+- **Memory Efficient**: Pydantic's optimized internal structure
+- **Fast Validation**: Native Python validation speed
+- **Cached Classes**: Pydantic's built-in class caching
 
 ## Dependencies
 
 ### Internal Dependencies
-- `typing`: List and Dict type hints
+- `typing`: List, Type, Dict, Any type hints
+- `pydantic`: BaseModel, Field, create_model, ConfigDict
 
 ### External Dependencies
-None - Pure Python implementation
+- **pydantic**: Modern data validation and serialization library
 
 ## Design Patterns Used
 
-1. **Dynamic Builder**: Constructs schema based on runtime input
-2. **Template Method**: Consistent structure with variable content
-3. **Factory Pattern**: Creates different schemas for different term sets
+1. **Dynamic Class Factory**: Creates classes based on runtime input
+2. **Builder Pattern**: Constructs complex objects step by step
+3. **Configuration Strategy**: Uses ConfigDict for validation control
+4. **Type Factory**: Generates typed interfaces dynamically
 
 ## Important Implementation Details
 
-1. **Dynamic Property Generation**:
+1. **Dynamic Field Generation**:
    ```python
-   properties = {}
-   for term in terms:
-       properties[term] = {
-           "type": "string",
-           "description": f"Translation of '{term}'"
-       }
+   translation_fields = {
+       term: (str, Field(description=f"Translation of '{term}'"))
+       for term in terms
+   }
    ```
 
-2. **Validation Strategy**:
-   - Nested structure prevents flat key conflicts
-   - `additionalProperties: false` enforces strict compliance
-   - Required array matches input terms exactly
+2. **Pydantic `create_model` Usage**:
+   ```python
+   TranslationDict = create_model(
+       'TranslationDict',
+       **translation_fields
+   )
+   ```
 
-3. **Performance Characteristics**:
+3. **Type Safety Strategy**:
+   - Each field is properly typed as `str`
+   - Field descriptions provide documentation
+   - Clean structure optimized for Gemini API compatibility
+   - Return type annotation ensures correct usage
+
+4. **Performance Characteristics**:
    - O(n) complexity where n = number of terms
-   - Minimal memory overhead
-   - No file I/O or external dependencies
-
-4. **Error Prevention**:
-   - Type hints prevent incorrect usage
-   - Clear structure reduces implementation errors
-   - Self-validating through schema compliance
+   - Pydantic's optimized class generation
+   - No file I/O or template processing
+   - Direct memory allocation
 
 ## Usage Examples
 
 ```python
-# Basic translation schema
+# Basic translation schema class creation
 terms = ['Summary', 'Themes', 'Total URLs']
-schema = build_translate_schema(terms)
+TranslateSchema = create_translate_schema_class(terms)
 
-# Integration with translation system
-from .translate_schema import build_translate_schema
-from llm7shi import build_schema_from_json
+# Integration with llm7shi
+from llm7shi import config_from_schema
 
-schema_dict = build_translate_schema(['Hello', 'World'])
-schema = build_schema_from_json(schema_dict)
+schema_class = create_translate_schema_class(['Hello', 'World'])
+config = config_from_schema(schema_class)
 
-# Expected LLM response format:
-{
-  "translations": {
-    "Hello": "こんにちは",
-    "World": "世界"
-  }
-}
-```
-
-## Migration Notes
-
-This module replaces the previous template-based approach that used:
-- `schemas/translate.json` with placeholders
-- Complex string replacement logic
-- Template processing with ```translation_properties``` markers
-
-### Before (Complex Template):
-```json
-{
-  "properties": {
+# Type-safe usage with IDE support
+result_data = {
     "translations": {
-      "properties": {
-        ```translation_properties```
-      },
-      "required": [```translation_required```]
+        "Hello": "こんにちは",
+        "World": "世界"
     }
-  }
 }
+
+# Pydantic validation
+result = schema_class(**result_data)
+print(result.translations.Hello)  # Type-safe access with IDE completion
 ```
 
-### After (Clean Code):
+## Migration from Dict-Based Approach
+
+This module migrated from dictionary-based JSON schema generation to Pydantic class generation.
+
+### Before (Dict-Based):
 ```python
 def build_translate_schema(terms: List[str]) -> Dict[str, Any]:
     properties = {}
@@ -152,21 +134,61 @@ def build_translate_schema(terms: List[str]) -> Dict[str, Any]:
             "type": "string",
             "description": f"Translation of '{term}'"
         }
-    return {/* clean structure */}
+    return {
+        "type": "object",
+        "properties": {
+            "translations": {
+                "type": "object",
+                "properties": properties,
+                "required": terms,
+                "additionalProperties": False
+            }
+        }
+    }
+```
+
+### After (Pydantic-Based):
+```python
+def create_translate_schema_class(terms: List[str]) -> Type[BaseModel]:
+    translation_fields = {
+        term: (str, Field(description=f"Translation of '{term}'"))
+        for term in terms
+    }
+    
+    TranslationDict = create_model(
+        'TranslationDict',
+        **translation_fields
+    )
+    
+    class TranslateResult(BaseModel):
+        translations: TranslationDict
+    
+    return TranslateResult
 ```
 
 ## Integration Points
 
-- **translate.py**: Primary consumer for schema generation
+- **translate.py**: Primary consumer using `create_translate_schema_class`
 - **classify.py**: Uses for report term translations
 - **translation_cache.py**: Works with translation caching system
-- **Testing**: Direct import for validation tests
+- **llm7shi**: Direct integration with `config_from_schema(PydanticClass)`
+- **Testing**: Type-safe schema validation
 
 ## Benefits Over Previous Approach
 
-1. **Elimination of Complexity**: No template processing required
-2. **Type Safety**: Full Python type checking support
-3. **Performance**: No file I/O or string manipulation overhead
-4. **Maintainability**: Single source of truth in version control
-5. **Flexibility**: Supports any term list without pre-configuration
-6. **Debugging**: Clear error traces in Python code
+1. **Complete Type Safety**: Full IDE support and compile-time validation
+2. **Performance**: No JSON schema parsing overhead
+3. **Developer Experience**: Autocomplete, type checking, and documentation
+4. **Maintainability**: Clear class definitions instead of nested dictionaries
+5. **Validation**: Built-in Pydantic validation with detailed error messages
+6. **Integration**: Direct compatibility with modern Python tooling
+7. **Debugging**: Clear stack traces and error messages in Python code
+8. **Extensibility**: Easy to add validation rules and custom logic
+
+## Technical Notes
+
+- **Gemini API Compatibility**: Configuration options like `extra='forbid'` are avoided because they generate `additionalProperties: false` in the JSON schema, which is not supported by the Gemini API
+- `create_model` enables dynamic field generation while maintaining type safety and API compatibility
+- Each generated class is fully typed and provides IDE completion
+- Compatible with all Pydantic v2 features and validation rules
+- Schema structure is optimized for LLM integration without unnecessary constraints

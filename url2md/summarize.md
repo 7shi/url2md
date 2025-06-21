@@ -111,7 +111,7 @@ Displays summary file paths and contents for specified URLs.
 - `.cache`: Cache class for file management
 - `.urlinfo`: URLInfo for metadata
 - `.utils`: HTML processing utilities
-- `.summarize_schema`: Code-based schema generation
+- `.summarize_schema`: Pydantic-based schema generation
 
 ### External Dependencies
 - `json`: JSON parsing and generation
@@ -144,10 +144,10 @@ Displays summary file paths and contents for specified URLs.
    - Cleans up uploaded files after use
    - Handles cleanup failures gracefully
 
-5. **Code-Based Schema**:
-   - Uses `build_summarize_schema()` function
+5. **Pydantic-Based Schema**:
+   - Uses `create_summarize_schema_class()` function
    - Dynamic language support via function parameters
-   - Type-safe schema generation
+   - Type-safe Pydantic class generation with full IDE support
 
 6. **Summary Storage**:
    - Saves as JSON in cache/summary/

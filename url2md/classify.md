@@ -133,7 +133,7 @@ Filters URLInfo objects by target URL list (duplicate of summarize.py version).
 - `.cache`: Cache and translation management
 - `.translate`: Generic translation functionality
 - `.urlinfo`: URLInfo class
-- `.classify_schema`: Code-based schema generation
+- `.classify_schema`: Pydantic-based schema generation
 
 ### External Dependencies
 - `json`: JSON parsing
@@ -159,10 +159,10 @@ Filters URLInfo objects by target URL list (duplicate of summarize.py version).
    - Only translates missing terms
    - Persistent caching across sessions
 
-4. **Code-Based Schema**:
-   - Dynamic schema generation via `build_classify_schema()`
-   - Language parameter passed directly to schema function
-   - Type-safe dictionary manipulation
+4. **Pydantic-Based Schema**:
+   - Dynamic schema class generation via `create_classify_schema_class()`
+   - Language parameter passed directly to schema class creation function
+   - Type-safe Pydantic model manipulation with full IDE support
 
 5. **Error Handling**:
    - Exits on schema file errors

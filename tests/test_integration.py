@@ -222,13 +222,13 @@ class TestWorkflowIntegration:
     
     def test_schema_module_integration(self):
         """Test schema module accessibility"""
-        from llm7shi import config_from_schema, build_schema_from_json
+        from llm7shi import config_from_schema
         
-        # Test code-based schema modules
+        # Test Pydantic schema class modules
         schema_modules = [
-            ('summarize_schema', 'build_summarize_schema'),
-            ('classify_schema', 'build_classify_schema'),
-            ('translate_schema', 'build_translate_schema'),
+            ('summarize_schema', 'create_summarize_schema_class'),
+            ('classify_schema', 'create_classify_schema_class'),
+            ('translate_schema', 'create_translate_schema_class'),
         ]
         
         for module_name, function_name in schema_modules:
@@ -237,27 +237,25 @@ class TestWorkflowIntegration:
                 schema_func = getattr(module, function_name)
                 
                 # Test schema creation
-                if function_name == 'build_translate_schema':
+                if function_name == 'create_translate_schema_class':
                     # translate_schema requires terms parameter
-                    schema_dict = schema_func(['test', 'example'])
-                    schema = build_schema_from_json(schema_dict)
-                    config = config_from_schema(schema)
+                    schema_class = schema_func(['test', 'example'])
+                    config = config_from_schema(schema_class)
                     assert config is not None
                 else:
                     # Other schemas support optional language parameter
-                    schema_dict = schema_func()
-                    schema = build_schema_from_json(schema_dict)
-                    config = config_from_schema(schema)
+                    schema_class = schema_func()
+                    config = config_from_schema(schema_class)
                     assert config is not None
                     
                     # Test with language parameter
-                    schema_dict_lang = schema_func(language='English')
-                    schema_lang = build_schema_from_json(schema_dict_lang)
-                    config_lang = config_from_schema(schema_lang)
+                    schema_class_lang = schema_func(language='English')
+                    config_lang = config_from_schema(schema_class_lang)
                     assert config_lang is not None
                 
             except Exception as e:
                 pytest.fail(f"Failed to create config from {module_name}.{function_name}: {e}")
+        
 
 
 class TestModuleIntegration:

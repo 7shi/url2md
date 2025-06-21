@@ -18,11 +18,12 @@ from url2md.summarize import generate_summary_prompt, summarize_content
 
 
 def test_schema_validation():
-    """Test summarize schema structure using code-based schema"""
-    from url2md.summarize_schema import build_summarize_schema
+    """Test summarize schema structure using Pydantic schema"""
+    from url2md.summarize_schema import create_summarize_schema_class
     
     # Test without language
-    schema = build_summarize_schema()
+    schema_class = create_summarize_schema_class()
+    schema = schema_class.model_json_schema()
     assert schema.get('type') == 'object'
     
     required_fields = schema.get('required', [])
@@ -39,7 +40,8 @@ def test_schema_validation():
     assert set(properties) == set(expected_required), f"Properties mismatch: got {properties}"
     
     # Test with language
-    schema_jp = build_summarize_schema(language='Japanese')
+    schema_class_jp = create_summarize_schema_class(language='Japanese')
+    schema_jp = schema_class_jp.model_json_schema()
     title_desc = schema_jp['properties']['title']['description']
     assert 'in Japanese' in title_desc, "Language not properly integrated"
 

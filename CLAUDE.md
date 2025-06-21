@@ -62,9 +62,9 @@ url2md/
     ├── utils.py          # HTML processing and resource utilities
     ├── download.py       # Playwright dynamic rendering
     ├── *.md              # Individual module documentation
-    ├── summarize_schema.py # Code-based schema for summarize command
-    ├── classify_schema.py  # Code-based schema for classify command
-    └── translate_schema.py # Code-based schema for translation operations
+    ├── summarize_schema.py # Pydantic-based schema for summarize command
+    ├── classify_schema.py  # Pydantic-based schema for classify command
+    └── translate_schema.py # Pydantic-based schema for translation operations
 ```
 
 ## Development Environment
@@ -125,18 +125,19 @@ Use the **two-phase development approach**: start with standalone module for pro
 #### Modifying AI Operations
 1. Update relevant schema module (`summarize_schema.py`, `classify_schema.py`, or `translate_schema.py`)
 2. Modify prompt generation in the command module
-3. Import Gemini functions from `llm7shi` package: `from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json`
-4. Import schema function: `from .{module}_schema import build_{module}_schema`
+3. Import Gemini functions from `llm7shi` package: `from llm7shi import generate_content_retry, config_from_schema`
+4. Import schema class creation function: `from .{module}_schema import create_{module}_schema_class`
 5. Configure thinking parameters in `generate_content_retry()` calls if needed
-6. For language-specific operations, pass language parameter to schema builder function
+6. For language-specific operations, pass language parameter to schema class creation function
 7. Test with actual API calls
 8. Verify structured output format and thinking process display
 
 #### Language Support and Schema Architecture
-- **Code-based Schema**: All schemas are now defined as Python functions in dedicated modules
-- **Dynamic Language Support**: Pass `language` parameter to schema builder functions for localized descriptions
-- **Schema Modules**: `summarize_schema.py`, `classify_schema.py`, `translate_schema.py` contain schema building functions
-- **Translation Support**: `translate_schema.py` dynamically generates schemas based on terms list
+- **Pydantic-based Schema**: All schemas are now defined as Pydantic classes in dedicated modules
+- **Dynamic Language Support**: Pass `language` parameter to schema class creation functions for localized descriptions
+- **Schema Modules**: `summarize_schema.py`, `classify_schema.py`, `translate_schema.py` contain schema class creation functions
+- **Translation Support**: `translate_schema.py` uses `create_model` to dynamically generate schemas based on terms list
+- **Type Safety**: Complete IDE support and compile-time validation with Pydantic models
 - **Generic Translation**: `translate.py` module provides reusable translation functions for any terms
 
 #### Report Translation Implementation
@@ -166,7 +167,7 @@ Before making changes: run `uv run pytest`, fix any failures, then run tests aga
 ### Key Guidelines
 - Use descriptive test names and test both positive/negative cases
 - Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases
-- Import schema functions directly from schema modules for testing
+- Import schema class creation functions directly from schema modules for testing
 - Follow existing test patterns in the test suite
 - For report generation tests, include tests for subsection URL tag ordering priority
 - Translation functionality tests should be in separate test files (e.g., `test_report_translations.py`)

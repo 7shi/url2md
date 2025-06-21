@@ -12,22 +12,23 @@ The `test_schema_structure.py` module provides structural and API tests for the 
 ## Schema Module Tests
 
 ### `test_schema_modules()`
-Tests code-based schema module structure and field definitions.
-- **Purpose**: Verify AI operation schema modules contain required functions and structure
+Tests Pydantic-based schema module structure and field definitions.
+- **Purpose**: Verify AI operation schema modules contain required class creation functions and structure
 - **Schema Modules Tested**:
-  - `summarize_schema.build_summarize_schema()` - For content summarization operations
-  - `classify_schema.build_classify_schema()` - For content classification operations
-  - `translate_schema.build_translate_schema()` - For translation operations
+  - `summarize_schema.create_summarize_schema_class()` - For content summarization operations
+  - `classify_schema.create_classify_schema_class()` - For content classification operations
+  - `translate_schema.create_translate_schema_class()` - For translation operations
 - **Schema Validation**:
   - **summarize_schema**: Required fields `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
   - **classify_schema**: Required fields `['themes', 'classification_summary']`
   - **translate_schema**: Required fields `['translations']`
 - **Validation Process**:
   1. Import schema module dynamically
-  2. Call schema builder function
-  3. Extract `required` and `properties` fields
-  4. Compare against expected field sets
-  5. Test language parameter functionality
+  2. Call schema class creation function
+  3. Generate JSON schema using `model_json_schema()`
+  4. Extract `required` and `properties` fields
+  5. Compare against expected field sets
+  6. Test language parameter functionality with type-safe classes
 - **Key Assertions**: Required fields and properties match expected structure exactly
 
 ## API Structure Tests

@@ -69,7 +69,7 @@ Main function that translates a list of terms using the specified LLM model.
 ## Dependencies
 
 ### Internal Dependencies
-- `.translate_schema`: Code-based schema generation functions
+- `.translate_schema`: Pydantic-based schema generation functions
 
 ### External Dependencies
 - `json`: For JSON parsing and manipulation
@@ -82,10 +82,10 @@ Main function that translates a list of terms using the specified LLM model.
 ## Important Implementation Details
 
 1. **Schema Generation**:
-   - Code-based schema via `build_translate_schema()`
-   - Properties dynamically generated for each term
-   - All terms marked as required fields
-   - Type-safe dictionary construction
+   - Pydantic-based schema via `create_translate_schema_class()`
+   - Properties dynamically generated for each term using `create_model`
+   - All terms marked as required fields with type safety
+   - Type-safe Pydantic class construction with full IDE support
 
 2. **Prompt Engineering**:
    - Clear instruction format
@@ -94,10 +94,10 @@ Main function that translates a list of terms using the specified LLM model.
    - Requests exact order preservation
 
 3. **LLM Integration**:
-   - Uses structured output via JSON schema
-   - Two-step schema processing: dict → Schema → config
+   - Uses structured output via Pydantic schema classes
+   - Direct schema processing: Pydantic class → config
    - Expects response with 'translations' key
-   - Handles JSON parsing of LLM response
+   - Handles JSON parsing of LLM response with type validation
 
 4. **Error Handling**:
    - No explicit error handling - exceptions propagate

@@ -1,8 +1,10 @@
-# Schema Migration: JSON Files to Code-Based Architecture
+# Schema Migration Phase 1: JSON Files to Code-Based Architecture
+
+> **⚠️ DEPRECATED DOCUMENT**: This document describes Phase 1 of the schema migration (JSON → Code-based dictionaries) which has been superseded by Phase 2 (Code-based dictionaries → Pydantic classes). For the current architecture and latest migration details, please see [schema-migration-2.md](schema-migration-2.md).
 
 ## Overview
 
-This document describes the migration from JSON-based schema files to code-based schema architecture implemented in url2md. This migration improves type safety, maintainability, and eliminates complex placeholder processing.
+This document describes the first phase of schema migration from JSON-based schema files to code-based schema architecture implemented in url2md. This migration improved type safety, maintainability, and eliminated complex placeholder processing. **Note**: This approach was later further improved in Phase 2 by migrating to Pydantic class-based schemas.
 
 ## Migration Summary
 
@@ -271,13 +273,16 @@ for term in terms:
 
 ## Conclusion
 
-The migration from JSON-based to code-based schemas successfully modernized the url2md architecture while maintaining full backward compatibility. The new system is more maintainable, type-safe, and performant, setting a strong foundation for future development.
+The migration from JSON-based to code-based schemas successfully modernized the url2md architecture while maintaining full backward compatibility. The new system was more maintainable, type-safe, and performant, setting a strong foundation for further development.
 
-**Key Achievements:**
+**Key Achievements (Phase 1):**
 - ✅ 100% test compatibility maintained
-- ✅ Type safety improved
-- ✅ Code complexity reduced
-- ✅ Performance enhanced
-- ✅ Developer experience improved
+- ✅ Type safety improved over JSON files
+- ✅ Code complexity reduced from file-based approach
+- ✅ Performance enhanced through direct dictionary construction
+- ✅ Developer experience improved over JSON editing
+
+**Evolution to Phase 2:**
+This migration established the foundation for the subsequent Phase 2 migration to Pydantic class-based schemas, which further enhanced type safety, IDE support, and developer experience. See [schema-migration-2.md](schema-migration-2.md) for details on the current Pydantic-based architecture.
 
 This migration demonstrates the value of iterative architecture improvements and the importance of comprehensive testing during system refactoring.

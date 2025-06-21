@@ -20,7 +20,7 @@ from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json, upload_file, delete_file
 from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title
-from .summarize_schema import build_summarize_schema
+from .summarize_schema import create_summarize_schema_class
 
 
 def generate_summary_prompt(url: str, content_type: str, language: str = None) -> str:
@@ -61,10 +61,9 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str, language: str
     print(f"  MIME type: {mime_type}")
     
     try:
-        # Build schema using code-based function
-        schema_dict = build_summarize_schema(language=language)
-        schema = build_schema_from_json(schema_dict)
-        config = config_from_schema(schema)
+        # Build Pydantic schema class
+        schema_class = create_summarize_schema_class(language=language)
+        config = config_from_schema(schema_class)
         
         # Generate prompt
         prompt = generate_summary_prompt(url, content_type, language)
