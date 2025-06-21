@@ -298,18 +298,50 @@ def run_classify(args) -> None:
         else:
             print("No frequent tags found for prompt generation")
         
-        # Show translation prompt if language is specified and translation is needed
+        # Show schema structure
+        from .schema import create_classify_schema_class
+        schema_class = create_classify_schema_class(language=args.language)
+        schema_dict = schema_class.model_json_schema()
+        print("\n=== CLASSIFICATION SCHEMA ===")
+        print(json.dumps(schema_dict, indent=2, ensure_ascii=False))
+        
+        # Show translation prompt and schema if language is specified
         if args.language:
-            from .classify import needs_translation, TRANSLATION_TERMS
+            from .classify import get_terms, needs_translation, TRANSLATION_TERMS
             from .translate import create_translation_prompt
-            if needs_translation(args.language, cache):
-                print(f"\n=== TRANSLATION PROMPT ({args.language}) ===")
-                translation_prompt = create_translation_prompt(TRANSLATION_TERMS, args.language)
-                print(translation_prompt)
+            from .schema import create_translate_schema_class
+            
+            # Always show translation prompt and schema for --show-prompt
+            print(f"\n=== TRANSLATION PROMPT ({args.language}) ===")
+            translation_prompt = create_translation_prompt(TRANSLATION_TERMS, args.language)
+            print(translation_prompt)
+            
+            # Show translation schema
+            translation_schema_class = create_translate_schema_class(TRANSLATION_TERMS, args.language)
+            translation_schema_dict = translation_schema_class.model_json_schema()
+            print(f"\n=== TRANSLATION SCHEMA ({args.language}) ===")
+            print(json.dumps(translation_schema_dict, indent=2, ensure_ascii=False))
+            
+            # Show cache status and translations
+            terms = get_terms(args.language, cache)
+            print(f"\n=== TRANSLATION STATUS ===")
+            missing_terms = [term for term in TRANSLATION_TERMS if terms.get(term) is None]
+            
+            if needs_translation(terms):
+                print(f"Translation is needed for '{args.language}' ({len(missing_terms)} terms missing).")
             else:
-                print(f"\n=== TRANSLATION STATUS ===")
                 print(f"All translation terms for '{args.language}' are already cached.")
-                print("No translation prompt needed.")
+                print("No translation execution needed.")
+            
+            # Show cached/missing translations
+            print(f"\n=== CACHED TRANSLATIONS ({args.language}) ===")
+            max_term_length = max(len(term) for term in TRANSLATION_TERMS)
+            for term in TRANSLATION_TERMS:
+                translation = terms.get(term)
+                if translation:
+                    print(f"{term:<{max_term_length}} -> {translation}")
+                else:
+                    print(f"{term:<{max_term_length}} -> (not cached)")
     
     if perform_classification:
         classification_result = classify_tags_with_llm(cache, tag_counter, model=args.model, language=args.language)

@@ -89,16 +89,31 @@ Main function that classifies tags using LLM and returns structured results.
 4. Adds language info if specified
 5. Triggers translation if needed
 
-### `needs_translation(language: str, cache: Optional[Cache] = None) -> bool`
+### `get_terms(language: str, cache: Optional[Cache] = None) -> dict`
 
-Checks if translation is needed for the given language.
+Gets translation terms for the given language from cache.
 
 **Parameters:**
-- `language`: Target language
-- `cache`: Optional cache instance
+- `language`: Target language to check
+- `cache`: Cache instance for checking existing translations
 
 **Returns:**
-- True if any terms need translation
+- Dictionary mapping terms to their translations (None if not cached)
+
+**Behavior:**
+- Returns empty dict if no cache available
+- Retrieves all TRANSLATION_TERMS from cache
+- Missing translations return None values
+
+### `needs_translation(terms: dict) -> bool`
+
+Checks if translation is needed based on terms dictionary.
+
+**Parameters:**
+- `terms`: Dictionary of terms and their translations from get_terms()
+
+**Returns:**
+- True if any terms need translation (have None values)
 
 ### `translate_report_terms(language: str, model: str = None, cache: Optional[Cache] = None) -> None`
 
@@ -110,10 +125,11 @@ Translates report UI terms and updates the cache.
 - `cache`: Cache instance for storage
 
 **Process:**
-1. Identifies missing translations
-2. Calls translation API for missing terms
-3. Updates translation cache
-4. Saves to persistent storage
+1. Uses get_terms() to check existing translations
+2. Returns early if no translation needed (via needs_translation())
+3. Identifies missing terms using dict comprehension
+4. Calls translation API for missing terms only
+5. Updates translation cache and saves to persistent storage
 
 ### `filter_url_infos_by_urls(cache: Cache, target_urls: List[str]) -> List[URLInfo]`
 
@@ -155,8 +171,9 @@ Filters URLInfo objects by target URL list (duplicate of summarize.py version).
    - Includes usage statistics in output
 
 3. **Translation Integration**:
-   - Automatic detection of translation needs
-   - Only translates missing terms
+   - Dictionary-based translation state management via get_terms()
+   - Efficient needs_translation() check using dict.get() pattern
+   - Only translates missing terms (None values)
    - Persistent caching across sessions
 
 4. **Pydantic-Based Schema**:

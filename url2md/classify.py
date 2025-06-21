@@ -183,32 +183,48 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str,
         classification_data['language'] = language
     
     # Handle translation if language is specified and translation is needed
-    if language and needs_translation(language, cache):
-        translate_report_terms(language, model, cache)
+    if language:
+        terms = get_terms(language, cache)
+        if needs_translation(terms):
+            translate_report_terms(language, model, cache)
     
     return classification_data
 
 
 
 
-def needs_translation(language: str, cache: Optional[Cache] = None) -> bool:
-    """Check if translation is needed for the given language
+def get_terms(language: str, cache: Optional[Cache] = None) -> dict:
+    """Get translation terms for the given language
     
     Args:
         language: Target language to check
         cache: Cache instance for checking existing translations
     
     Returns:
-        bool: True if translation is needed, False if all terms are cached
+        dict: Dictionary mapping terms to their translations (None if not cached)
     """
+    result = {}
+    
     if not cache or not cache.translation_cache:
-        return True
+        # No cache available, all terms need translation
+        return result
     
     for term in TRANSLATION_TERMS:
-        if not cache.translation_cache.get_translation(term, language):
-            return True
+        result[term] = cache.translation_cache.get_translation(term, language)
     
-    return False
+    return result
+
+
+def needs_translation(terms: dict) -> bool:
+    """Check if translation is needed based on terms dictionary
+    
+    Args:
+        terms: Dictionary of terms and their translations from get_terms()
+    
+    Returns:
+        bool: True if translation is needed, False if all terms are cached
+    """
+    return any(terms.get(term) is None for term in TRANSLATION_TERMS)
 
 
 def translate_report_terms(language: str, model: str = None, cache: Optional[Cache] = None) -> None:
@@ -223,16 +239,11 @@ def translate_report_terms(language: str, model: str = None, cache: Optional[Cac
         None: Translations are stored in cache
     """
     # Get missing terms to translate
-    terms_to_translate = []
-    if cache and cache.translation_cache:
-        for term in TRANSLATION_TERMS:
-            if not cache.translation_cache.get_translation(term, language):
-                terms_to_translate.append(term)
-    else:
-        terms_to_translate = TRANSLATION_TERMS
-    
-    if not terms_to_translate:
+    terms = get_terms(language, cache)
+    if not needs_translation(terms):
         return  # All terms already cached
+    
+    terms_to_translate = [term for term in TRANSLATION_TERMS if terms.get(term) is None]
     
     # Translate missing terms
     translations = translate_terms(terms_to_translate, language, model)

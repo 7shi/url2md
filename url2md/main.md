@@ -48,9 +48,13 @@ Routes commands to their respective handler functions:
 - Extracts tags from summaries
 - Three modes:
   - `--extract-tags`: Display tag statistics only
-  - `--show-prompt`: Show LLM prompt without calling API
+  - `--show-prompt`: Show LLM classification prompt and JSON schema without calling API
   - Default: Perform full classification with LLM
-- Handles translation prompts when language is specified
+- Enhanced `--show-prompt` functionality:
+  - Displays classification prompt and JSON schema structure
+  - Shows translation prompt and schema when language is specified
+  - Displays translation cache status and cached translations
+  - Always shows prompts/schemas regardless of cache state for verification
 - Saves classification results to JSON file
 
 #### `run_report(args)`
