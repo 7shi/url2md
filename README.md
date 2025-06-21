@@ -13,6 +13,21 @@ For output examples, see the [Wiki](https://github.com/7shi/url2md/wiki).
 - **Markdown Reports**: Generate comprehensive reports in Markdown format
 - **Pipeline Processing**: Complete workflow from URLs to final report
 
+## Requirements
+
+- Python 3.10 or higher
+- Internet connection for AI operations
+- **GEMINI_API_KEY**: Google Gemini API key for AI summarization and classification operations
+
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+```
+
+**Note**: API key not required for `--extract-tags` or `--show-prompt` operations.
+
+### Optional Dependencies
+- Playwright for dynamic rendering support
+
 ## Installation
 
 ### As a tool (recommended)
@@ -316,15 +331,6 @@ url2md workflow -u urls.txt -c class.json -o report.md -l Japanese
 - Any language name can be specified (e.g., "Japanese", "中文", "Français")
 - Translation cache persists across sessions for improved performance
 
-## Environment Variables
-
-- `GEMINI_API_KEY`: Required for AI summarization and classification operations (not needed for `--extract-tags` or `--show-prompt`)
-
-## Requirements
-
-- Python 3.10 or higher
-- Internet connection for AI operations
-- Optional: Playwright for dynamic rendering support
 
 ## File Formats
 
