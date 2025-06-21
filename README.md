@@ -413,6 +413,5 @@ For detailed testing commands and development workflows, see [CLAUDE.md](CLAUDE.
 - **[README.md](README.md)** - User documentation and command reference
 - **[CLAUDE.md](CLAUDE.md)** - Development guidelines and workflow
 - **[NOTES.md](NOTES.md)** - Development philosophy and key lessons
-- **[docs/](docs/)** - Specialized documentation for architecture, testing, troubleshooting, and detailed development guidance
-
-For a complete overview of all documentation files and their purposes, see **[docs/README.md](docs/README.md)**.
+- **[url2md/README.md](url2md/README.md)** - Package architecture and module documentation
+- **[docs/README.md](docs/README.md)** - Specialized documentation for architecture, testing, troubleshooting, and detailed development guidance
