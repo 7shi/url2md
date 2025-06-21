@@ -222,8 +222,9 @@ class TestWorkflowIntegration:
     
     def test_schema_file_integration(self):
         """Test schema file accessibility"""
-        from llm7shi import config_from_schema
+        from llm7shi import config_from_schema, build_schema_from_json
         from url2md.utils import get_resource_path
+        import json
         
         # Test that schema files can be loaded
         schema_files = [
@@ -237,7 +238,10 @@ class TestWorkflowIntegration:
             
             # Test that config can be created from schema
             try:
-                config = config_from_schema(str(schema_path))
+                with open(schema_path, 'r', encoding='utf-8') as f:
+                    schema_dict = json.load(f)
+                schema = build_schema_from_json(schema_dict)
+                config = config_from_schema(schema)
                 assert config is not None
             except Exception as e:
                 pytest.fail(f"Failed to create config from {schema_file}: {e}")

@@ -189,18 +189,23 @@ def test_json_structure():
 
 
 @patch('url2md.summarize.generate_content_retry')
-@patch('url2md.summarize.config_from_schema_string')
-def test_summarize_content_mock(mock_config, mock_generate):
+@patch('url2md.summarize.config_from_schema')
+@patch('url2md.summarize.build_schema_from_json')
+def test_summarize_content_mock(mock_build_schema, mock_config, mock_generate):
     """Test summarize_content with mocked dependencies"""
     # Setup mocks
+    mock_build_schema.return_value = Mock()
     mock_config.return_value = Mock()
-    mock_generate.return_value = json.dumps({
+    # Create a mock Response object
+    mock_response = Mock()
+    mock_response.text = json.dumps({
         'title': 'Test Title',
         'summary_one_line': 'Test summary',
         'summary_detailed': 'Detailed test summary',
         'tags': ['test'],
         'is_valid_content': True
     })
+    mock_generate.return_value = mock_response
     
     # Create test data
     with tempfile.TemporaryDirectory() as temp_dir:

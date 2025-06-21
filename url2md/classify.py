@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from .cache import Cache
-from llm7shi import generate_content_retry, config_from_schema_string
+from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
 from .translate import translate_terms
 from .urlinfo import URLInfo
 from .utils import get_resource_path
@@ -179,7 +179,12 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str,
         else:
             schema_content = schema_content.replace('{ in language}', '')
         
-        config = config_from_schema_string(schema_content)
+        # Parse JSON string to dictionary
+        schema_dict = json.loads(schema_content)
+        # Build Schema object from dictionary
+        schema = build_schema_from_json(schema_dict)
+        # Create config from Schema object
+        config = config_from_schema(schema)
     except Exception as e:
         print(f"Error: Cannot open schema file: {schema_path}", file=sys.stderr)
         traceback.print_exc()
@@ -189,7 +194,7 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str,
     response = generate_content_retry([prompt], model=model, config=config)
     
     # Parse JSON response
-    classification_data = json.loads(response.strip())
+    classification_data = json.loads(response.text.strip())
     
     # Add language information if specified
     if language:

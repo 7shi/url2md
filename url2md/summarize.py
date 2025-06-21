@@ -17,7 +17,7 @@ import minify_html
 from tqdm import tqdm
 
 from .cache import Cache
-from llm7shi import generate_content_retry, config_from_schema_string, upload_file, delete_file
+from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json, upload_file, delete_file
 from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title, get_resource_path
 
@@ -76,7 +76,12 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: 
             else:
                 schema_content = schema_content.replace('{ in language}', '')
             
-            config = config_from_schema_string(schema_content)
+            # Parse JSON string to dictionary
+            schema_dict = json.loads(schema_content)
+            # Build Schema object from dictionary
+            schema = build_schema_from_json(schema_dict)
+            # Create config from Schema object
+            config = config_from_schema(schema)
         except Exception as e:
             print(f"Error: Cannot open schema file: {schema_path}", file=sys.stderr)
             traceback.print_exc()
@@ -163,7 +168,7 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: 
             
             # Parse JSON
             try:
-                summary_data = json.loads(response.strip())
+                summary_data = json.loads(response.text.strip())
                 
                 # Convert title to list format
                 if 'title' in summary_data:
@@ -181,7 +186,7 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: 
                 error_msg = "JSON parsing error"
                 print(f"  {error_msg}", file=sys.stderr)
                 traceback.print_exc()
-                print(f"  Response: {response[:200]}...")
+                print(f"  Response: {response.text[:200]}...")
                 return False, {}, f"{error_msg}: {e}"
             
         finally:

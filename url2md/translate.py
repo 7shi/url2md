@@ -8,7 +8,7 @@ Provides utilities for translating terms using AI models with caching support.
 import json
 from typing import List, Dict, Optional
 
-from llm7shi import generate_content_retry, config_from_schema_string
+from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
 from .utils import get_resource_path
 
 
@@ -81,11 +81,16 @@ def translate_terms(terms: List[str], language: str, model: str) -> Dict[str, st
     prompt = create_translation_prompt(terms, language)
     
     # Configure model with schema
-    config = config_from_schema_string(schema_content)
+    # Parse JSON string to dictionary
+    schema_dict = json.loads(schema_content)
+    # Build Schema object from dictionary
+    schema = build_schema_from_json(schema_dict)
+    # Create config from Schema object
+    config = config_from_schema(schema)
     
     # Generate translations
     response = generate_content_retry([prompt], model=model, config=config)
     
     # Parse JSON response
-    translation_data = json.loads(response.strip())
+    translation_data = json.loads(response.text.strip())
     return translation_data.get('translations', {})
