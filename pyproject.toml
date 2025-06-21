@@ -35,13 +35,12 @@ dependencies = [
     "llm7shi",
 ]
 
+[tool.uv.sources]
+llm7shi = { git = "https://github.com/7shi/llm7shi.git" }
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.0",
-    "pytest-cov>=4.1.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "flake8>=6.0.0",
 ]
 
 [project.scripts]
@@ -53,20 +52,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["url2md"]
-
-[tool.black]
-line-length = 88
-target-version = ['py310']
-
-[tool.isort]
-profile = "black"
-line_length = 88
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-
-[tool.uv.sources]
-llm7shi = { git = "https://github.com/7shi/llm7shi.git" }
