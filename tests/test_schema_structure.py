@@ -15,15 +15,15 @@ import pytest
 def test_schema_modules():
     """Test schema module structure"""
     schema_modules = [
-        ('summarize_schema', 'create_summarize_schema_class', {
+        ('schema', 'create_summarize_schema_class', {
             'required': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content'],
             'properties': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']
         }),
-        ('classify_schema', 'create_classify_schema_class', {
+        ('schema', 'create_classify_schema_class', {
             'required': ['themes', 'classification_summary'],
             'properties': ['themes', 'classification_summary']
         }),
-        ('translate_schema', 'create_translate_schema_class', {
+        ('schema', 'create_translate_schema_class', {
             'required': ['translations'],
             'properties': ['translations']
         }),

@@ -15,13 +15,13 @@ The `test_schema_structure.py` module provides structural and API tests for the 
 Tests Pydantic-based schema module structure and field definitions.
 - **Purpose**: Verify AI operation schema modules contain required class creation functions and structure
 - **Schema Modules Tested**:
-  - `summarize_schema.create_summarize_schema_class()` - For content summarization operations
-  - `classify_schema.create_classify_schema_class()` - For content classification operations
-  - `translate_schema.create_translate_schema_class()` - For translation operations
+  - `schema.create_summarize_schema_class()` - For content summarization operations
+  - `schema.create_classify_schema_class()` - For content classification operations
+  - `schema.create_translate_schema_class()` - For translation operations
 - **Schema Validation**:
-  - **summarize_schema**: Required fields `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
-  - **classify_schema**: Required fields `['themes', 'classification_summary']`
-  - **translate_schema**: Required fields `['translations']`
+  - **summarize schema**: Required fields `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
+  - **classify schema**: Required fields `['themes', 'classification_summary']`
+  - **translate schema**: Required fields `['translations']`
 - **Validation Process**:
   1. Import schema module dynamically
   2. Call schema class creation function

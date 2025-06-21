@@ -226,9 +226,9 @@ class TestWorkflowIntegration:
         
         # Test Pydantic schema class modules
         schema_modules = [
-            ('summarize_schema', 'create_summarize_schema_class'),
-            ('classify_schema', 'create_classify_schema_class'),
-            ('translate_schema', 'create_translate_schema_class'),
+            ('schema', 'create_summarize_schema_class'),
+            ('schema', 'create_classify_schema_class'),
+            ('schema', 'create_translate_schema_class'),
         ]
         
         for module_name, function_name in schema_modules:

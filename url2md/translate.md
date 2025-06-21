@@ -18,7 +18,7 @@ Dynamically generates a JSON schema for translation using code-based approach.
 - JSON schema dictionary
 
 **Implementation Details:**
-- Uses `build_translate_schema()` from translate_schema module
+- Uses `build_translate_schema()` from schema module
 - Dynamically builds properties for each term
 - Type-safe dictionary manipulation
 - Each term becomes a required string property
@@ -69,7 +69,7 @@ Main function that translates a list of terms using the specified LLM model.
 ## Dependencies
 
 ### Internal Dependencies
-- `.translate_schema`: Pydantic-based schema generation functions
+- `.schema`: Pydantic-based schema generation functions
 
 ### External Dependencies
 - `json`: For JSON parsing and manipulation

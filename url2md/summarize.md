@@ -111,7 +111,7 @@ Displays summary file paths and contents for specified URLs.
 - `.cache`: Cache class for file management
 - `.urlinfo`: URLInfo for metadata
 - `.utils`: HTML processing utilities
-- `.summarize_schema`: Pydantic-based schema generation
+- `.schema`: Pydantic-based schema generation
 
 ### External Dependencies
 - `json`: JSON parsing and generation

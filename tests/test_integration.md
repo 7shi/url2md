@@ -121,9 +121,9 @@ Tests fetch command workflow integration with mocked dependencies.
 Tests Pydantic schema module accessibility and configuration generation.
 - **Purpose**: Verify Pydantic schema modules can be loaded and used with type safety
 - **Schema Modules Tested**:
-  - `summarize_schema.create_summarize_schema_class()`
-  - `classify_schema.create_classify_schema_class()`
-  - `translate_schema.create_translate_schema_class()`
+  - `schema.create_summarize_schema_class()`
+  - `schema.create_classify_schema_class()`
+  - `schema.create_translate_schema_class()`
 - **Operations Tested**:
   - Schema module imports
   - Pydantic class creation function calls

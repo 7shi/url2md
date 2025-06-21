@@ -20,7 +20,7 @@ from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json, upload_file, delete_file
 from .urlinfo import URLInfo
 from .utils import extract_body_content, extract_html_title
-from .summarize_schema import create_summarize_schema_class
+from .schema import create_summarize_schema_class
 
 
 def generate_summary_prompt(url: str, content_type: str, language: str = None) -> str:

@@ -14,6 +14,7 @@ This document describes the second phase of schema migration in url2md, transiti
 ### Migration Evolution
 - **Phase 1** (Previous): JSON files → Code-based dictionary generation
 - **Phase 2** (This): Code-based dictionaries → Pydantic class generation
+- **Phase 3** (Follow-up): Separate schema modules → Consolidated schema.py module
 
 ### Before Migration (Dict-Based)
 - Function-based schema generation returning dictionaries
@@ -554,3 +555,79 @@ This migration demonstrates the value of modern Python typing practices and esta
 - Demonstrated successful large-scale refactoring methodology
 
 This migration represents a significant step forward in the evolution of the url2md codebase, setting new standards for type safety, developer experience, and architectural clarity.
+
+## Phase 3: Module Consolidation
+
+**Date**: 2025-01-21  
+**Status**: ✅ Completed  
+**Test Results**: 113/113 tests passing  
+**Approach**: Consolidated three schema modules into single `schema.py`
+
+### Consolidation Overview
+
+Following the successful migration to Pydantic-based schemas, a third phase was implemented to consolidate the three separate schema modules (`summarize_schema.py`, `classify_schema.py`, `translate_schema.py`) into a single unified module (`schema.py`).
+
+### Before Consolidation
+```
+url2md/
+├── summarize_schema.py    # Summarization schema definitions
+├── classify_schema.py     # Classification schema definitions
+└── translate_schema.py    # Translation schema definitions
+```
+
+### After Consolidation
+```
+url2md/
+└── schema.py             # All schema definitions in one module
+    ├── create_summarize_schema_class()
+    ├── create_classify_schema_class()
+    └── create_translate_schema_class()
+```
+
+### Benefits of Consolidation
+
+1. **Simplified Structure**: Single source of truth for all schema definitions
+2. **Easier Navigation**: All schema functions in one location
+3. **Reduced Module Count**: Cleaner project structure
+4. **Consistent Patterns**: All schema patterns visible in one file
+5. **Import Simplification**: Single import statement for all schemas
+
+### Implementation Details
+
+#### Import Updates
+```python
+# Before
+from .summarize_schema import create_summarize_schema_class
+from .classify_schema import create_classify_schema_class
+from .translate_schema import create_translate_schema_class
+
+# After
+from .schema import (
+    create_summarize_schema_class,
+    create_classify_schema_class,
+    create_translate_schema_class
+)
+```
+
+#### Module Updates
+- **summarize.py**: Updated import to `from .schema import create_summarize_schema_class`
+- **classify.py**: Updated import to `from .schema import create_classify_schema_class`
+- **translate.py**: Updated import to `from .schema import create_translate_schema_class`
+
+#### Test Updates
+- All test files updated to import from consolidated `schema` module
+- Test structure maintained without changes to test logic
+- 100% test compatibility maintained
+
+#### Documentation Consolidation
+- Combined three documentation files into single `schema.md`
+- Updated all references in project documentation
+- Maintained comprehensive documentation structure
+
+### Migration Path Summary
+
+1. **Phase 1**: JSON files → Code-based dictionary generation
+2. **Phase 2**: Code-based dictionaries → Pydantic class generation
+3. **Phase 3**: Separate modules → Consolidated `schema.py` module
+
+This three-phase migration successfully modernized the schema architecture while maintaining full backward compatibility and improving developer experience at each step.

@@ -93,8 +93,11 @@ Package initialization and public API definition. Exports commonly used componen
 
 ### AI Processing and Translation
 
+#### [`schema.py`](schema.md)
+**Pydantic schema definitions** - Consolidated schema definitions for all AI operations. Provides type-safe Pydantic models for summarization, classification, and translation with multi-language support and dynamic field generation.
+
 #### [`summarize.py`](summarize.md)
-**AI-powered summarization** - Gemini API integration for content summarization with multi-language support, progress tracking, and structured output generation using JSON schemas.
+**AI-powered summarization** - Gemini API integration for content summarization with multi-language support, progress tracking, and structured output generation using Pydantic schemas.
 
 #### [`classify.py`](classify.md)
 **Tag extraction and classification** - Extracts tags from summaries and performs LLM-based theme classification. Integrates with translation system for multi-language output and provides thinking process visualization.

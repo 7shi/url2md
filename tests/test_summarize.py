@@ -19,7 +19,7 @@ from url2md.summarize import generate_summary_prompt, summarize_content
 
 def test_schema_validation():
     """Test summarize schema structure using Pydantic schema"""
-    from url2md.summarize_schema import create_summarize_schema_class
+    from url2md.schema import create_summarize_schema_class
     
     # Test without language
     schema_class = create_summarize_schema_class()

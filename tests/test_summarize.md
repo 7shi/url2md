@@ -18,10 +18,10 @@ The `test_summarize.py` module provides comprehensive tests for the summarizatio
 ### `test_schema_validation()`
 Tests the Pydantic summarization schema module structure and field requirements.
 - **Purpose**: Verify `create_summarize_schema_class()` function generates correct type-safe field definitions
-- **Schema Module**: `summarize_schema.create_summarize_schema_class()` function
+- **Schema Module**: `schema.create_summarize_schema_class()` function
 - **Required Fields Tested**: `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
 - **Validation Process**:
-  1. Import schema class creation function from summarize_schema module
+  1. Import schema class creation function from schema module
   2. Call function to generate Pydantic schema class
   3. Generate JSON schema using `model_json_schema()`
   4. Extract required fields and properties

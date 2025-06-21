@@ -33,17 +33,16 @@ url2md is a command-line tool for URL analysis and classification that generates
 
 ```
 url2md/
-├── pyproject.toml          # Package configuration (CC0 license, Python 3.10+)
-├── README.md               # User documentation and command reference
-├── CLAUDE.md              # This file - development guidelines
-├── CHANGELOG.md            # Version history following Keep a Changelog format
-├── NOTES.md                # Development philosophy and lessons learned
-├── docs/                  # Additional documentation
-│   ├── resource-support.md # Resource handling documentation
-│   └── translation-strategy.md # Translation implementation details
-├── tests/                 # Test directory with comprehensive test suite
-│   ├── README.md               # Test suite documentation and coverage overview
-│   ├── test_report.py          # Core report functionality tests
+├── pyproject.toml        # Package configuration (CC0 license, Python 3.10+)
+├── README.md             # User documentation and command reference
+├── CLAUDE.md             # This file - development guidelines
+├── CHANGELOG.md          # Version history following Keep a Changelog format
+├── NOTES.md              # Development philosophy and lessons learned
+├── docs/                 # Additional documentation
+│   ├── ...
+├── tests/                # Test directory with comprehensive test suite
+│   ├── README.md         # Test suite documentation and coverage overview
+│   ├── test_report.py    # Core report functionality tests
 │   ├── test_report_translations.py # Report translation functionality tests
 │   └── ...
 └── url2md/               # Main package
@@ -61,10 +60,8 @@ url2md/
     ├── report.py         # Report generation functions
     ├── utils.py          # HTML processing and resource utilities
     ├── download.py       # Playwright dynamic rendering
-    ├── *.md              # Individual module documentation
-    ├── summarize_schema.py # Pydantic-based schema for summarize command
-    ├── classify_schema.py  # Pydantic-based schema for classify command
-    └── translate_schema.py # Pydantic-based schema for translation operations
+    ├── schema.py         # Consolidated Pydantic schemas for all AI operations
+    └── *.md              # Individual module documentation
 ```
 
 ## Development Environment
@@ -123,10 +120,10 @@ uv run url2md [global-options] <subcommand> [options]
 Use the **two-phase development approach**: start with standalone module for prototyping, then integrate into centralized architecture. See [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development) for detailed methodology and benefits.
 
 #### Modifying AI Operations
-1. Update relevant schema module (`summarize_schema.py`, `classify_schema.py`, or `translate_schema.py`)
+1. Update relevant schema functions in `schema.py`
 2. Modify prompt generation in the command module
 3. Import Gemini functions from `llm7shi` package: `from llm7shi import generate_content_retry, config_from_schema`
-4. Import schema class creation function: `from .{module}_schema import create_{module}_schema_class`
+4. Import schema class creation function: `from .schema import create_{module}_schema_class`
 5. Configure thinking parameters in `generate_content_retry()` calls if needed
 6. For language-specific operations, pass language parameter to schema class creation function
 7. Test with actual API calls
@@ -135,8 +132,8 @@ Use the **two-phase development approach**: start with standalone module for pro
 #### Language Support and Schema Architecture
 - **Pydantic-based Schema**: All schemas are now defined as Pydantic classes in dedicated modules
 - **Dynamic Language Support**: Pass `language` parameter to schema class creation functions for localized descriptions
-- **Schema Modules**: `summarize_schema.py`, `classify_schema.py`, `translate_schema.py` contain schema class creation functions
-- **Translation Support**: `translate_schema.py` uses `create_model` to dynamically generate schemas based on terms list
+- **Schema Module**: `schema.py` contains all schema class creation functions for summarization, classification, and translation
+- **Translation Support**: Translation schema uses `create_model` to dynamically generate schemas based on terms list
 - **Type Safety**: Complete IDE support and compile-time validation with Pydantic models
 - **Generic Translation**: `translate.py` module provides reusable translation functions for any terms
 

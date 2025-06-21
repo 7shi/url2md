@@ -16,7 +16,7 @@ from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
 from .translate import translate_terms
 from .urlinfo import URLInfo
-from .classify_schema import create_classify_schema_class
+from .schema import create_classify_schema_class
 
 
 # Global list of terms that need translation

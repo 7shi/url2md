@@ -133,7 +133,7 @@ Filters URLInfo objects by target URL list (duplicate of summarize.py version).
 - `.cache`: Cache and translation management
 - `.translate`: Generic translation functionality
 - `.urlinfo`: URLInfo class
-- `.classify_schema`: Pydantic-based schema generation
+- `.schema`: Pydantic-based schema generation
 
 ### External Dependencies
 - `json`: JSON parsing

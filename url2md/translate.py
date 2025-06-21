@@ -9,7 +9,7 @@ import json
 from typing import List, Dict, Optional
 
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
-from .translate_schema import create_translate_schema_class
+from .schema import create_translate_schema_class
 
 
 def create_translation_schema(terms: List[str], language: str) -> Dict:
