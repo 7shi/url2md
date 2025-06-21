@@ -408,15 +408,11 @@ Technology:0.9$
 Business:1.0
 ```
 
-## License
-
-CC0-1.0 - Public Domain
-
 ## Testing
 
 ```bash
 # Quick test commands
-uv sync --dev        # Install development dependencies
+uv sync --dev       # Install development dependencies
 uv run pytest       # Run all tests
 ```
 
