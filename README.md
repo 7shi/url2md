@@ -21,6 +21,9 @@ For output examples, see the [Wiki](https://github.com/7shi/url2md/wiki).
 # Install as a tool
 uv tool install https://github.com/7shi/url2md.git
 
+# Add ~/.local/bin to PATH if not already added
+export PATH="$HOME/.local/bin:$PATH"
+
 # Optional for dynamic rendering
 playwright install
 ```
