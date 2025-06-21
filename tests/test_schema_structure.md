@@ -24,7 +24,7 @@ Tests Pydantic-based schema module structure and field definitions.
   - **translate schema**: Required fields `['translations']`
 - **Validation Process**:
   1. Import schema module dynamically
-  2. Call schema class creation function
+  2. Call schema class creation function (with required parameters for translation schema)
   3. Generate JSON schema using `model_json_schema()`
   4. Extract `required` and `properties` fields
   5. Compare against expected field sets
@@ -131,9 +131,9 @@ Tests confirm required dependencies are properly configured:
 ### Schema Module Access Testing
 Tests verify proper schema module handling:
 - Schema modules importable via dynamic imports
-- Schema functions callable with parameters
+- Schema functions callable with required parameters (terms and language for translation schema)
 - Schema generation works correctly
-- Language parameter support verified
+- Language parameter support verified (required for translation, optional for others)
 
 ## Key Implementation Details
 
@@ -141,9 +141,9 @@ Tests verify proper schema module handling:
 Tests enforce specific schema structure:
 - **Required Fields**: Must be present and match expected sets
 - **Properties**: Must align with required fields
-- **Function Interface**: Must be callable with expected parameters
+- **Function Interface**: Must be callable with expected parameters (language required for translation schema)
 - **Field Consistency**: Properties and required fields must match
-- **Language Support**: Must support optional language parameters
+- **Language Support**: Must support language parameters (required for translation, optional for others)
 
 ### API Surface Testing
 Tests verify public API remains stable:

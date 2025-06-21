@@ -238,8 +238,8 @@ class TestWorkflowIntegration:
                 
                 # Test schema creation
                 if function_name == 'create_translate_schema_class':
-                    # translate_schema requires terms parameter
-                    schema_class = schema_func(['test', 'example'])
+                    # translate_schema requires terms and language parameters
+                    schema_class = schema_func(['test', 'example'], 'English')
                     config = config_from_schema(schema_class)
                     assert config is not None
                 else:

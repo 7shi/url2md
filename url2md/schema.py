@@ -75,20 +75,21 @@ def create_classify_schema_class(language: Optional[str] = None) -> Type[BaseMod
     return ClassifyResult
 
 
-def create_translate_schema_class(terms: List[str]) -> Type[BaseModel]:
+def create_translate_schema_class(terms: List[str], language: str) -> Type[BaseModel]:
     """
     Create Pydantic schema class for term translation.
     
     Args:
         terms: List of terms to be translated.
                Each term becomes a required field in the schema.
+        language: Target language for translation.
                  
     Returns:
         Pydantic BaseModel class for translation output.
     """
     # Build dynamic fields from terms list
     translation_fields = {
-        term: (str, Field(description=f"Translation of '{term}'"))
+        term: (str, Field(description=f"Translation of '{term}' to {language}"))
         for term in terms
     }
     

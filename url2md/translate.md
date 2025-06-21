@@ -8,7 +8,7 @@ The `translate.py` module provides generic translation functionality using LLM A
 
 ### `create_translation_schema(terms: List[str], language: str) -> Dict`
 
-Dynamically generates a JSON schema for translation using code-based approach.
+Dynamically generates a JSON schema for translation using Pydantic-based approach.
 
 **Parameters:**
 - `terms`: List of terms to translate
@@ -18,10 +18,10 @@ Dynamically generates a JSON schema for translation using code-based approach.
 - JSON schema dictionary
 
 **Implementation Details:**
-- Uses `build_translate_schema()` from schema module
-- Dynamically builds properties for each term
-- Type-safe dictionary manipulation
-- Each term becomes a required string property
+- Uses `create_translate_schema_class()` from schema module with required language parameter
+- Generates Pydantic class with mandatory language-aware field descriptions
+- Each field description includes target language specification ("Translation of 'term' to {language}")
+- All terms become required string properties with language-enhanced descriptions
 
 ### `create_translation_prompt(terms: List[str], language: str) -> str`
 
@@ -53,8 +53,8 @@ Main function that translates a list of terms using the specified LLM model.
 - Dictionary mapping original terms to their translations
 
 **Process:**
-1. Generates dynamic schema using code-based function
-2. Creates translation prompt
+1. Generates dynamic Pydantic schema class with required language-aware descriptions
+2. Creates translation prompt specifying target language
 3. Configures LLM with schema for structured output
 4. Calls LLM API and parses JSON response
 5. Returns translation mappings
@@ -82,8 +82,9 @@ Main function that translates a list of terms using the specified LLM model.
 ## Important Implementation Details
 
 1. **Schema Generation**:
-   - Pydantic-based schema via `create_translate_schema_class()`
+   - Pydantic-based schema via `create_translate_schema_class()` with required language parameter
    - Properties dynamically generated for each term using `create_model`
+   - Field descriptions always include target language specification ("Translation of 'term' to {language}")
    - All terms marked as required fields with type safety
    - Type-safe Pydantic class construction with full IDE support
 
@@ -106,7 +107,7 @@ Main function that translates a list of terms using the specified LLM model.
 
 5. **Flexibility**:
    - Generic design works with any term list
-   - Language-agnostic implementation
+   - Supports any target language (language parameter required)
    - Model-agnostic (any llm7shi-supported model)
    - No hardcoded term lists
 

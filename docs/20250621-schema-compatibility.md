@@ -96,13 +96,17 @@ def create_dynamic_schema(field_names: List[str]) -> Type[BaseModel]:
 For more complex structures involving nested dynamic models:
 
 ```python
-def create_nested_dynamic_schema(terms: List[str]) -> Type[BaseModel]:
+def create_nested_dynamic_schema(terms: List[str], language: str) -> Type[BaseModel]:
     """
     Create nested dynamic schema compatible with LLM APIs.
+    
+    Args:
+        terms: List of terms to translate
+        language: Target language for translation
     """
     # Dynamic fields for inner model
     translation_fields = {
-        term: (str, Field(description=f"Translation of '{term}'"))
+        term: (str, Field(description=f"Translation of '{term}' to {language}"))
         for term in terms
     }
     
@@ -207,9 +211,77 @@ def test_api_compatibility(schema_class: Type[BaseModel]):
 
 ## Case Study: Translation Schema Evolution
 
-### Problem
+### The Complexity Inversion Phenomenon
 
-The original translation schema used `extra='forbid'` to ensure strict validation:
+An interesting observation from url2md's schema evolution: **translation schemas went from being the most complex to the most elegant** when migrating from placeholder-based to Pydantic-based architecture.
+
+#### Why This Inversion Occurred
+
+**Static vs Dynamic Requirements:**
+- **Summarize/Classify schemas**: Fixed field structures → relatively simple in both approaches
+- **Translation schema**: Dynamic field generation → complex with string manipulation, natural with `create_model`
+
+**Tool Alignment:**
+- **String replacement**: Poorly suited for dynamic generation (manual JSON construction)
+- **`create_model`**: Specifically designed for runtime class generation
+
+**Code Expressiveness:**
+- **Placeholder approach**: Obscured intent with string manipulation complexity
+- **Pydantic approach**: Directly expresses the desired schema structure
+
+#### Before (v0.4.0 - Most Complex)
+
+```python
+def create_translation_schema(terms: List[str], language: str) -> str:
+    # Manual JSON construction with string manipulation
+    properties = []
+    required = []
+    
+    for term in terms:
+        properties.append(f'"{term}": {{"type": "string", "description": "Translation of \'{term}\' to {language}"}}')
+        required.append(f'"{term}"')
+    
+    properties_str = ', '.join(properties)
+    required_str = ', '.join(required)
+    
+    # Template file loading and placeholder replacement
+    schema_path = get_resource_path("schemas/translate.json")
+    with open(schema_path, 'r', encoding='utf-8') as f:
+        schema_content = f.read()
+    
+    # String replacement operations
+    schema_content = schema_content.replace('```translation_properties```', properties_str)
+    schema_content = schema_content.replace('```translation_required```', required_str)
+    
+    return schema_content
+```
+
+#### After (Current - Most Elegant)
+
+```python
+def create_translate_schema_class(terms: List[str], language: str) -> Type[BaseModel]:
+    # Direct expression of intent
+    translation_fields = {
+        term: (str, Field(description=f"Translation of '{term}' to {language}"))
+        for term in terms
+    }
+    
+    # Natural dynamic class creation
+    TranslationDict = create_model('TranslationDict', **translation_fields)
+    
+    class TranslateResult(BaseModel):
+        translations: TranslationDict
+    
+    return TranslateResult
+```
+
+#### Key Insight: Right Tool for the Job
+
+This demonstrates that **choosing the appropriate tool can transform the most complex requirement into the most elegant solution**. Pydantic's `create_model` was specifically designed for dynamic schema generation, making what was previously the most complex operation now the most straightforward.
+
+### API Compatibility Problem
+
+Beyond elegance, the original translation schema used `extra='forbid'` to ensure strict validation:
 
 ```python
 # Original implementation (problematic)
@@ -249,6 +321,18 @@ class TranslateResult(BaseModel):
 - ✅ **Functionality**: Maintained full translation capabilities
 - ✅ **Type Safety**: Preserved Pydantic validation benefits
 - ✅ **Performance**: No degradation in validation speed
+- ✅ **Code Clarity**: Transformed from most complex to most elegant implementation
+
+### Lessons Learned
+
+This evolution demonstrates several important principles:
+
+1. **Tool Selection Matters**: The right tool can invert complexity hierarchies
+2. **Dynamic Requirements Need Dynamic Tools**: String manipulation is poor for runtime schema generation
+3. **Elegance and Functionality**: The most elegant solution often provides the best functionality
+4. **Migration Benefits**: Sometimes migration reveals better architectural patterns
+
+The translation schema evolution shows that **when requirements and tools align perfectly, complex problems become simple solutions**.
 
 ## Multi-API Compatibility
 
@@ -294,7 +378,7 @@ def test_schema_api_compatibility():
     
     # Test dynamic schema generation
     terms = ['hello', 'world', 'test']
-    schema_class = create_translate_schema_class(terms)
+    schema_class = create_translate_schema_class(terms, 'English')
     
     # Verify schema can be created
     assert schema_class is not None

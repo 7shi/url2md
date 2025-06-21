@@ -121,15 +121,15 @@ Tests fetch command workflow integration with mocked dependencies.
 Tests Pydantic schema module accessibility and configuration generation.
 - **Purpose**: Verify Pydantic schema modules can be loaded and used with type safety
 - **Schema Modules Tested**:
-  - `schema.create_summarize_schema_class()`
-  - `schema.create_classify_schema_class()`
-  - `schema.create_translate_schema_class()`
+  - `schema.create_summarize_schema_class()` - Optional language parameter
+  - `schema.create_classify_schema_class()` - Optional language parameter
+  - `schema.create_translate_schema_class()` - Required terms and language parameters
 - **Operations Tested**:
   - Schema module imports
-  - Pydantic class creation function calls
+  - Pydantic class creation function calls (with required parameters for translation)
   - Schema class generation with language parameters
   - Config generation from Pydantic classes
-  - Backward compatibility with dict-based schema functions
+  - Parameter validation for different schema types
 - **Integration Points**: Pydantic schema classes → llm7shi integration with `config_from_schema()`
 
 ## Module Integration Tests
@@ -206,9 +206,9 @@ Tests verify centralized command architecture:
 ### Schema Integration Testing
 Tests verify schema modules integrate properly with AI operations:
 - Schema modules importable and functional
-- Schema function calls work correctly
+- Schema function calls work correctly with required parameters
 - Configuration generation succeeds
-- Language parameter support verified
+- Language parameter support verified (required for translation, optional for others)
 - Integration with llm7shi package functions
 
 ### Cross-Platform Compatibility

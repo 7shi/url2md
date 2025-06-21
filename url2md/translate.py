@@ -22,7 +22,7 @@ def create_translation_schema(terms: List[str], language: str) -> Dict:
     Returns:
         Dict: JSON schema dictionary
     """
-    schema_class = create_translate_schema_class(terms)
+    schema_class = create_translate_schema_class(terms, language)
     return schema_class.model_json_schema()
 
 
@@ -58,7 +58,7 @@ def translate_terms(terms: List[str], language: str, model: str) -> Dict[str, st
     """
     
     # Generate Pydantic schema class and prompt
-    schema_class = create_translate_schema_class(terms)
+    schema_class = create_translate_schema_class(terms, language)
     prompt = create_translation_prompt(terms, language)
     
     # Configure model with Pydantic schema

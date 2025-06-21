@@ -36,8 +36,8 @@ def test_schema_modules():
             
             # Test schema creation
             if function_name == 'create_translate_schema_class':
-                # translate_schema requires terms parameter
-                schema_class = schema_func(['test', 'example'])
+                # translate_schema requires terms and language parameters
+                schema_class = schema_func(['test', 'example'], 'English')
                 schema = schema_class.model_json_schema()
             else:
                 schema_class = schema_func()

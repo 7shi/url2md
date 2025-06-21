@@ -81,12 +81,13 @@ for theme in result.themes:
     print(f"Theme: {theme.theme_name}, Tags: {len(theme.tags)}")
 ```
 
-### `create_translate_schema_class(terms: List[str]) -> Type[BaseModel]`
+### `create_translate_schema_class(terms: List[str], language: str) -> Type[BaseModel]`
 
 Creates a Pydantic schema class for term translation operations based on provided terms.
 
 **Parameters:**
 - `terms`: List of terms to be translated (each becomes a required field)
+- `language`: Target language for translation (required for proper field descriptions)
 
 **Returns:**
 - Pydantic BaseModel class for translation output with type safety
@@ -95,8 +96,8 @@ Creates a Pydantic schema class for term translation operations based on provide
 ```python
 # Dynamic field generation based on terms
 class TranslationDict(BaseModel):
-    term1: str = Field(description="Translation of 'term1'")
-    term2: str = Field(description="Translation of 'term2'")
+    term1: str = Field(description="Translation of 'term1' to Japanese")
+    term2: str = Field(description="Translation of 'term2' to Japanese")
     # ... dynamic fields for each term
     
 class TranslateResult(BaseModel):
@@ -105,9 +106,9 @@ class TranslateResult(BaseModel):
 
 **Usage:**
 ```python
-# Dynamic schema creation
+# Dynamic schema creation with required language specification
 terms = ['Summary', 'Themes', 'Total URLs']
-schema_class = create_translate_schema_class(terms)
+schema_class = create_translate_schema_class(terms, 'Japanese')
 
 # Type-safe usage
 result = schema_class(**response_data)
@@ -157,9 +158,9 @@ print(result.translations.Summary)  # Full IDE completion
    - Multi-language support
 
 3. **Translation Schema**
-   - Dynamic field generation
+   - Dynamic field generation with mandatory language-aware descriptions
    - Runtime class creation with `create_model`
-   - Flexible term handling
+   - Required target language specification for all translations
    - API compatibility optimized
 
 ### Design Patterns Used
@@ -247,8 +248,8 @@ def create_summarize_schema_class(language: Optional[str] = None) -> Type[BaseMo
 - **Hierarchical Organization**: Nested models for complex structures
 
 ### Term Translation
-- **Dynamic Fields**: Each term becomes a typed field
-- **Flexible Structure**: Adapts to any list of terms
+- **Dynamic Fields**: Each term becomes a typed field with language-specific descriptions
+- **Required Language**: Target language must be specified for proper AI guidance
 - **Type Safety**: Full validation and IDE support
 - **API Compatibility**: Optimized for Gemini API constraints
 
@@ -280,9 +281,9 @@ summarize_config = config_from_schema(summarize_schema)
 classify_schema = create_classify_schema_class(language='English')
 classify_config = config_from_schema(classify_schema)
 
-# 3. Dynamic translation schema
+# 3. Dynamic translation schema with required language specification
 terms_to_translate = ['Summary', 'Themes', 'Total URLs']
-translate_schema = create_translate_schema_class(terms_to_translate)
+translate_schema = create_translate_schema_class(terms_to_translate, 'Japanese')
 translate_config = config_from_schema(translate_schema)
 
 # Type-safe usage with full IDE support
