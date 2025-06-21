@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-06-21
+
+### Added
+- **Enhanced Prompt Display**: `--show-prompt` now shows schema structure and translation cache visualization
+
+### Changed
+- **llm7shi Integration**: Full migration to llm7shi package for Gemini API operations and terminal utilities
+- **Schema Migration**: Complete migration to Pydantic-based schemas for improved type safety and validation
+- **Documentation Structure**: Renamed documentation files with date prefixes for better organization
+- **Error Handling**: Improved error reporting with standard traceback display
+
 ## [0.4.0] - 2025-06-16
 
 ### Changed
