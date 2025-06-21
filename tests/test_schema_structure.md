@@ -9,22 +9,25 @@ The `test_schema_structure.py` module provides structural and API tests for the 
 - **pathlib.Path**: For file system path operations
 - **pytest**: Testing framework for assertions and test management
 
-## Schema File Tests
+## Schema Module Tests
 
-### `test_schema_files()`
-Tests JSON schema file structure and field definitions.
-- **Purpose**: Verify AI operation schema files contain required fields and structure
-- **Schema Files Tested**:
-  - `schemas/summarize.json` - For content summarization operations
-  - `schemas/classify.json` - For content classification operations
+### `test_schema_modules()`
+Tests code-based schema module structure and field definitions.
+- **Purpose**: Verify AI operation schema modules contain required functions and structure
+- **Schema Modules Tested**:
+  - `summarize_schema.build_summarize_schema()` - For content summarization operations
+  - `classify_schema.build_classify_schema()` - For content classification operations
+  - `translate_schema.build_translate_schema()` - For translation operations
 - **Schema Validation**:
-  - **summarize.json**: Required fields `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
-  - **classify.json**: Required fields `['themes', 'classification_summary']`
+  - **summarize_schema**: Required fields `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
+  - **classify_schema**: Required fields `['themes', 'classification_summary']`
+  - **translate_schema**: Required fields `['translations']`
 - **Validation Process**:
-  1. Load schema file using `get_resource_path()`
-  2. Parse JSON content
+  1. Import schema module dynamically
+  2. Call schema builder function
   3. Extract `required` and `properties` fields
   4. Compare against expected field sets
+  5. Test language parameter functionality
 - **Key Assertions**: Required fields and properties match expected structure exactly
 
 ## API Structure Tests
@@ -124,11 +127,12 @@ Tests confirm required dependencies are properly configured:
 - Internal module structure supports expected imports
 - Entry point configuration enables proper installation
 
-### Resource Access Testing
-Tests verify proper resource file handling:
-- Schema files accessible via `get_resource_path()`
-- JSON parsing works correctly
-- File path resolution functions properly
+### Schema Module Access Testing
+Tests verify proper schema module handling:
+- Schema modules importable via dynamic imports
+- Schema functions callable with parameters
+- Schema generation works correctly
+- Language parameter support verified
 
 ## Key Implementation Details
 
@@ -136,8 +140,9 @@ Tests verify proper resource file handling:
 Tests enforce specific schema structure:
 - **Required Fields**: Must be present and match expected sets
 - **Properties**: Must align with required fields
-- **JSON Format**: Must be valid, parseable JSON
+- **Function Interface**: Must be callable with expected parameters
 - **Field Consistency**: Properties and required fields must match
+- **Language Support**: Must support optional language parameters
 
 ### API Surface Testing
 Tests verify public API remains stable:
@@ -167,7 +172,8 @@ The schema structure test suite employs a **static validation approach**:
 - Validate directory structure
 
 ### Content Structure Validation
-- Parse and validate JSON schemas
+- Import and validate schema modules
+- Call schema functions and validate output
 - Verify source code contains required definitions
 - Check configuration file completeness
 

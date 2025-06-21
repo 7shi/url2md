@@ -16,17 +16,18 @@ The `test_summarize.py` module provides comprehensive tests for the summarizatio
 ## Schema and Structure Tests
 
 ### `test_schema_validation()`
-Tests the summarization schema file structure and field requirements.
-- **Purpose**: Verify `schemas/summarize.json` contains correct field definitions
-- **Schema File**: `schemas/summarize.json` accessed via `get_resource_path()`
+Tests the summarization schema module structure and field requirements.
+- **Purpose**: Verify `build_summarize_schema()` function generates correct field definitions
+- **Schema Module**: `summarize_schema.build_summarize_schema()` function
 - **Required Fields Tested**: `['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']`
 - **Validation Process**:
-  1. Load and parse schema JSON
-  2. Extract required fields and properties
-  3. Compare against expected field set
-  4. Debug output for verification
+  1. Import schema function from summarize_schema module
+  2. Call function to generate schema
+  3. Extract required fields and properties
+  4. Compare against expected field set
+  5. Test language parameter functionality
 - **Key Assertions**: Required fields and properties match expected structure
-- **Error Handling**: Comprehensive exception catching with detailed error reporting
+- **Language Testing**: Verifies language parameter correctly modifies field descriptions
 
 ### `test_imports()`
 Tests module import structure and availability.
@@ -147,9 +148,11 @@ Tests URL filtering functions for selective summarization.
 ## Testing Patterns and Approaches
 
 ### Schema-Driven Testing
-Tests verify compliance with JSON schema requirements:
+Tests verify compliance with code-based schema requirements:
+- Schema function import and execution
 - Field presence validation
 - Data type compliance
+- Language parameter functionality
 - Required vs optional field handling
 
 ### Mock-Based AI Testing
@@ -226,8 +229,10 @@ Tests handle data variations:
 The summarize test suite employs a **layered validation approach**:
 
 ### Schema Layer Testing
-- JSON schema compliance verification
+- Code-based schema function testing
+- Schema generation verification
 - Field requirement validation
+- Language parameter validation
 - Data structure consistency
 
 ### Function Layer Testing

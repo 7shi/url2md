@@ -69,7 +69,7 @@ Generates the prompt for LLM tag classification.
 - Each tag in only one theme
 - Complete tag frequency information
 
-### `classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str, schema_file: str = None, language: str = None) -> Dict[str, Any]`
+### `classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str, language: str = None) -> Dict[str, Any]`
 
 Main function that classifies tags using LLM and returns structured results.
 
@@ -77,7 +77,6 @@ Main function that classifies tags using LLM and returns structured results.
 - `cache`: Cache instance for translation management
 - `tag_counter`: Counter with tag frequencies
 - `model`: LLM model identifier
-- `schema_file`: Optional custom schema path
 - `language`: Optional output language
 
 **Returns:**
@@ -85,7 +84,7 @@ Main function that classifies tags using LLM and returns structured results.
 
 **Process:**
 1. Generates classification prompt
-2. Loads and configures schema
+2. Builds schema using code-based function
 3. Calls LLM with structured output
 4. Adds language info if specified
 5. Triggers translation if needed
@@ -134,7 +133,7 @@ Filters URLInfo objects by target URL list (duplicate of summarize.py version).
 - `.cache`: Cache and translation management
 - `.translate`: Generic translation functionality
 - `.urlinfo`: URLInfo class
-- `.utils`: Resource path utilities
+- `.classify_schema`: Code-based schema generation
 
 ### External Dependencies
 - `json`: JSON parsing
@@ -160,10 +159,10 @@ Filters URLInfo objects by target URL list (duplicate of summarize.py version).
    - Only translates missing terms
    - Persistent caching across sessions
 
-4. **Schema Placeholders**:
-   - `{ in language}` replaced dynamically
-   - Supports language-specific output
-   - Empty string if no language specified
+4. **Code-Based Schema**:
+   - Dynamic schema generation via `build_classify_schema()`
+   - Language parameter passed directly to schema function
+   - Type-safe dictionary manipulation
 
 5. **Error Handling**:
    - Exits on schema file errors
@@ -171,7 +170,7 @@ Filters URLInfo objects by target URL list (duplicate of summarize.py version).
    - No frequent tags triggers error exit
 
 6. **LLM Configuration**:
-   - Three-step schema processing
+   - Code-based schema generation
    - Structured JSON output enforced
    - Retry mechanism via llm7shi
 

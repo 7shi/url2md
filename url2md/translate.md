@@ -6,21 +6,21 @@ The `translate.py` module provides generic translation functionality using LLM A
 
 ## Functions
 
-### `create_translation_schema(terms: List[str], language: str) -> str`
+### `create_translation_schema(terms: List[str], language: str) -> Dict`
 
-Dynamically generates a JSON schema for translation based on the provided terms and target language.
+Dynamically generates a JSON schema for translation using code-based approach.
 
 **Parameters:**
 - `terms`: List of terms to translate
 - `language`: Target language for translation
 
 **Returns:**
-- JSON schema string with placeholders replaced
+- JSON schema dictionary
 
 **Implementation Details:**
-- Loads base schema from `schemas/translate.json`
-- Generates property definitions for each term
-- Replaces placeholders in the schema template
+- Uses `build_translate_schema()` from translate_schema module
+- Dynamically builds properties for each term
+- Type-safe dictionary manipulation
 - Each term becomes a required string property
 
 ### `create_translation_prompt(terms: List[str], language: str) -> str`
@@ -53,7 +53,7 @@ Main function that translates a list of terms using the specified LLM model.
 - Dictionary mapping original terms to their translations
 
 **Process:**
-1. Generates dynamic schema for the terms
+1. Generates dynamic schema using code-based function
 2. Creates translation prompt
 3. Configures LLM with schema for structured output
 4. Calls LLM API and parses JSON response
@@ -61,7 +61,7 @@ Main function that translates a list of terms using the specified LLM model.
 
 ## Key Design Patterns Used
 
-1. **Template Pattern**: Uses base schema as template with placeholders
+1. **Code-Based Schema**: Uses function-based schema generation
 2. **Builder Pattern**: Dynamically builds schema and prompt
 3. **Schema-Driven Design**: Ensures structured LLM output
 4. **Separation of Concerns**: Separates schema generation, prompt creation, and API calls
@@ -69,7 +69,7 @@ Main function that translates a list of terms using the specified LLM model.
 ## Dependencies
 
 ### Internal Dependencies
-- `.utils`: Uses `get_resource_path()` for schema file access
+- `.translate_schema`: Code-based schema generation functions
 
 ### External Dependencies
 - `json`: For JSON parsing and manipulation
@@ -82,10 +82,10 @@ Main function that translates a list of terms using the specified LLM model.
 ## Important Implementation Details
 
 1. **Schema Generation**:
-   - Base schema loaded from `schemas/translate.json`
+   - Code-based schema via `build_translate_schema()`
    - Properties dynamically generated for each term
    - All terms marked as required fields
-   - Placeholders (```translation_properties```, ```translation_required```) replaced
+   - Type-safe dictionary construction
 
 2. **Prompt Engineering**:
    - Clear instruction format
@@ -95,7 +95,7 @@ Main function that translates a list of terms using the specified LLM model.
 
 3. **LLM Integration**:
    - Uses structured output via JSON schema
-   - Three-step schema processing: string → dict → Schema → config
+   - Two-step schema processing: dict → Schema → config
    - Expects response with 'translations' key
    - Handles JSON parsing of LLM response
 

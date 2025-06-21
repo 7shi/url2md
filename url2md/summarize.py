@@ -19,7 +19,8 @@ from tqdm import tqdm
 from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json, upload_file, delete_file
 from .urlinfo import URLInfo
-from .utils import extract_body_content, extract_html_title, get_resource_path
+from .utils import extract_body_content, extract_html_title
+from .summarize_schema import build_summarize_schema
 
 
 def generate_summary_prompt(url: str, content_type: str, language: str = None) -> str:
@@ -45,7 +46,7 @@ def generate_summary_prompt(url: str, content_type: str, language: str = None) -
     return "\n".join(prompt_parts)
 
 
-def summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: str = None, language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+def summarize_content(cache: Cache, url_info: URLInfo, model: str, language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]:
     """Generate structured JSON summary for a single file using Gemini"""
     
     url = url_info.url
@@ -60,32 +61,10 @@ def summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: 
     print(f"  MIME type: {mime_type}")
     
     try:
-        # Load JSON schema configuration
-        if schema_file is None:
-            schema_path = get_resource_path("schemas/summarize.json")
-        else:
-            schema_path = schema_file
-        
-        try:
-            with open(schema_path, 'r', encoding='utf-8') as f:
-                schema_content = f.read()
-            
-            # Replace { in language} placeholder with actual language or empty string
-            if language:
-                schema_content = schema_content.replace('{ in language}', f' in {language}')
-            else:
-                schema_content = schema_content.replace('{ in language}', '')
-            
-            # Parse JSON string to dictionary
-            schema_dict = json.loads(schema_content)
-            # Build Schema object from dictionary
-            schema = build_schema_from_json(schema_dict)
-            # Create config from Schema object
-            config = config_from_schema(schema)
-        except Exception as e:
-            print(f"Error: Cannot open schema file: {schema_path}", file=sys.stderr)
-            traceback.print_exc()
-            sys.exit(1)
+        # Build schema using code-based function
+        schema_dict = build_summarize_schema(language=language)
+        schema = build_schema_from_json(schema_dict)
+        config = config_from_schema(schema)
         
         # Generate prompt
         prompt = generate_summary_prompt(url, content_type, language)

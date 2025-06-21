@@ -1,6 +1,8 @@
 # Resource Support in url2md
 
-This document describes how url2md handles package resources (schema files) that are bundled with the package.
+> **⚠️ DEPRECATED**: This resource system is no longer used in url2md. Schemas have been migrated to code-based architecture. See [schema-migration.md](schema-migration.md) for details.
+
+This document describes how url2md previously handled package resources (schema files) that were bundled with the package.
 
 ## Overview
 

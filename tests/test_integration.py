@@ -220,31 +220,44 @@ class TestWorkflowIntegration:
                 assert result == 0
             mock_fetch.assert_called_once()
     
-    def test_schema_file_integration(self):
-        """Test schema file accessibility"""
+    def test_schema_module_integration(self):
+        """Test schema module accessibility"""
         from llm7shi import config_from_schema, build_schema_from_json
-        from url2md.utils import get_resource_path
-        import json
         
-        # Test that schema files can be loaded
-        schema_files = [
-            'schemas/summarize.json',
-            'schemas/classify.json'
+        # Test code-based schema modules
+        schema_modules = [
+            ('summarize_schema', 'build_summarize_schema'),
+            ('classify_schema', 'build_classify_schema'),
+            ('translate_schema', 'build_translate_schema'),
         ]
         
-        for schema_file in schema_files:
-            schema_path = get_resource_path(schema_file)
-            assert schema_path.exists(), f"Schema file not found: {schema_file}"
-            
-            # Test that config can be created from schema
+        for module_name, function_name in schema_modules:
             try:
-                with open(schema_path, 'r', encoding='utf-8') as f:
-                    schema_dict = json.load(f)
-                schema = build_schema_from_json(schema_dict)
-                config = config_from_schema(schema)
-                assert config is not None
+                module = __import__(f'url2md.{module_name}', fromlist=[function_name])
+                schema_func = getattr(module, function_name)
+                
+                # Test schema creation
+                if function_name == 'build_translate_schema':
+                    # translate_schema requires terms parameter
+                    schema_dict = schema_func(['test', 'example'])
+                    schema = build_schema_from_json(schema_dict)
+                    config = config_from_schema(schema)
+                    assert config is not None
+                else:
+                    # Other schemas support optional language parameter
+                    schema_dict = schema_func()
+                    schema = build_schema_from_json(schema_dict)
+                    config = config_from_schema(schema)
+                    assert config is not None
+                    
+                    # Test with language parameter
+                    schema_dict_lang = schema_func(language='English')
+                    schema_lang = build_schema_from_json(schema_dict_lang)
+                    config_lang = config_from_schema(schema_lang)
+                    assert config_lang is not None
+                
             except Exception as e:
-                pytest.fail(f"Failed to create config from {schema_file}: {e}")
+                pytest.fail(f"Failed to create config from {module_name}.{function_name}: {e}")
 
 
 class TestModuleIntegration:

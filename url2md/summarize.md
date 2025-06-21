@@ -23,7 +23,7 @@ Generates the prompt for content summarization.
 - Specifies required fields (title, summaries, tags, validity)
 - Includes language directive if specified
 
-### `summarize_content(cache: Cache, url_info: URLInfo, model: str, schema_file: str = None, language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]`
+### `summarize_content(cache: Cache, url_info: URLInfo, model: str, language: str = None) -> Tuple[bool, Dict[str, Any], Optional[str]]`
 
 Generates structured JSON summary for a single file using Gemini.
 
@@ -31,7 +31,6 @@ Generates structured JSON summary for a single file using Gemini.
 - `cache`: Cache instance for file access
 - `url_info`: URLInfo object with metadata
 - `model`: Gemini model to use
-- `schema_file`: Optional custom schema file path
 - `language`: Optional output language
 
 **Returns:**
@@ -112,6 +111,7 @@ Displays summary file paths and contents for specified URLs.
 - `.cache`: Cache class for file management
 - `.urlinfo`: URLInfo for metadata
 - `.utils`: HTML processing utilities
+- `.summarize_schema`: Code-based schema generation
 
 ### External Dependencies
 - `json`: JSON parsing and generation
@@ -144,9 +144,10 @@ Displays summary file paths and contents for specified URLs.
    - Cleans up uploaded files after use
    - Handles cleanup failures gracefully
 
-5. **Schema Replacement**:
-   - Replaces `{ in language}` placeholder
-   - Dynamic language support in schema
+5. **Code-Based Schema**:
+   - Uses `build_summarize_schema()` function
+   - Dynamic language support via function parameters
+   - Type-safe schema generation
 
 6. **Summary Storage**:
    - Saves as JSON in cache/summary/

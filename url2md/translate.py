@@ -9,40 +9,20 @@ import json
 from typing import List, Dict, Optional
 
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
-from .utils import get_resource_path
+from .translate_schema import build_translate_schema
 
 
-def create_translation_schema(terms: List[str], language: str) -> str:
-    """Generate translation schema dynamically
+def create_translation_schema(terms: List[str], language: str) -> Dict:
+    """Generate translation schema dynamically using code-based approach
     
     Args:
         terms: List of terms to translate
         language: Target language for translation
     
     Returns:
-        str: JSON schema string with placeholders replaced
+        Dict: JSON schema dictionary
     """
-    # Generate properties and required fields
-    properties = []
-    required = []
-    
-    for term in terms:
-        properties.append(f'"{term}": {{"type": "string", "description": "Translation of \'{term}\' to {language}"}}')
-        required.append(f'"{term}"')
-    
-    properties_str = ', '.join(properties)
-    required_str = ', '.join(required)
-    
-    # Load base schema and replace placeholders
-    schema_path = get_resource_path("schemas/translate.json")
-    with open(schema_path, 'r', encoding='utf-8') as f:
-        schema_content = f.read()
-    
-    # Replace placeholders
-    schema_content = schema_content.replace('```translation_properties```', properties_str)
-    schema_content = schema_content.replace('```translation_required```', required_str)
-    
-    return schema_content
+    return build_translate_schema(terms)
 
 
 def create_translation_prompt(terms: List[str], language: str) -> str:
@@ -77,12 +57,10 @@ def translate_terms(terms: List[str], language: str, model: str) -> Dict[str, st
     """
     
     # Generate schema and prompt
-    schema_content = create_translation_schema(terms, language)
+    schema_dict = create_translation_schema(terms, language)
     prompt = create_translation_prompt(terms, language)
     
     # Configure model with schema
-    # Parse JSON string to dictionary
-    schema_dict = json.loads(schema_content)
     # Build Schema object from dictionary
     schema = build_schema_from_json(schema_dict)
     # Create config from Schema object

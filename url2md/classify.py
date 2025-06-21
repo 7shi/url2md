@@ -16,7 +16,7 @@ from .cache import Cache
 from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json
 from .translate import translate_terms
 from .urlinfo import URLInfo
-from .utils import get_resource_path
+from .classify_schema import build_classify_schema
 
 
 # Global list of terms that need translation
@@ -150,7 +150,7 @@ The output should include complete tag frequency information for use in URL clas
 
 
 def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str, 
-                          schema_file: str = None, language: str = None) -> Dict[str, Any]:
+                          language: str = None) -> Dict[str, Any]:
     """Classify tags using LLM and return structured result"""
     
     # Generate prompt
@@ -163,30 +163,13 @@ def classify_tags_with_llm(cache: Cache, tag_counter: Counter, model: str,
     print(f"Total unique tags: {len(tag_counter)}")
     print(f"Frequent tags (>=2 occurrences): {len(get_frequent_tags_with_counts(tag_counter))}")
     
-    # Load JSON schema configuration
-    if schema_file is None:
-        schema_path = get_resource_path("schemas/classify.json")
-    else:
-        schema_path = schema_file
-    
+    # Build schema using code-based function
     try:
-        with open(schema_path, 'r', encoding='utf-8') as f:
-            schema_content = f.read()
-        
-        # Replace { in language} placeholder with actual language or empty string
-        if language:
-            schema_content = schema_content.replace('{ in language}', f' in {language}')
-        else:
-            schema_content = schema_content.replace('{ in language}', '')
-        
-        # Parse JSON string to dictionary
-        schema_dict = json.loads(schema_content)
-        # Build Schema object from dictionary
+        schema_dict = build_classify_schema(language=language)
         schema = build_schema_from_json(schema_dict)
-        # Create config from Schema object
         config = config_from_schema(schema)
     except Exception as e:
-        print(f"Error: Cannot open schema file: {schema_path}", file=sys.stderr)
+        print(f"Error: Cannot build schema: {e}", file=sys.stderr)
         traceback.print_exc()
         sys.exit(1)
     

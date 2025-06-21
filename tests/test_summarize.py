@@ -18,32 +18,30 @@ from url2md.summarize import generate_summary_prompt, summarize_content
 
 
 def test_schema_validation():
-    """Test schemas/summarize.json structure"""
-    from url2md.utils import get_resource_path
+    """Test summarize schema structure using code-based schema"""
+    from url2md.summarize_schema import build_summarize_schema
     
-    schema_path = get_resource_path('schemas/summarize.json')
-    assert schema_path.exists(), "Schema file not found"
+    # Test without language
+    schema = build_summarize_schema()
+    assert schema.get('type') == 'object'
     
-    try:
-        with open(schema_path, 'r') as f:
-            schema = json.load(f)
+    required_fields = schema.get('required', [])
+    properties = list(schema.get('properties', {}).keys())
+    
+    print(f"Required fields: {required_fields}")
+    print(f"Properties: {properties}")
+    
+    # Check required fields
+    expected_required = ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']
+    assert set(required_fields) == set(expected_required), f"Required fields mismatch: got {required_fields}"
         
-        print(f"Schema type: {schema.get('type')}")
-        required_fields = schema.get('required', [])
-        properties = list(schema.get('properties', {}).keys())
-        
-        print(f"Required fields: {required_fields}")
-        print(f"Properties: {properties}")
-        
-        # Check required fields
-        expected_required = ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']
-        assert set(required_fields) == set(expected_required), f"Required fields mismatch: got {required_fields}"
-            
-        # Check properties
-        assert set(properties) == set(expected_required), f"Properties mismatch: got {properties}"
-        
-    except Exception as e:
-        pytest.fail(f"Schema validation error: {e}")
+    # Check properties
+    assert set(properties) == set(expected_required), f"Properties mismatch: got {properties}"
+    
+    # Test with language
+    schema_jp = build_summarize_schema(language='Japanese')
+    title_desc = schema_jp['properties']['title']['description']
+    assert 'in Japanese' in title_desc, "Language not properly integrated"
 
 
 def test_imports():

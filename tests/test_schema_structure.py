@@ -12,37 +12,53 @@ from pathlib import Path
 import pytest
 
 
-def test_schema_files():
-    """Test schema file structure"""
-    from url2md.utils import get_resource_path
-    
-    schema_files = [
-        ('schemas/summarize.json', {
+def test_schema_modules():
+    """Test schema module structure"""
+    schema_modules = [
+        ('summarize_schema', 'build_summarize_schema', {
             'required': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content'],
             'properties': ['title', 'summary_one_line', 'summary_detailed', 'tags', 'is_valid_content']
         }),
-        ('schemas/classify.json', {
+        ('classify_schema', 'build_classify_schema', {
             'required': ['themes', 'classification_summary'],
             'properties': ['themes', 'classification_summary']
-        })
+        }),
+        ('translate_schema', 'build_translate_schema', {
+            'required': ['translations'],
+            'properties': ['translations']
+        }),
     ]
     
-    for schema_file, expected in schema_files:
-        schema_path = get_resource_path(schema_file)
-        if not schema_path.exists():
-            pytest.fail(f"{schema_file} not found")
+    for module_name, function_name, expected in schema_modules:
+        try:
+            module = __import__(f'url2md.{module_name}', fromlist=[function_name])
+            schema_func = getattr(module, function_name)
             
-        with open(schema_path, 'r') as f:
-            schema = json.load(f)
-        
-        required_fields = schema.get('required', [])
-        properties = list(schema.get('properties', {}).keys())
-        
-        # Check required fields
-        assert set(required_fields) == set(expected['required']), f"Required fields mismatch in {schema_file}"
+            # Test schema creation
+            if function_name == 'build_translate_schema':
+                # translate_schema requires terms parameter
+                schema = schema_func(['test', 'example'])
+            else:
+                schema = schema_func()
             
-        # Check properties
-        assert set(properties) == set(expected['properties']), f"Properties mismatch in {schema_file}"
+            required_fields = schema.get('required', [])
+            properties = list(schema.get('properties', {}).keys())
+            
+            # Check required fields
+            assert set(required_fields) == set(expected['required']), f"Required fields mismatch in {module_name}"
+                
+            # Check properties
+            assert set(properties) == set(expected['properties']), f"Properties mismatch in {module_name}"
+            
+            # Test language parameter (only for non-translate schemas)
+            if function_name != 'build_translate_schema':
+                schema_lang = schema_func(language='English')
+                assert schema_lang is not None
+            
+        except ImportError:
+            pytest.fail(f"Cannot import {module_name}.{function_name}")
+        except Exception as e:
+            pytest.fail(f"Error testing {module_name}: {e}")
 
 
 

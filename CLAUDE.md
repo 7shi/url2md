@@ -62,10 +62,9 @@ url2md/
     ├── utils.py          # HTML processing and resource utilities
     ├── download.py       # Playwright dynamic rendering
     ├── *.md              # Individual module documentation
-    └── schemas/          # JSON schemas for AI operations
-        ├── summarize.json# Schema for summarize command
-        ├── classify.json # Schema for classify command
-        └── translate.json# Schema for report term translation
+    ├── summarize_schema.py # Code-based schema for summarize command
+    ├── classify_schema.py  # Code-based schema for classify command
+    └── translate_schema.py # Code-based schema for translation operations
 ```
 
 ## Development Environment
@@ -103,7 +102,7 @@ uv run url2md [global-options] <subcommand> [options]
 1. Identify which module needs modification
 2. Update relevant data models if needed
 3. Add/modify command logic
-4. Update JSON schemas if AI operations are involved
+4. Update schema modules if AI operations are involved
 5. Add tests for new functionality
 6. Update module documentation if implementation changes
 7. Update README.md if user-facing changes
@@ -124,20 +123,21 @@ uv run url2md [global-options] <subcommand> [options]
 Use the **two-phase development approach**: start with standalone module for prototyping, then integrate into centralized architecture. See [NOTES.md](NOTES.md#development-methodology-two-phase-subcommand-development) for detailed methodology and benefits.
 
 #### Modifying AI Operations
-1. Update relevant JSON schema in `url2md/schemas/`
+1. Update relevant schema module (`summarize_schema.py`, `classify_schema.py`, or `translate_schema.py`)
 2. Modify prompt generation in the command module
-3. Import Gemini functions from `llm7shi` package: `from llm7shi import generate_content_retry, config_from_schema`
-4. Configure thinking parameters in `generate_content_retry()` calls if needed
-5. Use `get_resource_path()` for schema file access in tests and code
-6. For language-specific operations, use `{ in language}` placeholder in schema descriptions
+3. Import Gemini functions from `llm7shi` package: `from llm7shi import generate_content_retry, config_from_schema, build_schema_from_json`
+4. Import schema function: `from .{module}_schema import build_{module}_schema`
+5. Configure thinking parameters in `generate_content_retry()` calls if needed
+6. For language-specific operations, pass language parameter to schema builder function
 7. Test with actual API calls
 8. Verify structured output format and thinking process display
 
-#### Language Support and Schema Placeholders
-- Use `{ in language}` placeholder in JSON schema descriptions for language-specific fields
-- Schemas automatically replace placeholders: if language specified → ` in {language}`, if not → empty string
-- Use `config_from_schema_string()` for dynamic schema modification with placeholders
-- Generic translation module (`translate.py`): `translate_terms()` for any term list, `create_translation_schema()` and `create_translation_prompt()` for dynamic generation
+#### Language Support and Schema Architecture
+- **Code-based Schema**: All schemas are now defined as Python functions in dedicated modules
+- **Dynamic Language Support**: Pass `language` parameter to schema builder functions for localized descriptions
+- **Schema Modules**: `summarize_schema.py`, `classify_schema.py`, `translate_schema.py` contain schema building functions
+- **Translation Support**: `translate_schema.py` dynamically generates schemas based on terms list
+- **Generic Translation**: `translate.py` module provides reusable translation functions for any terms
 
 #### Report Translation Implementation
 - **Translation Cache System**: Uses TSV-based caching (`cache/terms.tsv`) to store translations persistently
@@ -166,7 +166,7 @@ Before making changes: run `uv run pytest`, fix any failures, then run tests aga
 ### Key Guidelines
 - Use descriptive test names and test both positive/negative cases
 - Use `pytest.raises(SystemExit)` for `sys.exit(1)` cases
-- Use `get_resource_path()` for accessing schema files in tests
+- Import schema functions directly from schema modules for testing
 - Follow existing test patterns in the test suite
 - For report generation tests, include tests for subsection URL tag ordering priority
 - Translation functionality tests should be in separate test files (e.g., `test_report_translations.py`)

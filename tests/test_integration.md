@@ -117,18 +117,19 @@ Tests fetch command workflow integration with mocked dependencies.
   3. Verify command completes successfully
 - **Key Assertion**: Mock called once, command returns success (0)
 
-### `test_schema_file_integration()`
-Tests schema file accessibility and configuration generation.
-- **Purpose**: Verify schema files can be loaded and used
-- **Schema Files Tested**:
-  - `schemas/summarize.json`
-  - `schemas/classify.json`
+### `test_schema_module_integration()`
+Tests schema module accessibility and configuration generation.
+- **Purpose**: Verify schema modules can be loaded and used
+- **Schema Modules Tested**:
+  - `summarize_schema.build_summarize_schema()`
+  - `classify_schema.build_classify_schema()`
+  - `translate_schema.build_translate_schema()`
 - **Operations Tested**:
-  - Schema file existence
-  - JSON parsing
-  - Schema object creation
+  - Schema module imports
+  - Schema function calls
+  - Schema object creation with language parameters
   - Config generation from schema
-- **Integration Points**: File system → JSON parsing → llm7shi integration
+- **Integration Points**: Code-based schema → llm7shi integration
 
 ## Module Integration Tests
 
@@ -202,10 +203,11 @@ Tests verify centralized command architecture:
 - No standalone execution in command modules
 
 ### Schema Integration Testing
-Tests verify schema files integrate properly with AI operations:
-- Schema files accessible via resource paths
-- JSON parsing works correctly
+Tests verify schema modules integrate properly with AI operations:
+- Schema modules importable and functional
+- Schema function calls work correctly
 - Configuration generation succeeds
+- Language parameter support verified
 - Integration with llm7shi package functions
 
 ### Cross-Platform Compatibility

@@ -66,16 +66,28 @@ Detailed error handling strategies and implementation guidance:
 
 **When to use**: Implementing error handling, debugging complex error scenarios, or understanding error handling philosophy.
 
-### [resource-support.md](resource-support.md)
-**Resource handling and packaging details**
+### [resource-support.md](resource-support.md) ⚠️ DEPRECATED
+**Legacy resource handling and packaging details**
 
-Technical details about resource management and packaging:
-- Package resource access patterns
-- JSON schema file handling
+Historical documentation of the previous resource management system:
+- Package resource access patterns (no longer used)
+- JSON schema file handling (migrated to code-based)
 - Resource distribution in different installation scenarios
 - Resource loading under various deployment methods
 
-**When to use**: Working with package resources, schema files, or deployment scenarios.
+**When to use**: Understanding legacy architecture or migration context. See [schema-migration.md](schema-migration.md) for current implementation.
+
+### [schema-migration.md](schema-migration.md) ✨ NEW
+**Schema architecture migration documentation**
+
+Comprehensive documentation of the migration from JSON-based to code-based schemas:
+- Migration methodology and implementation phases
+- Before/after architecture comparison
+- Technical improvements and benefits analysis
+- Code examples and API changes
+- Testing strategy and validation results
+
+**When to use**: Understanding current schema architecture, implementing new AI operations, or learning from architectural improvements.
 
 ### [translation-strategy.md](translation-strategy.md)
 **Multi-language support and translation architecture**
@@ -92,9 +104,10 @@ Comprehensive documentation of the LLM-powered translation approach:
 
 ### For New Developers
 1. Start with [architecture.md](architecture.md) to understand the system design
-2. Review [development-history.md](development-history.md) for context on key decisions
-3. Check [testing.md](testing.md) for testing setup and patterns
-4. Reference [error-handling.md](error-handling.md) when implementing error handling
+2. Review [schema-migration.md](schema-migration.md) for current schema architecture
+3. Check [development-history.md](development-history.md) for context on key decisions
+4. Review [testing.md](testing.md) for testing setup and patterns
+5. Reference [error-handling.md](error-handling.md) when implementing error handling
 
 ### For Troubleshooting
 1. Check [troubleshooting.md](troubleshooting.md) for common issues
@@ -103,9 +116,10 @@ Comprehensive documentation of the LLM-powered translation approach:
 
 ### For Adding Features
 1. Follow the methodology in [architecture.md](architecture.md)
-2. Implement tests according to [testing.md](testing.md)
-3. Handle errors per [error-handling.md](error-handling.md)
-4. Consider lessons from [development-history.md](development-history.md)
+2. Review schema patterns in [schema-migration.md](schema-migration.md) for AI operations
+3. Implement tests according to [testing.md](testing.md)
+4. Handle errors per [error-handling.md](error-handling.md)
+5. Consider lessons from [development-history.md](development-history.md)
 
 ### For Understanding Decisions
 1. Read [development-history.md](development-history.md) for detailed examples
@@ -119,9 +133,12 @@ NOTES.md (Philosophy & Core Lessons)
     ↓
 architecture.md (Technical Design & Methodology)
     ↓
+schema-migration.md (Current Schema Architecture) ✨
+    ↓
 development-history.md (Detailed Examples & Evolution)
     ↓
-testing.md, error-handling.md, resource-support.md, translation-strategy.md (Implementation Specifics)
+testing.md, error-handling.md, translation-strategy.md (Implementation Specifics)
+resource-support.md (Legacy - DEPRECATED) ⚠️
     ↓
 troubleshooting.md (Practical Problem Solving)
 ```
