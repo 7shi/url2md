@@ -165,3 +165,47 @@ Package initialization and public API definition. Exports commonly used componen
 - **Languages**: Multi-language support for summaries and reports
 
 This architecture enables maintainable, testable, and extensible code while providing a clean user interface for complex AI-powered content analysis workflows.
+
+## Technical Implementation Details
+
+### AI Schema Architecture
+The system uses **Pydantic-based schema generation** for all AI operations:
+- **Dynamic Language Support**: Schema descriptions automatically localized based on language parameter
+- **Runtime Class Generation**: Translation schemas created dynamically using `create_model` for any term list
+- **Structured Output**: Ensures reliable JSON parsing through schema-enforced LLM responses
+- **Consolidated Design**: All schema creation functions centralized in `schema.py` module
+
+### Content Processing Pipeline
+Handles diverse content types through **unified preprocessing**:
+- **Multi-Format Support**: HTML, PDF, images, text files processed consistently
+- **Smart Content Detection**: Automatic choice between Playwright dynamic rendering vs standard requests
+- **Character Limits**: Text content limited to 300,000 characters for optimal AI processing
+- **Binary Handling**: GIF conversion to PNG, direct file upload for other binary types
+
+### Classification Algorithm
+**Weight-based URL-to-theme classification** with intelligent matching:
+- **Substring Matching**: Calculates proportional weights for partial tag matches
+- **Score Accumulation**: Sums weights across all tags for comprehensive theme scoring
+- **Theme Prioritization**: Optional weight multipliers enable theme importance adjustment
+- **Tag Subsections**: Configurable tag-based subsections within themes for detailed organization
+
+### Cache Management
+**Atomic file operations** with domain-aware processing:
+- **Collision-Safe Naming**: Automatic counter-based filename generation prevents overwrites
+- **Domain Throttling**: Per-domain timing controls respect rate limits during batch processing
+- **TSV Format**: Human-readable cache storage with robust special character escaping
+- **Retry Logic**: Automatic retry of URLs with error status or missing content files
+
+### Translation System
+**Multi-language support** with persistent caching:
+- **Tuple-Based Keys**: `(english, language)` pairs enable multiple translations per term
+- **Memory-Plus-Persistence**: Fast in-memory lookups with TSV file persistence
+- **LLM Call Optimization**: Cache-first approach eliminates redundant translation requests
+- **Lifecycle Management**: Translations created during classification available for subsequent reports
+
+### Error Handling Philosophy
+**Fail-fast approach** optimized for development visibility:
+- **Exception-Based**: Natural error propagation with full stack traces for debugging
+- **Localized Try-Catch**: Handle exceptions close to source, avoid broad safety nets
+- **User Input Validation**: `sys.exit(1)` for file read errors and invalid user input
+- **Graceful Degradation**: Only for optional operations (cache detection, HTML parsing)
